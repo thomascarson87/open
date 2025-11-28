@@ -21,7 +21,6 @@ import Login from './components/Login';
 import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { User, Briefcase } from 'lucide-react';
 
-// --- MAIN APP COMPONENT ---
 function MainApp() {
   const { user, signOut } = useAuth();
   const [userRole, setUserRole] = useState<Role>(null);
@@ -67,27 +66,29 @@ function MainApp() {
             .eq('id', user?.id)
             .single();
 
-        if (error || !data) {
-             // If no profile found, stop loading. The UI will show onboarding selection.
-             setIsLoadingProfile(false);
-             return; 
+        if (error) {
+             console.error("Error fetching base profile:", error);
+             // If profile doesn't exist (trigger failed), we might need to handle it, 
+             // but usually this just means role is null.
         }
 
         if (data) {
-            setUserRole(data.role as Role);
-            if (data.role === 'candidate') {
-                 // Fetch extended candidate profile
-                 const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).single();
-                 if (cand) setCandidateProfile(cand);
+            if (data.role) {
+                setUserRole(data.role as Role);
+                if (data.role === 'candidate') {
+                     const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).single();
+                     if (cand) setCandidateProfile(cand);
+                } else {
+                     const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).single();
+                     if (comp) {
+                         setCompanyProfile(comp);
+                         const { data: team } = await supabase.from('team_members').select('*').eq('company_id', comp.id);
+                         if (team) setTeamMembers(team as TeamMember[]);
+                     }
+                }
             } else {
-                 // Fetch extended company profile
-                 const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).single();
-                 if (comp) {
-                     setCompanyProfile(comp);
-                     // Fetch Team Members
-                     const { data: team } = await supabase.from('team_members').select('*').eq('company_id', comp.id);
-                     if (team) setTeamMembers(team as TeamMember[]);
-                 }
+                // Profile exists but no role set yet
+                setUserRole(null);
             }
         }
     } catch (error) {
@@ -98,13 +99,22 @@ function MainApp() {
   };
 
   const fetchData = async () => {
-      // 1. Fetch Jobs
+      // 1. Fetch Jobs (Published)
       const { data: jobs } = await supabase.from('jobs').select('*');
       if (jobs) setJobPostings(jobs);
 
       // 2. Fetch Applications
-      const { data: apps } = await supabase.from('applications').select('*');
-      if (apps) setApplications(apps);
+      if (user) {
+        if (userRole === 'candidate') {
+            const { data: apps } = await supabase.from('applications').select('*').eq('candidate_id', user.id);
+            if (apps) setApplications(apps);
+        } else {
+            // Recruiters see apps for their jobs
+             const { data: apps } = await supabase.from('applications').select('*');
+             // RLS handles filtering, but good to be explicit in real API
+             if (apps) setApplications(apps);
+        }
+      }
 
       // 3. Fetch Candidates (for recruiters)
       if (userRole === 'recruiter') {
@@ -116,11 +126,14 @@ function MainApp() {
   const handleCreateProfile = async (role: Role) => {
       if (!user) return;
       try {
-          // 1. Create base profile
-          const { error: profileError } = await supabase.from('profiles').insert([{ id: user.id, role, email: user.email }]);
-          if (profileError) throw profileError;
+          // KEY FIX: Update the existing profile (created by trigger) instead of Upserting/Inserting
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ role: role })
+            .eq('id', user.id);
 
-          // 2. Create specific profile
+          if (profileError) throw profileError;
+          
           if (role === 'candidate') {
               const newProfile: Partial<CandidateProfile> = {
                   id: user.id,
@@ -140,7 +153,8 @@ function MainApp() {
                   nonNegotiables: [],
                   desiredPerks: []
               };
-              await supabase.from('candidate_profiles').insert([newProfile]);
+              // Use upsert to be safe against double-clicks or retries
+              await supabase.from('candidate_profiles').upsert([newProfile]);
               setCandidateProfile(newProfile as CandidateProfile);
           } else {
                const newProfile: CompanyProfileType = {
@@ -151,13 +165,15 @@ function MainApp() {
                    size: '1-10',
                    website: ''
                };
-               await supabase.from('company_profiles').insert([{ id: user.id, ...newProfile }]);
+               // Use upsert to be safe
+               await supabase.from('company_profiles').upsert([{ id: user.id, ...newProfile }]);
                setCompanyProfile({ id: user.id, ...newProfile});
           }
 
           setUserRole(role);
       } catch (e) {
           console.error("Error creating profile", e);
+          alert("Error setting up profile. Please try again or refresh.");
       }
   };
 
@@ -185,18 +201,13 @@ function MainApp() {
   };
 
   const handleApproveJob = async (jobId: string, role: 'hiringManager' | 'finance') => {
-      // Optimistic Update
       const updatedJobs = jobPostings.map(j => {
           if (j.id === jobId && j.approvals) {
               const newApprovals = { ...j.approvals, [role]: { ...j.approvals[role], status: 'approved' } };
-              
-              // Check if both are approved to publish
               let status = j.status;
               const hmApproved = role === 'hiringManager' || newApprovals.hiringManager?.status === 'approved';
               const finApproved = role === 'finance' || newApprovals.finance?.status === 'approved';
-              if (hmApproved && finApproved) {
-                  status = 'published';
-              }
+              if (hmApproved && finApproved) status = 'published';
 
               return { ...j, approvals: newApprovals, status: status as any };
           }
@@ -207,7 +218,6 @@ function MainApp() {
           setSelectedJob(updatedJobs.find(j => j.id === jobId) || null);
       }
       
-      // DB Update
       const job = updatedJobs.find(j => j.id === jobId);
       if (job) {
           await supabase.from('jobs').update({ approvals: job.approvals, status: job.status }).eq('id', jobId);
@@ -238,7 +248,6 @@ function MainApp() {
       if (credits > 0) {
           setCredits(c => c - 1);
           setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
-          // In a real app, we would record this transaction in DB
       }
   };
 
@@ -246,7 +255,6 @@ function MainApp() {
       return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>;
   }
 
-  // Onboarding Screen
   if (!userRole) {
       return (
           <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
@@ -396,7 +404,6 @@ function MainApp() {
   );
 }
 
-// Wrapper to provide Auth
 export default function App() {
   return (
       <HashRouter>
@@ -412,3 +419,4 @@ function AuthWrapper() {
     if (loading) return <div className="h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
     return session ? <MainApp /> : <Login />;
 }
+
