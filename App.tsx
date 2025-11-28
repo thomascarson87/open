@@ -178,6 +178,46 @@ function MainApp() {
   const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
 
+  // Default Candidate Generator
+  const createDefaultCandidate = (uid: string, email: string): CandidateProfile => ({
+    id: uid,
+    name: email.split('@')[0] || 'Candidate',
+    headline: 'New Member',
+    email: email,
+    location: '',
+    status: 'actively_looking',
+    skills: [],
+    experience: [],
+    portfolio: [],
+    references: [],
+    avatarUrls: [],
+    contractTypes: [JobType.FULL_TIME],
+    preferredWorkMode: [WorkMode.REMOTE],
+    characterTraits: [],
+    values: [],
+    nonNegotiables: [],
+    desiredPerks: [],
+    themeColor: 'blue',
+    themeFont: 'sans',
+    bio: '',
+    legalStatus: '',
+    currentBonuses: '',
+    noticePeriod: '',
+    ambitions: '',
+    salaryExpectation: ''
+  });
+
+  // Default Company Generator
+  const createDefaultCompany = (uid: string): CompanyProfileType => ({
+    id: uid,
+    companyName: 'New Company',
+    about: '',
+    location: '',
+    industry: '',
+    size: '1-10',
+    website: ''
+  });
+
   useEffect(() => {
     if (user) {
         fetchUserProfile();
@@ -192,24 +232,39 @@ function MainApp() {
 
   const fetchUserProfile = async () => {
     try {
+        // 1. Get Base Profile
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user?.id)
-            .single();
+            .maybeSingle(); // Use maybeSingle to prevent 406 error if row missing
 
         if (data) {
             if (data.role) {
                 setUserRole(data.role as Role);
+                
+                // 2. Load Role Specific Data
                 if (data.role === 'candidate') {
-                     const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).single();
-                     if (cand) setCandidateProfile(mapCandidateFromDB(cand));
+                     const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
+                     if (cand) {
+                         setCandidateProfile(mapCandidateFromDB(cand));
+                     } else if (user?.email) {
+                         // SELF-HEALING: Role exists but profile data missing. Create it now.
+                         const newProfile = createDefaultCandidate(user.id, user.email);
+                         await supabase.from('candidate_profiles').upsert([mapCandidateToDB(newProfile)]);
+                         setCandidateProfile(newProfile);
+                     }
                 } else {
-                     const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).single();
+                     const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
                      if (comp) {
                          setCompanyProfile(mapCompanyFromDB(comp));
                          const { data: team } = await supabase.from('team_members').select('*').eq('company_id', comp.id);
                          if (team) setTeamMembers(team as TeamMember[]);
+                     } else if (user?.id) {
+                         // SELF-HEALING: Role exists but company data missing.
+                         const newProfile = createDefaultCompany(user.id);
+                         await supabase.from('company_profiles').upsert([mapCompanyToDB(newProfile)]);
+                         setCompanyProfile(newProfile);
                      }
                 }
             } else {
@@ -263,6 +318,7 @@ function MainApp() {
   const handleCreateProfile = async (role: Role) => {
       if (!user) return;
       try {
+          // 1. Update Base Profile
           const { error: profileError } = await supabase
             .from('profiles')
             .update({ role: role })
@@ -270,50 +326,21 @@ function MainApp() {
 
           if (profileError) throw profileError;
           
+          // 2. Create Specific Profile
           if (role === 'candidate') {
-              const newProfile: CandidateProfile = {
-                  id: user.id,
-                  name: user.email?.split('@')[0] || 'Candidate',
-                  headline: 'New Member',
-                  email: user.email!,
-                  location: '',
-                  status: 'actively_looking',
-                  skills: [],
-                  experience: [],
-                  portfolio: [],
-                  references: [],
-                  avatarUrls: [],
-                  contractTypes: [JobType.FULL_TIME],
-                  preferredWorkMode: [WorkMode.REMOTE],
-                  characterTraits: [],
-                  values: [],
-                  nonNegotiables: [],
-                  desiredPerks: [],
-                  themeColor: 'blue',
-                  themeFont: 'sans',
-                  bio: '',
-                  legalStatus: '',
-                  currentBonuses: '',
-                  noticePeriod: '',
-                  ambitions: '',
-                  salaryExpectation: ''
-              };
+              const newProfile = createDefaultCandidate(user.id, user.email || '');
               // Map to DB format before sending
-              await supabase.from('candidate_profiles').upsert([mapCandidateToDB(newProfile)]);
+              const { error } = await supabase.from('candidate_profiles').upsert([mapCandidateToDB(newProfile)]);
+              if (error) throw error;
               setCandidateProfile(newProfile);
+              setCurrentView('profile'); // Send to profile edit immediately
           } else {
-               const newProfile: CompanyProfileType = {
-                   id: user.id,
-                   companyName: 'New Company',
-                   about: '',
-                   location: '',
-                   industry: '',
-                   size: '1-10',
-                   website: ''
-               };
+               const newProfile = createDefaultCompany(user.id);
                // Map to DB format before sending
-               await supabase.from('company_profiles').upsert([mapCompanyToDB(newProfile)]);
+               const { error } = await supabase.from('company_profiles').upsert([mapCompanyToDB(newProfile)]);
+               if (error) throw error;
                setCompanyProfile(newProfile);
+               setCurrentView('profile'); // Send to profile edit immediately
           }
 
           setUserRole(role);
@@ -325,12 +352,14 @@ function MainApp() {
 
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
       setCandidateProfile(profile);
-      await supabase.from('candidate_profiles').update(mapCandidateToDB(profile)).eq('id', user?.id);
+      // Use UPSERT to ensure it saves even if the row was missing (ghost state fix)
+      await supabase.from('candidate_profiles').upsert(mapCandidateToDB(profile));
   };
 
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
       setCompanyProfile(profile);
-      await supabase.from('company_profiles').update(mapCompanyToDB(profile)).eq('id', user?.id);
+      // Use UPSERT to ensure it saves even if the row was missing (ghost state fix)
+      await supabase.from('company_profiles').upsert(mapCompanyToDB(profile));
   };
 
   const handlePublishJob = async (job: JobPosting) => {
