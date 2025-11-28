@@ -1020,3 +1020,4 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
 };
 
 export default CandidateProfileForm;
+
