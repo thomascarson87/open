@@ -21,6 +21,138 @@ import Login from './components/Login';
 import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { User, Briefcase } from 'lucide-react';
 
+// --- DATA MAPPERS ---
+// These functions translate between Supabase (snake_case) and App (camelCase)
+
+const mapCandidateFromDB = (data: any): CandidateProfile => ({
+    id: data.id,
+    name: data.name || '',
+    headline: data.headline || '',
+    email: data.email || '',
+    location: data.location || '',
+    avatarUrls: data.avatar_urls || [],
+    videoIntroUrl: data.video_intro_url,
+    themeColor: data.theme_color || 'blue',
+    themeFont: data.theme_font || 'sans',
+    bio: data.bio || '',
+    status: data.status || 'not_looking',
+    characterTraits: data.character_traits || [],
+    legalStatus: data.legal_status || '',
+    contractTypes: data.contract_types || [],
+    currentBonuses: data.current_bonuses || '',
+    experience: data.experience || [],
+    certificates: data.certificates || [],
+    portfolio: data.portfolio || [],
+    references: data.references_list || [], // Mapped from references_list
+    noticePeriod: data.notice_period || '',
+    skills: data.skills || [],
+    values: data.values_list || [], // Mapped from values_list
+    ambitions: data.ambitions || '',
+    salaryExpectation: data.salary_expectation || '',
+    preferredWorkMode: data.preferred_work_mode || [],
+    desiredPerks: data.desired_perks || [],
+    nonNegotiables: data.non_negotiables || [],
+    resumeText: data.resume_text,
+    isUnlocked: data.is_unlocked || false,
+    matchScore: data.match_score,
+    connections: data.connections
+});
+
+const mapCandidateToDB = (profile: CandidateProfile) => ({
+    id: profile.id,
+    name: profile.name,
+    headline: profile.headline,
+    email: profile.email,
+    location: profile.location,
+    avatar_urls: profile.avatarUrls,
+    video_intro_url: profile.videoIntroUrl,
+    theme_color: profile.themeColor,
+    theme_font: profile.themeFont,
+    bio: profile.bio,
+    status: profile.status,
+    character_traits: profile.characterTraits,
+    legal_status: profile.legalStatus,
+    contract_types: profile.contractTypes,
+    current_bonuses: profile.currentBonuses,
+    experience: profile.experience,
+    certificates: profile.certificates,
+    portfolio: profile.portfolio,
+    references_list: profile.references, // Map back to references_list
+    notice_period: profile.noticePeriod,
+    skills: profile.skills,
+    values_list: profile.values, // Map back to values_list
+    ambitions: profile.ambitions,
+    salary_expectation: profile.salaryExpectation,
+    preferred_work_mode: profile.preferredWorkMode,
+    desired_perks: profile.desiredPerks,
+    non_negotiables: profile.nonNegotiables,
+    is_unlocked: profile.isUnlocked
+});
+
+const mapCompanyFromDB = (data: any): CompanyProfileType => ({
+    id: data.id,
+    companyName: data.company_name || '',
+    industry: data.industry || '',
+    size: data.size || '',
+    website: data.website || '',
+    location: data.location || '',
+    about: data.about || '',
+    paymentMethod: data.payment_method,
+    logoUrl: data.logo_url
+});
+
+const mapCompanyToDB = (profile: CompanyProfileType) => ({
+    id: profile.id,
+    company_name: profile.companyName,
+    industry: profile.industry,
+    size: profile.size,
+    website: profile.website,
+    location: profile.location,
+    about: profile.about,
+    payment_method: profile.paymentMethod,
+    logo_url: profile.logoUrl
+});
+
+const mapJobFromDB = (data: any): JobPosting => ({
+    id: data.id,
+    company_id: data.company_id,
+    companyName: data.company_name || '',
+    companyLogo: data.company_logo, // If you join with company profile
+    title: data.title,
+    description: data.description,
+    location: data.location,
+    salaryRange: data.salary_range,
+    seniority: data.seniority,
+    startDate: data.start_date,
+    workMode: data.work_mode,
+    requiredSkills: data.required_skills || [],
+    values: data.values_list || [],
+    perks: data.perks || [],
+    postedDate: data.posted_date,
+    status: data.status,
+    approvals: data.approvals
+});
+
+const mapJobToDB = (job: JobPosting) => ({
+    company_id: job.company_id,
+    company_name: job.companyName,
+    title: job.title,
+    description: job.description,
+    location: job.location,
+    salary_range: job.salaryRange,
+    seniority: job.seniority,
+    start_date: job.startDate,
+    work_mode: job.workMode,
+    required_skills: job.requiredSkills,
+    values_list: job.values,
+    perks: job.perks,
+    status: job.status,
+    approvals: job.approvals,
+    posted_date: job.postedDate
+});
+
+// --- MAIN APP ---
+
 function MainApp() {
   const { user, signOut } = useAuth();
   const [userRole, setUserRole] = useState<Role>(null);
@@ -66,28 +198,21 @@ function MainApp() {
             .eq('id', user?.id)
             .single();
 
-        if (error) {
-             console.error("Error fetching base profile:", error);
-             // If profile doesn't exist (trigger failed), we might need to handle it, 
-             // but usually this just means role is null.
-        }
-
         if (data) {
             if (data.role) {
                 setUserRole(data.role as Role);
                 if (data.role === 'candidate') {
                      const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).single();
-                     if (cand) setCandidateProfile(cand);
+                     if (cand) setCandidateProfile(mapCandidateFromDB(cand));
                 } else {
                      const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).single();
                      if (comp) {
-                         setCompanyProfile(comp);
+                         setCompanyProfile(mapCompanyFromDB(comp));
                          const { data: team } = await supabase.from('team_members').select('*').eq('company_id', comp.id);
                          if (team) setTeamMembers(team as TeamMember[]);
                      }
                 }
             } else {
-                // Profile exists but no role set yet
                 setUserRole(null);
             }
         }
@@ -99,34 +224,45 @@ function MainApp() {
   };
 
   const fetchData = async () => {
-      // 1. Fetch Jobs (Published)
+      // 1. Fetch Jobs
       const { data: jobs } = await supabase.from('jobs').select('*');
-      if (jobs) setJobPostings(jobs);
+      if (jobs) setJobPostings(jobs.map(mapJobFromDB));
 
       // 2. Fetch Applications
       if (user) {
         if (userRole === 'candidate') {
             const { data: apps } = await supabase.from('applications').select('*').eq('candidate_id', user.id);
-            if (apps) setApplications(apps);
+            if (apps) setApplications(apps.map(a => ({
+                id: a.id,
+                jobId: a.job_id,
+                candidateId: a.candidate_id,
+                status: a.status,
+                matchScore: a.match_score,
+                lastUpdated: a.last_updated
+            })));
         } else {
-            // Recruiters see apps for their jobs
              const { data: apps } = await supabase.from('applications').select('*');
-             // RLS handles filtering, but good to be explicit in real API
-             if (apps) setApplications(apps);
+             if (apps) setApplications(apps.map(a => ({
+                 id: a.id,
+                 jobId: a.job_id,
+                 candidateId: a.candidate_id,
+                 status: a.status,
+                 matchScore: a.match_score,
+                 lastUpdated: a.last_updated
+             })));
         }
       }
 
-      // 3. Fetch Candidates (for recruiters)
+      // 3. Fetch Candidates
       if (userRole === 'recruiter') {
           const { data: cands } = await supabase.from('candidate_profiles').select('*');
-          if (cands) setCandidatesList(cands);
+          if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
       }
   };
 
   const handleCreateProfile = async (role: Role) => {
       if (!user) return;
       try {
-          // KEY FIX: Update the existing profile (created by trigger) instead of Upserting/Inserting
           const { error: profileError } = await supabase
             .from('profiles')
             .update({ role: role })
@@ -135,11 +271,12 @@ function MainApp() {
           if (profileError) throw profileError;
           
           if (role === 'candidate') {
-              const newProfile: Partial<CandidateProfile> = {
+              const newProfile: CandidateProfile = {
                   id: user.id,
                   name: user.email?.split('@')[0] || 'Candidate',
                   headline: 'New Member',
                   email: user.email!,
+                  location: '',
                   status: 'actively_looking',
                   skills: [],
                   experience: [],
@@ -151,13 +288,22 @@ function MainApp() {
                   characterTraits: [],
                   values: [],
                   nonNegotiables: [],
-                  desiredPerks: []
+                  desiredPerks: [],
+                  themeColor: 'blue',
+                  themeFont: 'sans',
+                  bio: '',
+                  legalStatus: '',
+                  currentBonuses: '',
+                  noticePeriod: '',
+                  ambitions: '',
+                  salaryExpectation: ''
               };
-              // Use upsert to be safe against double-clicks or retries
-              await supabase.from('candidate_profiles').upsert([newProfile]);
-              setCandidateProfile(newProfile as CandidateProfile);
+              // Map to DB format before sending
+              await supabase.from('candidate_profiles').upsert([mapCandidateToDB(newProfile)]);
+              setCandidateProfile(newProfile);
           } else {
                const newProfile: CompanyProfileType = {
+                   id: user.id,
                    companyName: 'New Company',
                    about: '',
                    location: '',
@@ -165,9 +311,9 @@ function MainApp() {
                    size: '1-10',
                    website: ''
                };
-               // Use upsert to be safe
-               await supabase.from('company_profiles').upsert([{ id: user.id, ...newProfile }]);
-               setCompanyProfile({ id: user.id, ...newProfile});
+               // Map to DB format before sending
+               await supabase.from('company_profiles').upsert([mapCompanyToDB(newProfile)]);
+               setCompanyProfile(newProfile);
           }
 
           setUserRole(role);
@@ -179,20 +325,20 @@ function MainApp() {
 
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
       setCandidateProfile(profile);
-      await supabase.from('candidate_profiles').update(profile).eq('id', user?.id);
+      await supabase.from('candidate_profiles').update(mapCandidateToDB(profile)).eq('id', user?.id);
   };
 
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
       setCompanyProfile(profile);
-      await supabase.from('company_profiles').update(profile).eq('id', user?.id);
+      await supabase.from('company_profiles').update(mapCompanyToDB(profile)).eq('id', user?.id);
   };
 
   const handlePublishJob = async (job: JobPosting) => {
       const newJob = { ...job, company_id: user?.id, postedDate: new Date().toISOString() };
-      const { data, error } = await supabase.from('jobs').insert([newJob]).select();
+      const { data, error } = await supabase.from('jobs').insert([mapJobToDB(newJob)]).select();
       
       if (data) {
-          setJobPostings([data[0], ...jobPostings]);
+          setJobPostings([mapJobFromDB(data[0]), ...jobPostings]);
           setCurrentView('dashboard');
       } else if (error) {
           console.error("Error publishing job", error);
@@ -227,16 +373,23 @@ function MainApp() {
   const handleApply = async (jobId: string) => {
       if (!user) return;
       const newApp = {
-          jobId,
-          candidateId: user.id,
+          job_id: jobId,
+          candidate_id: user.id,
           status: 'applied',
-          matchScore: 0, 
-          lastUpdated: new Date().toISOString()
+          match_score: 0, 
+          last_updated: new Date().toISOString()
       };
       
       const { data, error } = await supabase.from('applications').insert([newApp]).select();
       if (data) {
-        setApplications([...applications, data[0] as Application]);
+        setApplications([...applications, {
+             id: data[0].id,
+             jobId: data[0].job_id,
+             candidateId: data[0].candidate_id,
+             status: data[0].status,
+             matchScore: data[0].match_score,
+             lastUpdated: data[0].last_updated
+        }]);
         alert("Application sent!");
       } else {
         console.error(error);
@@ -248,6 +401,7 @@ function MainApp() {
       if (credits > 0) {
           setCredits(c => c - 1);
           setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
+          // In real app, persist unlock to DB
       }
   };
 
@@ -292,7 +446,7 @@ function MainApp() {
               if (userRole === 'candidate' && candidateProfile) {
                 return <CandidateProfileForm profile={candidateProfile} onSave={handleUpdateCandidate} />;
               }
-              return null;
+              return <div className="text-center p-10">Loading profile data...</div>;
           case 'network':
               return <Network connections={connections} />;
           case 'messages':
@@ -419,4 +573,5 @@ function AuthWrapper() {
     if (loading) return <div className="h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
     return session ? <MainApp /> : <Login />;
 }
+
 
