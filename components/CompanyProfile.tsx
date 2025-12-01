@@ -1,15 +1,17 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { CompanyProfile as CompanyProfileType, TeamMember, MemberRole } from '../types';
 import { Building2, Globe, MapPin, CreditCard, Save, Users, UserPlus, Trash2, Mail } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import GroupedMultiSelect from './GroupedMultiSelect';
+import { INDUSTRIES } from '../constants/matchingData';
 
 interface Props {
   profile: CompanyProfileType;
   onSave: (p: CompanyProfileType) => void;
 }
 
-const INDUSTRIES = ["Fintech", "HealthTech", "EdTech", "E-commerce", "SaaS", "Cybersecurity", "AI/ML", "Gaming"];
 const COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-1000", "1000+"];
 
 const ROLES: { id: MemberRole, label: string }[] = [
@@ -115,17 +117,19 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave }) => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Industry</label>
-                             <div className="relative">
-                                <select 
-                                    value={formData.industry}
-                                    onChange={e => setFormData({...formData, industry: e.target.value})}
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg appearance-none cursor-pointer"
-                                >
-                                    <option value="" disabled>Select Industry</option>
-                                    {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
-                                </select>
-                             </div>
+                             {/* Industry Selection */}
+                             <section>
+                              <GroupedMultiSelect
+                                label="Company Industry"
+                                options={INDUSTRIES}
+                                selected={formData.industry || []}
+                                onChange={(industry) => setFormData(prev => ({ ...prev, industry }))}
+                                placeholder="Select your primary industry(ies)"
+                                helpText="Select 1-3 industries that best describe your company"
+                                maxSelections={3}
+                                searchable={true}
+                              />
+                             </section>
                         </div>
                         <div>
                              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Size</label>
