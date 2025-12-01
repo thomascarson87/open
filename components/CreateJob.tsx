@@ -1,8 +1,15 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
 import { suggestSkillsForRole, generateJobDescription } from '../services/geminiService';
 import { Sparkles, ArrowRight, MapPin, DollarSign, Calendar, Info, Users, TrendingUp, Briefcase, CheckCircle, UserCheck, Trash2, Plus } from 'lucide-react';
+import GroupedMultiSelect from './GroupedMultiSelect';
+import { 
+  CULTURAL_VALUES, 
+  PERKS_CATEGORIES,
+  CHARACTER_TRAITS_CATEGORIES
+} from '../constants/matchingData';
 
 interface Props {
     onPublish: (job: JobPosting) => void;
@@ -11,7 +18,6 @@ interface Props {
 }
 
 const LOCATIONS = ["Remote", "San Francisco, CA", "New York, NY", "London, UK", "Berlin, DE", "Toronto, CA", "Austin, TX"];
-const PERK_OPTIONS = ["Health Insurance", "401k / Pension", "Unlimited PTO", "Remote First", "Equity / Stock Options", "Gym Stipend", "Learning Budget", "Free Meals", "Dog Friendly Office"];
 
 const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const [step, setStep] = useState(1);
@@ -22,8 +28,10 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
         companyName: "TechFlow Inc.",
         workMode: WorkMode.REMOTE,
         requiredSkills: [],
-        values: ["Innovation", "User Focus"],
+        values: [],
         perks: [],
+        desiredTraits: [],
+        requiredTraits: [],
         seniority: SeniorityLevel.SENIOR,
         contractTypes: [JobType.FULL_TIME],
         salaryCurrency: 'USD',
@@ -76,13 +84,6 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
             ...prev,
             requiredSkills: prev.requiredSkills?.filter((_, i) => i !== index)
         }));
-    };
-
-    const togglePerk = (perk: string) => {
-        setJobData(prev => {
-            const current = prev.perks || [];
-            return { ...prev, perks: current.includes(perk) ? current.filter(p => p !== perk) : [...current, perk] };
-        });
     };
 
     const toggleContractType = (type: JobType) => {
@@ -296,21 +297,66 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                             </div>
                         </div>
 
-                        {/* Perks */}
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Perks</label>
-                            <div className="flex flex-wrap gap-2">
-                                {PERK_OPTIONS.map(perk => (
-                                    <button
-                                        key={perk}
-                                        onClick={() => togglePerk(perk)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${jobData.perks?.includes(perk) ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-gray-600 border-gray-200'}`}
-                                    >
-                                        {perk}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        {/* Company Values Section */}
+                        <section>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3">Company Values</h3>
+                          <GroupedMultiSelect
+                            label="Cultural Values"
+                            options={CULTURAL_VALUES}
+                            selected={jobData.values || []}
+                            onChange={(values) => setJobData(prev => ({ ...prev, values }))}
+                            placeholder="What values drive your company?"
+                            helpText="Select 5-8 core values that define your culture"
+                            maxSelections={10}
+                            searchable={true}
+                          />
+                        </section>
+
+                        {/* Perks & Benefits Section */}
+                        <section>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3">Perks & Benefits</h3>
+                          <GroupedMultiSelect
+                            label="What You Offer"
+                            options={PERKS_CATEGORIES}
+                            selected={jobData.perks || []}
+                            onChange={(perks) => setJobData(prev => ({ ...prev, perks }))}
+                            placeholder="Select the perks you offer"
+                            helpText="Be comprehensive - this helps attract the right talent"
+                            grouped={true}
+                            searchable={true}
+                          />
+                        </section>
+
+                        {/* Desired Traits Section */}
+                        <section>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3">Desired Character Traits</h3>
+                          
+                          <GroupedMultiSelect
+                            label="Required Traits (Must Have)"
+                            options={CHARACTER_TRAITS_CATEGORIES}
+                            selected={jobData.requiredTraits || []}
+                            onChange={(traits) => setJobData(prev => ({ ...prev, requiredTraits: traits }))}
+                            placeholder="Non-negotiable personality traits"
+                            helpText="Select 2-4 must-have traits for this role"
+                            maxSelections={5}
+                            grouped={true}
+                            searchable={true}
+                          />
+
+                          <div className="mt-4">
+                            <GroupedMultiSelect
+                              label="Desired Traits (Nice to Have)"
+                              options={CHARACTER_TRAITS_CATEGORIES}
+                              selected={jobData.desiredTraits || []}
+                              onChange={(traits) => setJobData(prev => ({ ...prev, desiredTraits: traits }))}
+                              placeholder="Bonus traits that would be great"
+                              helpText="Select 3-5 traits that would be a plus"
+                              maxSelections={8}
+                              grouped={true}
+                              searchable={true}
+                            />
+                          </div>
+                        </section>
 
                         <div className="flex justify-between pt-6 border-t border-gray-100">
                              <button onClick={() => setStep(1)} className="text-gray-500 hover:text-gray-900 font-medium px-4">Back</button>
