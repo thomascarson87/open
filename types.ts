@@ -1,4 +1,5 @@
 
+
 export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
@@ -104,7 +105,9 @@ export interface CandidateProfile {
   // Bio & Status
   bio: string;
   status: 'actively_looking' | 'open_to_offers' | 'happy_but_listening' | 'not_looking';
-  characterTraits: string[];
+  
+  // ENHANCED FIELDS
+  characterTraits: string[]; // Now uses ALL_CHARACTER_TRAITS
   
   // Logistics
   legalStatus: string; // Visa, Citizenship
@@ -118,7 +121,7 @@ export interface CandidateProfile {
   
   noticePeriod: string; 
   skills: Skill[];
-  values: string[];
+  values: string[]; // Now uses CULTURAL_VALUES
   ambitions: string;
   
   // Matching Fields
@@ -128,7 +131,11 @@ export interface CandidateProfile {
   
   desiredSeniority: string[]; // e.g. ['Senior', 'Lead']
   preferredWorkMode: WorkMode[];
-  desiredPerks: string[];
+  desiredPerks: string[]; // Now uses ALL_PERKS
+  
+  // NEW FIELDS
+  interestedIndustries: string[];  // From INDUSTRIES
+  industryExperience?: Record<string, string>;  // e.g., {"Fintech": "5 years"}
   
   // Logic
   nonNegotiables: string[]; // Array of field keys that are non-negotiable
@@ -141,7 +148,7 @@ export interface CandidateProfile {
 export interface CompanyProfile {
   id?: string;
   companyName: string;
-  industry: string;
+  industry: string[]; // Changed from string to array
   size: string;
   website: string;
   location: string;
@@ -180,6 +187,7 @@ export interface JobPosting {
   title: string;
   description: string;
   location: string;
+  companyIndustry?: string[]; // For quick display
   
   // Salary
   salaryRange: string; // Display string
@@ -197,6 +205,11 @@ export interface JobPosting {
   
   values: string[];
   perks: string[];
+  
+  // NEW FIELDS
+  desiredTraits: string[];  // From ALL_CHARACTER_TRAITS (nice to have)
+  requiredTraits: string[];  // From ALL_CHARACTER_TRAITS (must have)
+  
   postedDate: string;
   status: 'draft' | 'pending_approval' | 'published' | 'closed';
   approvals?: JobApprovals;
@@ -218,6 +231,8 @@ export interface MatchBreakdown {
     contract: MatchDetails;
     culture: MatchDetails;
     perks: MatchDetails;
+    industry: MatchDetails; // NEW
+    traits: MatchDetails; // NEW
   };
   dealBreakers: string[];
   recommendations: string[];
