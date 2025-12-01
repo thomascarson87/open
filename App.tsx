@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -37,7 +38,14 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     themeFont: data.theme_font || 'sans',
     bio: data.bio || '',
     status: data.status || 'not_looking',
+    
+    // Updated Matching Fields
+    values: data.values_list || [],
+    desiredPerks: data.desired_perks || [],
     characterTraits: data.character_traits || [],
+    interestedIndustries: data.interested_industries || [],
+    industryExperience: data.industry_experience || {},
+    
     legalStatus: data.legal_status || '',
     contractTypes: data.contract_types || [],
     currentBonuses: data.current_bonuses || '',
@@ -47,16 +55,13 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     references: data.references_list || [],
     noticePeriod: data.notice_period || '',
     skills: data.skills || [],
-    values: data.values_list || [],
     ambitions: data.ambitions || '',
     
-    // Updated Matching Fields
     salaryExpectation: data.salary_expectation || '', // Keeping for legacy/display compatibility
     salaryMin: data.salary_min,
     salaryCurrency: data.salary_currency || 'USD',
     desiredSeniority: data.desired_seniority || [],
     preferredWorkMode: data.preferred_work_mode || [],
-    desiredPerks: data.desired_perks || [],
     
     nonNegotiables: data.non_negotiables || [],
     resumeText: data.resume_text,
@@ -97,6 +102,8 @@ const mapCandidateToDB = (profile: CandidateProfile) => ({
     desired_seniority: profile.desiredSeniority,
     preferred_work_mode: profile.preferredWorkMode,
     desired_perks: profile.desiredPerks,
+    interested_industries: profile.interestedIndustries,
+    industry_experience: profile.industryExperience,
     
     non_negotiables: profile.nonNegotiables,
     is_unlocked: profile.isUnlocked,
@@ -108,7 +115,7 @@ const mapCandidateToDB = (profile: CandidateProfile) => ({
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     id: data.id,
     companyName: data.company_name || '',
-    industry: data.industry || '',
+    industry: data.industry || [], // Should be array now
     size: data.size || '',
     website: data.website || '',
     location: data.location || '',
@@ -120,7 +127,7 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
 const mapCompanyToDB = (profile: CompanyProfileType) => ({
     id: profile.id,
     company_name: profile.companyName,
-    industry: profile.industry,
+    industry: profile.industry, // Array
     size: profile.size,
     website: profile.website,
     location: profile.location,
@@ -151,6 +158,11 @@ const mapJobFromDB = (data: any): JobPosting => ({
     requiredSkills: data.required_skills || [],
     values: data.values_list || [],
     perks: data.perks || [],
+    
+    // NEW FIELDS
+    desiredTraits: data.desired_traits || [],
+    requiredTraits: data.required_traits || [],
+    
     postedDate: data.posted_date,
     status: data.status,
     approvals: data.approvals
@@ -176,6 +188,11 @@ const mapJobToDB = (job: JobPosting) => ({
     required_skills: job.requiredSkills,
     values_list: job.values,
     perks: job.perks,
+    
+    // NEW FIELDS
+    desired_traits: job.desiredTraits,
+    required_traits: job.requiredTraits,
+    
     status: job.status,
     approvals: job.approvals,
     posted_date: job.postedDate
@@ -240,7 +257,9 @@ function MainApp() {
     certificates: [],
     matchScore: 0,
     connections: [],
-    resumeText: ''
+    resumeText: '',
+    interestedIndustries: [],
+    industryExperience: {}
   });
 
   const createDefaultCompany = (uid: string): CompanyProfileType => ({
@@ -248,7 +267,7 @@ function MainApp() {
     companyName: 'New Company',
     about: '',
     location: '',
-    industry: '',
+    industry: [],
     size: '1-10',
     website: ''
   });
