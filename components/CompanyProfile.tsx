@@ -1,11 +1,10 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { CompanyProfile as CompanyProfileType, TeamMember, MemberRole } from '../types';
 import { Building2, Globe, MapPin, CreditCard, Save, Users, UserPlus, Trash2, Mail } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import GroupedMultiSelect from './GroupedMultiSelect';
-import { INDUSTRIES } from '../constants/matchingData';
+import { INDUSTRIES, CULTURAL_VALUES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES } from '../constants/matchingData';
 
 interface Props {
   profile: CompanyProfileType;
@@ -101,7 +100,7 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave }) => {
         
         {/* DETAILS TAB */}
         {activeTab === 'details' && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-8">
                 <h3 className="text-xl font-bold text-gray-900 flex items-center"><Building2 className="w-5 h-5 mr-2 text-gray-400"/> Company Details</h3>
                 
                 <div className="space-y-4">
@@ -180,6 +179,52 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave }) => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="border-t border-gray-100 pt-8 space-y-8">
+                    <section>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Company Culture</h3>
+                      <GroupedMultiSelect
+                        label="Core Values"
+                        options={CULTURAL_VALUES}
+                        selected={formData.values || []}
+                        onChange={(values) => setFormData(prev => ({ ...prev, values }))}
+                        placeholder="What values define your company culture?"
+                        helpText="Select 5-8 core values that candidates should align with"
+                        maxSelections={10}
+                        searchable={true}
+                      />
+                    </section>
+
+                    <section>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Standard Benefits</h3>
+                      <GroupedMultiSelect
+                        label="Perks & Benefits Offered"
+                        options={PERKS_CATEGORIES}
+                        selected={formData.perks || []}
+                        onChange={(perks) => setFormData(prev => ({ ...prev, perks }))}
+                        placeholder="What perks do you offer all employees?"
+                        helpText="Select the benefits package you provide"
+                        grouped={true}
+                        searchable={true}
+                      />
+                    </section>
+
+                    <section>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Ideal Candidate Traits</h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        These are company-wide trait preferences. You can override these per job posting.
+                      </p>
+                      <GroupedMultiSelect
+                        label="Desired Character Traits"
+                        options={CHARACTER_TRAITS_CATEGORIES}
+                        selected={formData.desiredTraits || []}
+                        onChange={(traits) => setFormData(prev => ({ ...prev, desiredTraits: traits }))}
+                        placeholder="What personality traits fit your culture?"
+                        grouped={true}
+                        searchable={true}
+                      />
+                    </section>
                 </div>
             </div>
         )}
