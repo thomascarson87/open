@@ -42,6 +42,12 @@ export interface Skill {
   years: number;
 }
 
+export interface JobSkill {
+  name: string;
+  minimumYears: number;
+  weight: 'required' | 'preferred';
+}
+
 export interface Experience {
   id: string;
   role: string;
@@ -114,7 +120,13 @@ export interface CandidateProfile {
   skills: Skill[];
   values: string[];
   ambitions: string;
-  salaryExpectation: string;
+  
+  // Matching Fields
+  salaryExpectation: string; // Deprecated in favor of salaryMin
+  salaryMin?: number;
+  salaryCurrency?: string;
+  
+  desiredSeniority: string[]; // e.g. ['Senior', 'Lead']
   preferredWorkMode: WorkMode[];
   desiredPerks: string[];
   
@@ -168,16 +180,47 @@ export interface JobPosting {
   title: string;
   description: string;
   location: string;
-  salaryRange: string;
+  
+  // Salary
+  salaryRange: string; // Display string
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryCurrency?: string;
+  
   seniority: SeniorityLevel;
+  contractTypes: JobType[];
+  
   startDate?: string;
   workMode: WorkMode;
-  requiredSkills: Skill[];
+  
+  requiredSkills: JobSkill[]; // Structured skills
+  
   values: string[];
   perks: string[];
   postedDate: string;
   status: 'draft' | 'pending_approval' | 'published' | 'closed';
   approvals?: JobApprovals;
+}
+
+export interface MatchDetails {
+  score: number;
+  reason: string;
+}
+
+export interface MatchBreakdown {
+  overallScore: number;
+  details: {
+    skills: MatchDetails;
+    seniority: MatchDetails;
+    salary: MatchDetails;
+    location: MatchDetails;
+    workMode: MatchDetails;
+    contract: MatchDetails;
+    culture: MatchDetails;
+    perks: MatchDetails;
+  };
+  dealBreakers: string[];
+  recommendations: string[];
 }
 
 export type ApplicationStatus = 
@@ -198,10 +241,10 @@ export interface Application {
   candidateId: string;
   status: ApplicationStatus;
   matchScore: number;
+  matchBreakdown?: MatchBreakdown; // Detailed scoring
   aiAnalysis?: string;
   lastUpdated: string;
-  // B2B Collaboration
-  interviewers?: { [stage: string]: string[] }; // stage -> array of user_ids
+  interviewers?: { [stage: string]: string[] };
 }
 
 export interface Message {
