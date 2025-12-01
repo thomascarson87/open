@@ -17,6 +17,8 @@ export enum JobType {
   FULL_TIME = 'Full-time',
   CONTRACT = 'Contract',
   FREELANCE = 'Freelance',
+  PART_TIME = 'Part-time',
+  INTERNSHIP = 'Internship'
 }
 
 export enum WorkMode {
@@ -53,7 +55,10 @@ export interface Experience {
   id: string;
   role: string;
   company: string;
-  duration: string;
+  duration: string; // Display string e.g., "Jan 2020 - Present • 4 years"
+  startDate: string; // YYYY-MM
+  endDate: string | null; // YYYY-MM or null for Present
+  isCurrentRole: boolean;
   type: string;
   description?: string; // Detailed responsibilities
   achievements?: string[]; // Key accomplishments
@@ -155,6 +160,11 @@ export interface CompanyProfile {
   about: string;
   paymentMethod?: { last4: string; brand: string };
   logoUrl?: string;
+  
+  // NEW FIELDS
+  values?: string[];
+  perks?: string[];
+  desiredTraits?: string[];
 }
 
 export interface Connection {
