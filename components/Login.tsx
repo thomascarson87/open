@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { ArrowRight, Github, Mail } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { ArrowRight, Github, ArrowLeft } from 'lucide-react';
 
-const Login = () => {
+interface Props {
+    selectedRole?: 'candidate' | 'recruiter' | null;
+    onBack?: () => void;
+}
+
+const Login: React.FC<Props> = ({ selectedRole, onBack }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -49,16 +53,26 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-      <header className="px-6 py-6 max-w-7xl mx-auto w-full flex items-center">
-         <div className="flex items-center space-x-2">
+      <header className="px-6 py-6 max-w-7xl mx-auto w-full flex items-center relative">
+         {onBack && (
+             <button onClick={onBack} className="absolute left-6 p-2 rounded-full hover:bg-gray-200 transition-colors">
+                 <ArrowLeft className="w-5 h-5 text-gray-600" />
+             </button>
+         )}
+         <div className="flex items-center space-x-2 mx-auto">
             <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg">O</div>
             <span className="text-xl font-bold tracking-tight">Open</span>
          </div>
       </header>
 
       <main className="flex-grow flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md">
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md animate-in fade-in zoom-in duration-300">
            <div className="text-center mb-8">
+              {selectedRole && (
+                  <span className="inline-block px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold uppercase tracking-wider mb-4">
+                      {selectedRole === 'candidate' ? 'For Talent' : 'For Companies'}
+                  </span>
+              )}
               <h1 className="text-3xl font-extrabold tracking-tight mb-2">
                 {isSignUp ? 'Create an account' : 'Welcome back'}
               </h1>
@@ -98,7 +112,7 @@ const Login = () => {
               </div>
               <button 
                 disabled={loading}
-                className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center disabled:opacity-50"
+                className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center disabled:opacity-50 shadow-lg"
               >
                 {loading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')} <ArrowRight className="w-4 h-4 ml-2"/>
               </button>
