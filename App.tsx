@@ -11,6 +11,7 @@ import JobCard from './components/JobCard';
 import JobDetails from './components/JobDetails';
 import CandidateCard from './components/CandidateCard';
 import CandidateDetails from './components/CandidateDetails';
+import CandidateDetailsLocked from './components/CandidateDetailsLocked';
 import ATSBoard from './components/ATSBoard';
 import CandidateApplications from './components/CandidateApplications';
 import Messages from './components/Messages';
@@ -121,7 +122,10 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     location: data.location || '',
     about: data.about || '',
     paymentMethod: data.payment_method,
-    logoUrl: data.logo_url
+    logoUrl: data.logo_url,
+    values: data.values || [],
+    perks: data.perks || [],
+    desiredTraits: data.desired_traits || []
 });
 
 const mapCompanyToDB = (profile: CompanyProfileType) => ({
@@ -133,7 +137,10 @@ const mapCompanyToDB = (profile: CompanyProfileType) => ({
     location: profile.location,
     about: profile.about,
     payment_method: profile.paymentMethod,
-    logo_url: profile.logoUrl
+    logo_url: profile.logoUrl,
+    values: profile.values,
+    perks: profile.perks,
+    desired_traits: profile.desiredTraits
 });
 
 const mapJobFromDB = (data: any): JobPosting => ({
@@ -498,6 +505,12 @@ function MainApp() {
       if (credits > 0) {
           setCredits(c => c - 1);
           setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
+          // Optimistically update selected candidate if open
+          if(selectedCandidate && selectedCandidate.id === id) {
+              setSelectedCandidate(prev => prev ? {...prev, isUnlocked: true} : null);
+          }
+      } else {
+          alert("Not enough credits!");
       }
   };
 
@@ -564,15 +577,28 @@ function MainApp() {
                 />
                ) : null;
           case 'candidate-details':
-              return selectedCandidate ? (
-                <CandidateDetails 
-                    candidate={selectedCandidate} 
-                    onBack={() => setCurrentView('dashboard')} 
-                    onUnlock={handleUnlockCandidate}
-                    onMessage={() => setCurrentView('messages')}
-                    onSchedule={() => setCurrentView('schedule')}
-                /> 
-              ) : null;
+              if (selectedCandidate) {
+                  // Logic for Locked vs Unlocked View
+                  if (userRole === 'recruiter' && !selectedCandidate.isUnlocked) {
+                      return (
+                          <CandidateDetailsLocked 
+                             candidate={selectedCandidate}
+                             onUnlock={handleUnlockCandidate}
+                             onBack={() => setCurrentView('dashboard')}
+                          />
+                      );
+                  }
+                  return (
+                    <CandidateDetails 
+                        candidate={selectedCandidate} 
+                        onBack={() => setCurrentView('dashboard')} 
+                        onUnlock={handleUnlockCandidate}
+                        onMessage={() => setCurrentView('messages')}
+                        onSchedule={() => setCurrentView('schedule')}
+                    /> 
+                  );
+              }
+              return null;
           case 'ats':
               if (userRole === 'candidate') {
                   return <CandidateApplications applications={applications} jobs={jobPostings} onViewMessage={() => setCurrentView('messages')}/>;
