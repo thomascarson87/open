@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { JobPosting, CandidateProfile } from '../types';
 import { MapPin, DollarSign, Clock, ArrowRight, Building2, Users } from 'lucide-react';
@@ -71,20 +72,46 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
                 </span>
             ))}
          </div>
+         
+         {/* Industry Tags */}
+         {job.companyIndustry && (
+            <div className="flex flex-wrap gap-2 mt-2">
+                {job.companyIndustry.slice(0, 2).map(ind => (
+                <span key={ind} className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full border border-purple-200">
+                    🏢 {ind}
+                </span>
+                ))}
+            </div>
+         )}
+
+         {/* Top Values */}
+         {job.values.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+                {job.values.slice(0, 2).map(val => (
+                <span key={val} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                    💡 {val}
+                </span>
+                ))}
+            </div>
+         )}
 
          {/* Match Breakdown Snippet */}
-         <div className="grid grid-cols-3 gap-1 mt-2">
+         <div className="grid grid-cols-4 gap-1 mt-2">
              <div className="text-[10px] text-center bg-gray-50 rounded py-1">
                  <span className="block text-gray-400">Skills</span>
                  <span className="font-bold text-gray-700">{matchResult.details.skills.score}%</span>
              </div>
              <div className="text-[10px] text-center bg-gray-50 rounded py-1">
-                 <span className="block text-gray-400">Culture</span>
+                 <span className="block text-gray-400">Values</span>
                  <span className="font-bold text-gray-700">{matchResult.details.culture.score}%</span>
              </div>
              <div className="text-[10px] text-center bg-gray-50 rounded py-1">
-                 <span className="block text-gray-400">Salary</span>
-                 <span className="font-bold text-gray-700">{matchResult.details.salary.score}%</span>
+                 <span className="block text-gray-400">Perks</span>
+                 <span className="font-bold text-gray-700">{matchResult.details.perks.score}%</span>
+             </div>
+             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
+                 <span className="block text-gray-400">Traits</span>
+                 <span className="font-bold text-gray-700">{matchResult.details.traits.score}%</span>
              </div>
          </div>
 
