@@ -18,6 +18,7 @@ import CreateJob from './components/CreateJob';
 import Notifications from './components/Notifications';
 import Network from './components/Network';
 import Login from './components/Login';
+import LandingPage from './components/LandingPage';
 import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { User, Briefcase } from 'lucide-react';
 
@@ -86,7 +87,10 @@ const mapCandidateToDB = (profile: CandidateProfile) => ({
     preferred_work_mode: profile.preferredWorkMode,
     desired_perks: profile.desiredPerks,
     non_negotiables: profile.nonNegotiables,
-    is_unlocked: profile.isUnlocked
+    is_unlocked: profile.isUnlocked,
+    resume_text: profile.resumeText,
+    match_score: profile.matchScore,
+    connections: profile.connections
 });
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
@@ -204,7 +208,11 @@ function MainApp() {
     currentBonuses: '',
     noticePeriod: '',
     ambitions: '',
-    salaryExpectation: ''
+    salaryExpectation: '',
+    certificates: [],
+    matchScore: 0,
+    connections: [],
+    resumeText: ''
   });
 
   // Default Company Generator
@@ -239,43 +247,58 @@ function MainApp() {
             .eq('id', user?.id)
             .maybeSingle(); // Use maybeSingle to prevent 406 error if row missing
 
-        if (data) {
-            if (data.role) {
-                setUserRole(data.role as Role);
-                
-                // 2. Load Role Specific Data
-                if (data.role === 'candidate') {
-                     const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
-                     if (cand) {
-                         setCandidateProfile(mapCandidateFromDB(cand));
-                     } else if (user?.email) {
-                         // SELF-HEALING: Role exists but profile data missing. Create it now.
-                         const newProfile = createDefaultCandidate(user.id, user.email);
-                         await supabase.from('candidate_profiles').upsert([mapCandidateToDB(newProfile)]);
-                         setCandidateProfile(newProfile);
-                     }
-                } else {
-                     const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
-                     if (comp) {
-                         setCompanyProfile(mapCompanyFromDB(comp));
-                         const { data: team } = await supabase.from('team_members').select('*').eq('company_id', comp.id);
-                         if (team) setTeamMembers(team as TeamMember[]);
-                     } else if (user?.id) {
-                         // SELF-HEALING: Role exists but company data missing.
-                         const newProfile = createDefaultCompany(user.id);
-                         await supabase.from('company_profiles').upsert([mapCompanyToDB(newProfile)]);
-                         setCompanyProfile(newProfile);
-                     }
-                }
-            } else {
-                setUserRole(null);
-            }
+        if (data && data.role) {
+             setUserRole(data.role as Role);
+             loadRoleData(data.role as Role);
+        } else {
+             // NO ROLE FOUND
+             // Check if we have a pending selection from Landing Page
+             const pendingRole = localStorage.getItem('open_selected_role');
+             if (pendingRole && (pendingRole === 'candidate' || pendingRole === 'recruiter')) {
+                 await handleCreateProfile(pendingRole);
+                 localStorage.removeItem('open_selected_role');
+             } else {
+                 // No pending role, waiting for user to select (should fallback to null role view)
+                 setUserRole(null);
+                 setIsLoadingProfile(false);
+             }
         }
     } catch (error) {
         console.error('Error fetching profile:', error);
-    } finally {
         setIsLoadingProfile(false);
     }
+  };
+
+  const loadRoleData = async (role: Role) => {
+        try {
+            if (role === 'candidate') {
+                    const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
+                    if (cand) {
+                        setCandidateProfile(mapCandidateFromDB(cand));
+                    } else if (user?.email) {
+                        // SELF-HEALING: Role exists but profile data missing. Create it now.
+                        const newProfile = createDefaultCandidate(user.id, user.email);
+                        await supabase.from('candidate_profiles').upsert([mapCandidateToDB(newProfile)]);
+                        setCandidateProfile(newProfile);
+                    }
+            } else {
+                    const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
+                    if (comp) {
+                        setCompanyProfile(mapCompanyFromDB(comp));
+                        const { data: team } = await supabase.from('team_members').select('*').eq('company_id', comp.id);
+                        if (team) setTeamMembers(team as TeamMember[]);
+                    } else if (user?.id) {
+                        // SELF-HEALING: Role exists but company data missing.
+                        const newProfile = createDefaultCompany(user.id);
+                        await supabase.from('company_profiles').upsert([mapCompanyToDB(newProfile)]);
+                        setCompanyProfile(newProfile);
+                    }
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsLoadingProfile(false);
+        }
   };
 
   const fetchData = async () => {
@@ -318,11 +341,11 @@ function MainApp() {
   const handleCreateProfile = async (role: Role) => {
       if (!user) return;
       try {
+          setIsLoadingProfile(true);
           // 1. Update Base Profile
           const { error: profileError } = await supabase
             .from('profiles')
-            .update({ role: role })
-            .eq('id', user.id);
+            .upsert({ id: user.id, email: user.email, role: role }); // Upsert to be safe
 
           if (profileError) throw profileError;
           
@@ -346,20 +369,23 @@ function MainApp() {
           setUserRole(role);
       } catch (e) {
           console.error("Error creating profile", e);
-          alert("Error setting up profile. Please try again or refresh.");
+      } finally {
+          setIsLoadingProfile(false);
       }
   };
 
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
       setCandidateProfile(profile);
       // Use UPSERT to ensure it saves even if the row was missing (ghost state fix)
-      await supabase.from('candidate_profiles').upsert(mapCandidateToDB(profile));
+      const { error } = await supabase.from('candidate_profiles').upsert(mapCandidateToDB(profile));
+      if (error) console.error("Error saving candidate:", error);
   };
 
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
       setCompanyProfile(profile);
       // Use UPSERT to ensure it saves even if the row was missing (ghost state fix)
-      await supabase.from('company_profiles').upsert(mapCompanyToDB(profile));
+      const { error } = await supabase.from('company_profiles').upsert(mapCompanyToDB(profile));
+      if (error) console.error("Error saving company:", error);
   };
 
   const handlePublishJob = async (job: JobPosting) => {
@@ -438,12 +464,13 @@ function MainApp() {
       return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>;
   }
 
+  // Fallback for role selection if somehow localStorage failed or user came directly
   if (!userRole) {
       return (
           <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
               <div className="max-w-2xl w-full text-center mb-12">
-                  <h1 className="text-4xl font-black text-gray-900 mb-4">Welcome to Open</h1>
-                  <p className="text-xl text-gray-500">To get started, please tell us what brings you here.</p>
+                  <h1 className="text-4xl font-black text-gray-900 mb-4">Complete Your Setup</h1>
+                  <p className="text-xl text-gray-500">Please confirm your role to continue.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
                   <button onClick={() => handleCreateProfile('candidate')} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:border-gray-900 hover:shadow-xl transition-all group text-left">
@@ -597,8 +624,34 @@ export default function App() {
   );
 }
 
+// Manages the flow: Landing -> Login -> MainApp
 function AuthWrapper() {
     const { session, loading } = useAuth();
+    const [view, setView] = useState<'landing' | 'login'>('landing');
+    const [selectedRole, setSelectedRole] = useState<'candidate' | 'recruiter' | null>(null);
+
+    // If session exists, user is already logged in -> Go to Main App
+    if (session) {
+        return <MainApp />;
+    }
+
     if (loading) return <div className="h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
-    return session ? <MainApp /> : <Login />;
+
+    const handleSelectRole = (role: 'candidate' | 'recruiter') => {
+        setSelectedRole(role);
+        // Persist so MainApp can pick it up after auth redirect/reload
+        localStorage.setItem('open_selected_role', role);
+        setView('login');
+    };
+
+    if (view === 'landing') {
+        return <LandingPage onSelectRole={handleSelectRole} />;
+    }
+
+    return (
+        <Login 
+            selectedRole={selectedRole} 
+            onBack={() => setView('landing')} 
+        />
+    );
 }
