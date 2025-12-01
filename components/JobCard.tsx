@@ -1,30 +1,24 @@
-import React, { useState } from 'react';
+
+import React, { useMemo } from 'react';
 import { JobPosting, CandidateProfile } from '../types';
-import { MapPin, DollarSign, Clock, ArrowRight, Zap, Building2, Users, Briefcase } from 'lucide-react';
-import { analyzeMatch } from '../services/geminiService';
+import { MapPin, DollarSign, Clock, ArrowRight, Building2, Users } from 'lucide-react';
+import { calculateMatch } from '../services/matchingService';
 
 interface Props {
   job: JobPosting;
   candidateProfile: CandidateProfile;
   onApply: (jobId: string) => void;
   onViewDetails: (job: JobPosting) => void;
-  // In a real app we would pass full connection objects, but here we just check IDs/Strings loosely
   connections?: any[]; 
 }
 
 const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetails, connections }) => {
-  const [analyzing, setAnalyzing] = useState(false);
-  const [matchData, setMatchData] = useState<{score: number, analysis: string} | null>(null);
+  
+  // Calculate Match Score
+  const matchResult = useMemo(() => {
+      return calculateMatch(job, candidateProfile);
+  }, [job, candidateProfile]);
 
-  const handleAnalyze = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAnalyzing(true);
-    const result = await analyzeMatch(candidateProfile, job);
-    setMatchData(result);
-    setAnalyzing(false);
-  };
-
-  // Mock Logic for Social Signals
   const isInternal = candidateProfile.experience.some(e => e.company === job.companyName && e.duration.includes('Present'));
   const hasReferral = connections?.some(c => c.company === job.companyName);
 
@@ -33,7 +27,6 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
         onClick={() => onViewDetails(job)}
         className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col h-full relative overflow-hidden"
     >
-      {/* Social Signal Badges */}
       {isInternal && (
           <div className="absolute top-0 right-0 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
               INTERNAL ROLE
@@ -52,22 +45,15 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
         </div>
         
         {!isInternal && (
-            matchData ? (
-                <div className="flex flex-col items-end">
-                    <span className={`text-lg font-bold ${matchData.score > 80 ? 'text-green-600' : 'text-yellow-600'}`}>
-                        {matchData.score}%
-                    </span>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wide">Match</span>
-                </div>
-            ) : (
-                <button 
-                    onClick={handleAnalyze}
-                    className="text-gray-400 hover:text-blue-600 transition-colors p-2"
-                    title="AI Match Analysis"
-                >
-                    {analyzing ? <div className="animate-spin h-5 w-5 border-2 border-blue-600 rounded-full border-t-transparent"/> : <Zap className="w-5 h-5" />}
-                </button>
-            )
+            <div className="flex flex-col items-end">
+                <span className={`text-lg font-bold ${
+                    matchResult.overallScore >= 80 ? 'text-green-600' : 
+                    matchResult.overallScore >= 60 ? 'text-yellow-600' : 'text-red-600'
+                }`}>
+                    {matchResult.overallScore}%
+                </span>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wide">Match</span>
+            </div>
         )}
       </div>
 
@@ -80,22 +66,38 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
          
          <div className="flex flex-wrap gap-2 pt-2">
             {job.requiredSkills.slice(0, 3).map((s, i) => (
-                <span key={i} className="px-2 py-1 bg-gray-50 border border-gray-100 rounded text-xs font-medium text-gray-600">
+                <span key={i} className={`px-2 py-1 border rounded text-xs font-medium ${s.weight === 'required' ? 'bg-gray-50 border-gray-200 text-gray-700' : 'bg-white border-dashed border-gray-300 text-gray-500'}`}>
                     {s.name}
                 </span>
             ))}
          </div>
 
-         {matchData && (
-             <p className="text-xs text-gray-500 italic mt-3 bg-blue-50 p-2 rounded border border-blue-100">
-                 "{matchData.analysis}"
-             </p>
+         {/* Match Breakdown Snippet */}
+         <div className="grid grid-cols-3 gap-1 mt-2">
+             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
+                 <span className="block text-gray-400">Skills</span>
+                 <span className="font-bold text-gray-700">{matchResult.details.skills.score}%</span>
+             </div>
+             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
+                 <span className="block text-gray-400">Culture</span>
+                 <span className="font-bold text-gray-700">{matchResult.details.culture.score}%</span>
+             </div>
+             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
+                 <span className="block text-gray-400">Salary</span>
+                 <span className="font-bold text-gray-700">{matchResult.details.salary.score}%</span>
+             </div>
+         </div>
+
+         {matchResult.dealBreakers.length > 0 && (
+             <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+                 ⚠️ {matchResult.dealBreakers[0]}
+             </div>
          )}
 
          {hasReferral && !isInternal && (
              <div className="mt-3 bg-purple-50 border border-purple-100 p-2 rounded-lg flex items-center text-xs text-purple-700">
                  <Users className="w-3 h-3 mr-2 text-purple-600" />
-                 <b>1 Connection</b> works here. Request a referral!
+                 <b>1 Connection</b> works here.
              </div>
          )}
       </div>
