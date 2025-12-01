@@ -1,9 +1,19 @@
 
+
 import React, { useState, useRef } from 'react';
 import { CandidateProfile, ThemeColor, ThemeFont, JobType, WorkMode, Experience, Reference, SeniorityLevel } from '../types';
 import { parseResume } from '../services/geminiService';
 import CandidateDetails from './CandidateDetails';
-import { Upload, Sparkles, Plus, X, Check, Award, Heart, Lock, Unlock, Image as ImageIcon, Globe, Briefcase, GripVertical, Palette, Type, MapPin, DollarSign, Clock, Monitor, Minus, Quote, Mail, Edit2, Trophy, Zap, TrendingUp } from 'lucide-react';
+import { Upload, Sparkles, Plus, X, Check, Award, Heart, Lock, Unlock, Image as ImageIcon, Globe, Briefcase, GripVertical, Palette, Type, MapPin, DollarSign, Clock, Monitor, Minus, Quote, Mail, Edit2, Trophy, Zap, TrendingUp, UserCheck } from 'lucide-react';
+import GroupedMultiSelect from './GroupedMultiSelect';
+import { 
+  CULTURAL_VALUES, 
+  INDUSTRIES, 
+  PERKS_CATEGORIES, 
+  CHARACTER_TRAITS_CATEGORIES,
+  ALL_PERKS,
+  ALL_CHARACTER_TRAITS
+} from '../constants/matchingData';
 
 interface Props {
   profile: CandidateProfile;
@@ -11,8 +21,6 @@ interface Props {
 }
 
 const COMMON_SKILLS = ["React", "TypeScript", "Node.js", "Python", "AWS", "Kubernetes", "Docker", "GraphQL", "Go", "Rust"];
-const AVAILABLE_PERKS = ["Health Insurance", "Remote Work", "Gym Pass", "Equity", "Flexible Hours", "Learning Budget", "Free Lunch", "Pet Friendly"];
-const TRAITS = ["Ambitious", "Collaborative", "Detail-oriented", "Creative", "Reliable", "Leader", "Mentor", "Independent"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const YEARS = Array.from({length: 50}, (_, i) => (new Date().getFullYear() - i).toString());
 
@@ -134,15 +142,6 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
       });
   };
 
-  const togglePerk = (perk: string) => {
-      setFormData(prev => {
-          const perks = prev.desiredPerks.includes(perk) 
-            ? prev.desiredPerks.filter(p => p !== perk)
-            : [...prev.desiredPerks, perk];
-          return { ...prev, desiredPerks: perks };
-      });
-  };
-
   const updateExperienceDate = (id: string, type: 'startMonth' | 'startYear' | 'endMonth' | 'endYear' | 'current', value: string | boolean) => {
       setFormData(prev => ({
           ...prev,
@@ -259,7 +258,6 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
             
             {/* Identity Card */}
             <SectionCard title="Identity & Bio" icon={<Sparkles className="w-5 h-5"/>} themeColor={formData.themeColor}>
-                {/* ... existing identity fields ... */}
                 <div className="flex flex-col md:flex-row gap-8 mb-8">
                     {/* Avatar Carousel */}
                     <div className="relative group w-32 h-32 flex-shrink-0 mx-auto md:mx-0">
@@ -336,12 +334,65 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                 </div>
             </SectionCard>
 
+            {/* Cultural Values Section */}
+            <SectionCard title="Your Values" icon={<Heart className="w-5 h-5"/>} themeColor={formData.themeColor}>
+              <GroupedMultiSelect
+                label="Cultural Values"
+                options={CULTURAL_VALUES}
+                selected={formData.values}
+                onChange={(values) => setFormData(prev => ({ ...prev, values }))}
+                placeholder="What matters to you in a workplace?"
+                helpText="Select the top values that are most important to you (5-10 recommended)"
+                maxSelections={10}
+                searchable={true}
+              />
+            </SectionCard>
+
+            {/* Industry Interests Section */}
+            <SectionCard title="Industry Interests" icon={<TrendingUp className="w-5 h-5"/>} themeColor={formData.themeColor}>
+              <GroupedMultiSelect
+                label="Industries You're Interested In"
+                options={INDUSTRIES}
+                selected={formData.interestedIndustries || []}
+                onChange={(industries) => setFormData(prev => ({ ...prev, interestedIndustries: industries }))}
+                placeholder="Which industries excite you?"
+                helpText="Select 2-5 industries where you'd like to work"
+                maxSelections={5}
+                searchable={true}
+              />
+              
+              {/* Optional: Years of experience per industry */}
+              {formData.interestedIndustries && formData.interestedIndustries.length > 0 && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Industry Experience (Optional)
+                  </label>
+                  {formData.interestedIndustries.map(industry => (
+                    <div key={industry} className="flex items-center gap-4 mb-2">
+                      <span className="text-sm text-gray-700 w-48">{industry}</span>
+                      <input
+                        type="text"
+                        placeholder="e.g., 3 years"
+                        value={formData.industryExperience?.[industry] || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          industryExperience: {
+                            ...prev.industryExperience,
+                            [industry]: e.target.value
+                          }
+                        }))}
+                        className="flex-1 p-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+
             {/* Work Experience */}
             <SectionCard title="Work Experience" icon={<Briefcase className="w-5 h-5"/>} themeColor={formData.themeColor}>
-                {/* ... existing experience rendering code ... */}
                 <div className="space-y-4">
                     {formData.experience.map((exp) => (
-                         // ... simplified for brevity, keeping existing implementation
                          <div key={exp.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                              <div className="flex justify-between font-bold">
                                  <span>{exp.role}</span>
@@ -358,8 +409,6 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                     </button>
                 </div>
             </SectionCard>
-
-            {/* ... Other sections (References, Values, Ambitions) ... */}
             
             {/* Skills */}
              <SectionCard title="Skills" icon={<Award className="w-5 h-5"/>} themeColor={formData.themeColor}>
@@ -393,12 +442,27 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
 
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-8">
+
+             {/* Character Traits Section */}
+            <SectionCard title="Character" icon={<UserCheck className="w-5 h-5"/>} themeColor={formData.themeColor}>
+              <GroupedMultiSelect
+                label="Character Traits"
+                options={CHARACTER_TRAITS_CATEGORIES}
+                selected={formData.characterTraits}
+                onChange={(traits) => setFormData(prev => ({ ...prev, characterTraits: traits }))}
+                placeholder="What are your strongest traits?"
+                helpText="Select 5-8 traits that best describe your work style"
+                maxSelections={10}
+                grouped={true}
+                searchable={true}
+              />
+            </SectionCard>
              
              {/* The Nitty Gritty (Logistics) */}
              <SectionCard title="The Nitty Gritty" icon={<Lock className="w-5 h-5"/>} themeColor={formData.themeColor}>
                 <div className="space-y-6">
                      
-                     {/* Desired Seniority - NEW */}
+                     {/* Desired Seniority */}
                      <div>
                         <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">
                             Desired Seniority Level
@@ -425,7 +489,7 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                         </div>
                      </div>
 
-                    {/* Numeric Compensation - UPDATED */}
+                    {/* Numeric Compensation */}
                      <div>
                         <div className="flex justify-between items-center mb-2">
                             <label className="text-xs font-bold text-gray-400 uppercase">Min. Compensation</label>
@@ -498,16 +562,29 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                              ))}
                          </div>
                     </div>
-
-                    {/* ... other fields ... */}
                 </div>
              </SectionCard>
+
+             {/* Desired Perks Section */}
+            <SectionCard title="Desired Perks" icon={<Gift className="w-5 h-5"/>} themeColor={formData.themeColor}>
+              <GroupedMultiSelect
+                label="Perks & Incentives"
+                options={PERKS_CATEGORIES}
+                selected={formData.desiredPerks}
+                onChange={(perks) => setFormData(prev => ({ ...prev, desiredPerks: perks }))}
+                placeholder="What benefits matter most to you?"
+                helpText="Select the perks that would make a big difference for you"
+                grouped={true}
+                searchable={true}
+              />
+            </SectionCard>
         </div>
       </div>
-      
-      {/* Modals for Experience Editing would go here (omitted for brevity) */}
     </div>
   );
 };
+
+// Helper icon
+const Gift = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
 
 export default CandidateProfileForm;
