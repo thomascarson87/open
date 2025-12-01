@@ -1,14 +1,14 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
-import { suggestSkillsForRole, generateJobDescription } from '../services/geminiService';
-import { Sparkles, ArrowRight, MapPin, DollarSign, Calendar, Info, Users, TrendingUp, Briefcase, CheckCircle, UserCheck, Trash2, Plus } from 'lucide-react';
+import { generateJobDescription } from '../services/geminiService';
+import { Plus, UserCheck, Trash2, Users } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import { 
   CULTURAL_VALUES, 
   PERKS_CATEGORIES,
-  CHARACTER_TRAITS_CATEGORIES
+  CHARACTER_TRAITS_CATEGORIES,
+  SKILLS_LIST
 } from '../constants/matchingData';
 
 interface Props {
@@ -43,7 +43,6 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
 
     const [selectedHM, setSelectedHM] = useState('');
     const [selectedFinance, setSelectedFinance] = useState('');
-    const [newSkill, setNewSkill] = useState<Partial<JobSkill>>({ name: '', minimumYears: 2, weight: 'required' });
     
     // Audience Insight State
     const [reachMetrics, setReachMetrics] = useState({ count: 0, quality: 'Low', suggestions: [] as string[] });
@@ -64,25 +63,29 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const handleSuggest = async () => {
         if (!jobData.title) return;
         setIsLoading(true);
-        // Mock suggestion mapping for now
         const desc = await generateJobDescription(jobData.title, []);
         setJobData(prev => ({ ...prev, description: desc }));
         setIsLoading(false);
     };
 
-    const addSkill = () => {
-        if (!newSkill.name) return;
+    const updateSkillYears = (name: string, years: number) => {
         setJobData(prev => ({
             ...prev,
-            requiredSkills: [...(prev.requiredSkills || []), newSkill as JobSkill]
+            requiredSkills: prev.requiredSkills?.map(s => s.name === name ? { ...s, minimumYears: years } : s)
         }));
-        setNewSkill({ name: '', minimumYears: 2, weight: 'required' });
     };
 
-    const removeSkill = (index: number) => {
+    const updateSkillWeight = (name: string, weight: 'required' | 'preferred') => {
         setJobData(prev => ({
             ...prev,
-            requiredSkills: prev.requiredSkills?.filter((_, i) => i !== index)
+            requiredSkills: prev.requiredSkills?.map(s => s.name === name ? { ...s, weight } : s)
+        }));
+    };
+
+    const removeSkill = (name: string) => {
+        setJobData(prev => ({
+            ...prev,
+            requiredSkills: prev.requiredSkills?.filter(s => s.name !== name)
         }));
     };
 
@@ -96,7 +99,6 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const handleSubmit = () => {
         const finalJob = {
             ...jobData,
-            // Format legacy salaryRange string for display
             salaryRange: `${jobData.salaryCurrency} ${jobData.salaryMin ? (jobData.salaryMin/1000)+'k' : '0'} - ${jobData.salaryMax ? (jobData.salaryMax/1000)+'k' : 'Max'}`,
             status: 'pending_approval',
             approvals: {
@@ -155,7 +157,11 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                         <button
                                             key={type}
                                             onClick={() => toggleContractType(type)}
-                                            className={`px-3 py-2 rounded-lg text-xs font-bold border ${jobData.contractTypes?.includes(type) ? 'bg-gray-900 text-white' : 'bg-white text-gray-500'}`}
+                                            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${
+                                                jobData.contractTypes?.includes(type) 
+                                                ? 'bg-blue-600 text-white border-blue-600' 
+                                                : 'bg-white text-gray-500 hover:border-blue-400'
+                                            }`}
                                         >
                                             {type}
                                         </button>
@@ -199,14 +205,13 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                              <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location</label>
-                                <select 
+                                <input
+                                    type="text"
                                     value={jobData.location || ''}
                                     onChange={e => setJobData({...jobData, location: e.target.value})}
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none"
-                                >
-                                    <option value="" disabled>Select</option>
-                                    {LOCATIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                                </select>
+                                    placeholder="e.g. San Francisco or Remote"
+                                />
                             </div>
                              <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Work Mode</label>
@@ -250,52 +255,77 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                             />
                         </div>
 
-                        {/* Structured Skills */}
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Required Skills</label>
-                            <div className="flex gap-2 mb-4">
-                                <input 
-                                    placeholder="Skill Name (e.g. React)"
-                                    value={newSkill.name}
-                                    onChange={e => setNewSkill({...newSkill, name: e.target.value})}
-                                    className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-lg"
-                                />
-                                <input 
-                                    type="number"
-                                    placeholder="Min Years"
-                                    value={newSkill.minimumYears}
-                                    onChange={e => setNewSkill({...newSkill, minimumYears: parseInt(e.target.value)})}
-                                    className="w-24 p-2 bg-gray-50 border border-gray-200 rounded-lg"
-                                />
-                                <select 
-                                    value={newSkill.weight}
-                                    onChange={e => setNewSkill({...newSkill, weight: e.target.value as any})}
-                                    className="p-2 bg-gray-50 border border-gray-200 rounded-lg"
-                                >
-                                    <option value="required">Required</option>
-                                    <option value="preferred">Preferred</option>
-                                </select>
-                                <button onClick={addSkill} className="bg-gray-900 text-white p-2 rounded-lg">
-                                    <Plus className="w-5 h-5" />
-                                </button>
-                            </div>
-                            
-                            <div className="space-y-2">
-                                {jobData.requiredSkills?.map((skill, idx) => (
-                                    <div key={idx} className="flex items-center justify-between bg-white border border-gray-200 p-3 rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold text-gray-900">{skill.name}</span>
-                                            <span className="text-xs text-gray-500">{skill.minimumYears}y+</span>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold ${skill.weight === 'required' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                {skill.weight}
-                                            </span>
-                                        </div>
-                                        <button onClick={() => removeSkill(idx)} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+                        {/* Structured Skills Dropdown */}
+                        <section>
+                            <h3 className="text-lg font-bold text-gray-900 mb-3">Required Skills</h3>
+                            <GroupedMultiSelect
+                                label="Technical Skills"
+                                options={SKILLS_LIST}
+                                selected={jobData.requiredSkills?.map(s => s.name) || []}
+                                onChange={(selectedSkills) => {
+                                    const updatedSkills = selectedSkills.map(name => {
+                                        const existing = jobData.requiredSkills?.find(s => s.name === name);
+                                        return existing || { 
+                                            name, 
+                                            minimumYears: 2, 
+                                            weight: 'required' as const 
+                                        };
+                                    });
+                                    setJobData(prev => ({ ...prev, requiredSkills: updatedSkills }));
+                                }}
+                                placeholder="Search and select required skills..."
+                                searchable={true}
+                                grouped={true}
+                            />
+
+                            <div className="mt-4 space-y-3">
+                                {jobData.requiredSkills?.map(skill => (
+                                <div key={skill.name} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <span className="flex-1 font-medium">{skill.name}</span>
+                                    
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">Min years:</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="20"
+                                            value={skill.minimumYears}
+                                            onChange={(e) => updateSkillYears(skill.name, parseInt(e.target.value))}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                                        />
                                     </div>
+                                    
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => updateSkillWeight(skill.name, 'required')}
+                                            className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
+                                            skill.weight === 'required'
+                                                ? 'bg-red-100 text-red-700 border-red-300'
+                                                : 'bg-white text-gray-600 border-gray-200'
+                                            }`}
+                                        >
+                                            Required
+                                        </button>
+                                        <button
+                                            onClick={() => updateSkillWeight(skill.name, 'preferred')}
+                                            className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
+                                            skill.weight === 'preferred'
+                                                ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                                : 'bg-white text-gray-600 border-gray-200'
+                                            }`}
+                                        >
+                                            Preferred
+                                        </button>
+                                    </div>
+                                    
+                                    <button onClick={() => removeSkill(skill.name)} className="text-gray-400 hover:text-red-500">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                                 ))}
-                                {jobData.requiredSkills?.length === 0 && <div className="text-sm text-gray-400 italic">No skills added yet.</div>}
+                                {jobData.requiredSkills?.length === 0 && <p className="text-sm text-gray-400 italic">No skills selected.</p>}
                             </div>
-                        </div>
+                        </section>
 
                         {/* Company Values Section */}
                         <section>
