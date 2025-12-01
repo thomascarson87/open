@@ -1,4 +1,5 @@
 
+
 import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill } from '../types';
 
 export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): MatchBreakdown => {
@@ -7,7 +8,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
   const dealBreakers: string[] = [];
   const recommendations: string[] = [];
 
-  // --- 1. SKILLS MATCH (Weight: 35) ---
+  // --- 1. SKILLS MATCH (Weight: 30%) ---
   let skillsScore = 0;
   let requiredSkillsCount = 0;
   let skillsMatchedWeight = 0;
@@ -58,7 +59,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
       skillsScore = 100; // No skills required
   }
 
-  // --- 2. SALARY MATCH (Weight: 15) ---
+  // --- 2. SALARY MATCH (Weight: 15%) ---
   let salaryScore = 100;
   if (job.salaryMax && candidate.salaryMin) {
       if (candidate.salaryMin > job.salaryMax) {
@@ -78,7 +79,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
       }
   }
 
-  // --- 3. CONTRACT TYPE MATCH (Weight: 10) ---
+  // --- 3. CONTRACT TYPE MATCH (Weight: 8%) ---
   let contractScore = 0;
   const sharedContracts = job.contractTypes.filter(t => candidate.contractTypes.includes(t));
   if (sharedContracts.length > 0) {
@@ -87,7 +88,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
       dealBreakers.push(`Job requires ${job.contractTypes.join('/')} contract`);
   }
 
-  // --- 4. WORK MODE & LOCATION (Weight: 15) ---
+  // --- 4. WORK MODE & LOCATION (Weight: 12%) ---
   let locationScore = 0;
   let workModeScore = 0;
 
@@ -120,7 +121,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
   
   const locWorkScore = (locationScore + workModeScore) / 2;
 
-  // --- 5. SENIORITY (Weight: 10) ---
+  // --- 5. SENIORITY (Weight: 8%) ---
   let seniorityScore = 0;
   // Simple hierarchy map
   const levels = ['Intern', 'Junior', 'Mid-Level', 'Senior', 'Manager', 'Director', 'Executive'];
@@ -139,33 +140,77 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
       else seniorityScore = 0;
   }
 
-  // --- 6. CULTURE & VALUES (Weight: 10) ---
+  // --- 6. CULTURE & VALUES (Weight: 12%) ---
   let cultureScore = 0;
-  if (job.values.length > 0) {
+  if (job.values.length > 0 && candidate.values.length > 0) {
       const sharedValues = job.values.filter(v => candidate.values.includes(v));
-      cultureScore = (sharedValues.length / job.values.length) * 100;
+      cultureScore = (sharedValues.length / Math.max(job.values.length, candidate.values.length)) * 100;
+      
+      if (sharedValues.length === 0) {
+        recommendations.push('No shared cultural values - consider if there\'s alignment');
+      }
   } else {
       cultureScore = 100;
   }
 
-  // --- 7. PERKS (Weight: 5) ---
-  let perkScore = 0;
+  // --- 7. PERKS (Weight: 7%) ---
+  let perkScore = 100;
   if (candidate.desiredPerks.length > 0) {
-      const sharedPerks = job.perks.filter(p => candidate.desiredPerks.includes(p));
-      perkScore = (sharedPerks.length / candidate.desiredPerks.length) * 100;
-  } else {
-      perkScore = 100;
+    const sharedPerks = job.perks.filter(p => candidate.desiredPerks.includes(p));
+    perkScore = (sharedPerks.length / candidate.desiredPerks.length) * 100;
+    
+    const missingImportantPerks = candidate.desiredPerks.filter(p => !job.perks.includes(p));
+    if (missingImportantPerks.length > 0 && candidate.nonNegotiables.includes('perks')) {
+      dealBreakers.push(`Missing important perks: ${missingImportantPerks.slice(0, 2).join(', ')}`);
+      perkScore = Math.min(perkScore, 30);
+    }
   }
+
+  // --- 8. INDUSTRY MATCH (Weight: 5%) ---
+  let industryScore = 0;
+  if (candidate.interestedIndustries && candidate.interestedIndustries.length > 0) {
+    // Check if job's company industry matches candidate interests
+    if (job.companyIndustry && job.companyIndustry.some(ind => candidate.interestedIndustries.includes(ind))) {
+        industryScore = 100;
+    } else {
+        industryScore = 20; // Some transferability assumed
+    }
+  } else {
+    industryScore = 100; // No preference = matches everything
+  }
+
+  // --- 9. TRAITS MATCH (Weight: 3%) ---
+  let traitsScore = 100;
+  if (job.requiredTraits && job.requiredTraits.length > 0) {
+    const hasRequiredTraits = job.requiredTraits.filter(t => candidate.characterTraits.includes(t));
+    const requiredRatio = hasRequiredTraits.length / job.requiredTraits.length;
+    
+    if (requiredRatio < 1.0) {
+      const missingTraits = job.requiredTraits.filter(t => !candidate.characterTraits.includes(t));
+      dealBreakers.push(`Missing required traits: ${missingTraits.slice(0, 2).join(', ')}`);
+      traitsScore = 0;
+    } else {
+      // Check desired traits (bonus points)
+      if (job.desiredTraits && job.desiredTraits.length > 0) {
+        const hasDesiredTraits = job.desiredTraits.filter(t => candidate.characterTraits.includes(t));
+        const desiredRatio = hasDesiredTraits.length / job.desiredTraits.length;
+        traitsScore = 70 + (desiredRatio * 30); // 70 base for having required, up to 100 with desired
+      }
+    }
+  }
+
 
   // --- CALC OVERALL ---
   const weightedSum = 
-      (skillsScore * 0.35) + 
+      (skillsScore * 0.30) + 
       (salaryScore * 0.15) + 
-      (contractScore * 0.10) + 
-      (locWorkScore * 0.15) + 
-      (seniorityScore * 0.10) + 
-      (cultureScore * 0.10) + 
-      (perkScore * 0.05);
+      (contractScore * 0.08) + 
+      (locWorkScore * 0.12) + 
+      (seniorityScore * 0.08) + 
+      (cultureScore * 0.12) + 
+      (perkScore * 0.07) +
+      (industryScore * 0.05) +
+      (traitsScore * 0.03);
 
   let overallScore = Math.round(weightedSum);
 
@@ -184,7 +229,9 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
           workMode: { score: Math.round(workModeScore), reason: workModeScore === 100 ? 'Mode match' : 'Mode mismatch' },
           seniority: { score: Math.round(seniorityScore), reason: seniorityScore === 100 ? 'Level align' : 'Level misalign' },
           culture: { score: Math.round(cultureScore), reason: 'Value alignment' },
-          perks: { score: Math.round(perkScore), reason: 'Perks alignment' }
+          perks: { score: Math.round(perkScore), reason: 'Perks alignment' },
+          industry: { score: Math.round(industryScore), reason: 'Industry fit' },
+          traits: { score: Math.round(traitsScore), reason: 'Personality fit' }
       },
       dealBreakers,
       recommendations
