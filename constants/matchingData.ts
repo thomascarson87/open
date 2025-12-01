@@ -1,3 +1,6 @@
+
+// constants/matchingData.ts
+
 export const CULTURAL_VALUES = [
   // Work Style & Pace
   "Innovation & Creativity",
@@ -93,45 +96,40 @@ export const INDUSTRIES = [
 
 export const PERKS_CATEGORIES = {
   "Health & Wellness": [
-    "Comprehensive Health Insurance (Medical, Dental, Vision)",
-    "Mental Health Support & Therapy Coverage",
-    "Gym Membership or Fitness Stipend",
-    "Wellness Programs & Challenges",
-    "On-site Healthcare Services",
+    "Comprehensive Health Insurance",
+    "Mental Health Support",
+    "Gym Membership / Fitness Stipend",
+    "Wellness Programs",
+    "On-site Healthcare",
     "Ergonomic Home Office Setup",
     "Health Savings Account (HSA)",
     "Life Insurance",
     "Disability Insurance",
     "Vision & Hearing Care"
   ],
-  
   "Financial Benefits": [
-    "401(k) or Pension Plan",
-    "Company Match on 401(k)",
-    "Stock Options / Equity Grants",
+    "401(k) / Pension Plan",
+    "Company Match",
+    "Stock Options / Equity",
     "Performance Bonuses",
     "Profit Sharing",
     "Signing Bonus",
     "Relocation Assistance",
-    "Student Loan Repayment Assistance",
+    "Student Loan Repayment",
     "Financial Planning Services",
-    "Referral Bonuses",
-    "Retention Bonuses"
+    "Referral Bonuses"
   ],
-  
   "Time Off & Leave": [
     "Unlimited PTO",
     "Generous PTO (20+ days)",
-    "Paid Parental Leave (Maternity/Paternity)",
+    "Paid Parental Leave",
     "Sabbatical Program",
     "Flexible Holidays",
     "Birthday Day Off",
     "Volunteer Time Off",
     "Bereavement Leave",
-    "Jury Duty Paid Leave",
     "Personal Days"
   ],
-  
   "Work Flexibility": [
     "Fully Remote Work",
     "Hybrid Work Model",
@@ -139,182 +137,115 @@ export const PERKS_CATEGORIES = {
     "4-Day Work Week",
     "Compressed Work Week",
     "Work From Anywhere Policy",
-    "No Core Hours Required",
-    "Flexible Start/End Times",
-    "Part-Time Options Available"
+    "No Core Hours",
+    "Part-Time Options"
   ],
-  
   "Professional Development": [
-    "Learning & Development Budget",
-    "Conference & Event Attendance",
+    "L&D Budget",
+    "Conference Attendance",
     "Certification Reimbursement",
-    "Internal Training Programs",
+    "Internal Training",
     "Mentorship Program",
     "Executive Coaching",
     "Tuition Reimbursement",
-    "Book Stipend",
-    "Online Course Subscriptions",
-    "Career Pathing Programs",
-    "Lunch & Learn Sessions"
+    "Book Stipend"
   ],
-  
-  "Lifestyle & Workplace": [
-    "Free Meals & Catered Lunch",
-    "Snacks & Beverages Provided",
-    "Team Outings & Events",
-    "Annual Company Retreats",
+  "Lifestyle": [
+    "Free Meals / Catered Lunch",
+    "Snacks & Beverages",
+    "Team Outings",
+    "Annual Retreats",
     "Pet-Friendly Office",
     "Commuter Benefits",
     "Free Parking",
-    "Transit Pass Subsidy",
-    "Phone & Internet Stipend",
-    "Co-working Space Membership",
-    "Modern Office Space",
-    "Game Room & Recreational Areas",
-    "Standing Desks Available"
+    "Phone/Internet Stipend",
+    "Co-working Membership",
+    "Game Room"
   ],
-  
   "Family Support": [
     "Childcare Assistance",
-    "Family Health Insurance Coverage",
+    "Family Health Coverage",
     "Adoption Assistance",
     "Elder Care Support",
-    "Fertility Benefits & IVF Coverage",
-    "Back-up Childcare Services",
-    "Lactation Rooms & Support",
-    "Family Leave (Beyond Parental)"
-  ],
-  
-  "Unique & Special Perks": [
-    "Paid Sabbatical After X Years",
-    "Charitable Donation Matching",
-    "Employee Discounts on Products",
-    "Company Car or Vehicle Allowance",
-    "Housing or Rent Stipend",
-    "Legal Assistance & Services",
-    "Identity Theft Protection",
-    "Travel Stipend",
-    "Pet Insurance",
-    "Dry Cleaning Services",
-    "Concierge Services",
-    "Unlimited Coffee & Snacks",
-    "Company-Sponsored Social Clubs"
+    "Fertility Benefits",
+    "Back-up Childcare"
   ]
 };
 
-// Flatten perks for easier use
 export const ALL_PERKS = Object.values(PERKS_CATEGORIES).flat();
 
 export const CHARACTER_TRAITS_CATEGORIES = {
-  "Leadership": [
-    "Decisive",
-    "Inspiring & Motivating",
-    "Strategic Thinker",
-    "Accountable",
-    "Empowering Others",
-    "Visionary",
-    "Leads by Example",
-    "Delegation Skills"
-  ],
-  
-  "Communication": [
-    "Clear Communicator",
-    "Active Listener",
-    "Persuasive",
-    "Diplomatic",
-    "Transparent",
-    "Articulate",
-    "Concise",
-    "Multilingual"
-  ],
-  
-  "Work Style": [
-    "Self-Starter",
-    "Detail-Oriented",
-    "Big Picture Thinker",
-    "Methodical",
-    "Adaptable",
-    "Organized",
-    "Proactive",
-    "Hands-On",
-    "Process-Oriented",
-    "Results-Focused"
-  ],
-  
-  "Problem Solving": [
-    "Analytical",
-    "Creative Problem Solver",
-    "Resourceful",
-    "Pragmatic",
-    "Innovative",
-    "Critical Thinker",
-    "Data-Driven",
-    "First Principles Thinker"
-  ],
-  
-  "Interpersonal": [
-    "Collaborative",
-    "Empathetic",
-    "Team Player",
-    "Mentoring",
-    "Conflict Resolver",
-    "Inclusive",
-    "Supportive",
-    "Networking",
-    "Cross-Functional Collaborator"
-  ],
-  
-  "Drive & Motivation": [
-    "Results-Oriented",
-    "Goal-Driven",
-    "Persistent",
-    "Ambitious",
-    "Competitive",
-    "Passionate",
-    "Self-Motivated",
-    "High Energy",
-    "Ownership Mindset"
-  ],
-  
-  "Adaptability": [
-    "Flexible",
-    "Resilient",
-    "Open-Minded",
-    "Learning-Oriented",
-    "Change Agent",
-    "Comfortable with Ambiguity",
-    "Growth Mindset",
-    "Agile"
-  ],
-  
-  "Technical Aptitude": [
-    "Technical Depth",
-    "Quick Learner",
-    "Systems Thinker",
-    "Quality-Focused",
-    "Debugging Expert",
-    "Documentation-Oriented",
-    "Best Practices Advocate"
-  ],
-  
-  "Emotional Intelligence": [
-    "Self-Aware",
-    "Patient",
-    "Calm Under Pressure",
-    "Emotionally Intelligent",
-    "Positive Attitude",
-    "Humble",
-    "Confident",
-    "Mature",
-    "Stress Management"
-  ]
+  "Leadership": ["Decisive", "Inspiring", "Strategic", "Accountable", "Empowering", "Visionary"],
+  "Communication": ["Clear Communicator", "Active Listener", "Persuasive", "Diplomatic", "Transparent", "Articulate"],
+  "Work Style": ["Self-Starter", "Detail-Oriented", "Big Picture", "Methodical", "Adaptable", "Organized", "Proactive"],
+  "Problem Solving": ["Analytical", "Creative", "Resourceful", "Pragmatic", "Innovative", "Critical Thinker", "Data-Driven"],
+  "Interpersonal": ["Collaborative", "Empathetic", "Team Player", "Mentoring", "Conflict Resolver", "Inclusive", "Supportive"],
+  "Drive": ["Results-Oriented", "Goal-Driven", "Persistent", "Ambitious", "Competitive", "Passionate", "High Energy"],
+  "Adaptability": ["Flexible", "Resilient", "Open-Minded", "Learning-Oriented", "Change Agent", "Agile"],
+  "Technical": ["Technical Depth", "Quick Learner", "Systems Thinker", "Quality-Focused", "Documentation-Oriented"],
+  "EQ": ["Self-Aware", "Patient", "Calm Under Pressure", "Emotionally Intelligent", "Positive", "Humble"]
 };
 
-// Flatten traits for easier use
 export const ALL_CHARACTER_TRAITS = Object.values(CHARACTER_TRAITS_CATEGORIES).flat();
+
+export const SKILLS_LIST = {
+  "Frontend Development": [
+    "React", "React Native", "Vue.js", "Angular", "Svelte", "Next.js", "Nuxt.js", 
+    "TypeScript", "JavaScript", "HTML5", "CSS3", "Tailwind CSS", "SASS/SCSS",
+    "Material-UI", "Chakra UI", "Ant Design", "Redux", "Zustand", "MobX",
+    "Webpack", "Vite", "Jest", "Cypress", "Playwright", "WebAssembly", "Three.js",
+    "Bootstrap", "Styled Components", "Emotion", "Storybook", "Framer Motion",
+    "D3.js", "Chart.js", "Recoil", "React Query", "SWR"
+  ],
+  "Backend Development": [
+    "Node.js", "Express.js", "NestJS", "Python", "Django", "Flask", "FastAPI",
+    "Java", "Spring Boot", "Go (Golang)", "Rust", "Ruby", "Ruby on Rails",
+    "PHP", "Laravel", "Symfony", "C#", ".NET Core", "ASP.NET", "Scala", "Elixir", 
+    "Phoenix", "Kotlin (Backend)", "Perl", "Lua", "Erlang"
+  ],
+  "Database & Storage": [
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "DynamoDB",
+    "Cassandra", "Neo4j", "SQLite", "Supabase", "Firebase", "Oracle", "Microsoft SQL Server",
+    "MariaDB", "CockroachDB", "CouchDB", "InfluxDB", "TimescaleDB", "Snowflake", "BigQuery"
+  ],
+  "DevOps & Cloud": [
+    "AWS", "Azure", "Google Cloud Platform", "Docker", "Kubernetes", "Terraform",
+    "Ansible", "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI", "Linux",
+    "Nginx", "Apache", "Serverless", "Prometheus", "Grafana", "ELK Stack",
+    "CloudFormation", "Pulumi", "Heroku", "Vercel", "Netlify", "DigitalOcean",
+    "ArgoCD", "Helm", "Istio"
+  ],
+  "Mobile Development": [
+    "iOS (Swift)", "Android (Kotlin)", "Flutter", "React Native", "Expo", 
+    "Xamarin", "Ionic", "Objective-C", "Java (Android)", "SwiftUI", "Jetpack Compose"
+  ],
+  "Data Science & AI": [
+    "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-learn",
+    "Pandas", "NumPy", "Data Visualization", "Tableau", "Power BI", "SQL",
+    "Apache Spark", "Hadoop", "Airflow", "Databricks", "NLP", "Computer Vision",
+    "OpenCV", "Keras", "Matplotlib", "Seaborn", "R Language", "Jupyter"
+  ],
+  "Design & Product": [
+    "Figma", "Sketch", "Adobe XD", "Photoshop", "Illustrator", "Prototyping",
+    "Wireframing", "User Research", "Design Systems", "Jira", "Asana", "Notion",
+    "Product Management", "Agile/Scrum", "Linear", "Miro", "InVision", "Zeplin"
+  ],
+  "Security & Network": [
+    "Network Security", "Penetration Testing", "OAuth", "JWT", "Cryptography",
+    "Web Application Security", "Ethical Hacking", "CISSP", "Firewalls", "VPN",
+    "OWASP", "Identity Management", "SSO"
+  ],
+  "General & Soft Skills": [
+    "Git", "REST APIs", "GraphQL", "gRPC", "WebSockets",
+    "Microservices", "System Design", "Technical Writing", "Mentoring",
+    "Public Speaking", "Code Review", "TDD", "DDD", "Clean Architecture",
+    "Remote Collaboration", "Cross-Functional Leadership"
+  ]
+};
 
 // Helper type exports
 export type CulturalValue = typeof CULTURAL_VALUES[number];
 export type Industry = typeof INDUSTRIES[number];
 export type Perk = typeof ALL_PERKS[number];
 export type CharacterTrait = typeof ALL_CHARACTER_TRAITS[number];
+
