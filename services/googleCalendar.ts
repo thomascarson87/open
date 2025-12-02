@@ -21,8 +21,8 @@ class GoogleCalendarService {
   // Using import.meta.env for Vite compatibility, casting to any to avoid TS errors if types are missing
   private clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
   private clientSecret = (import.meta as any).env?.VITE_GOOGLE_CLIENT_SECRET || '';
-  // Update to point to the new specific callback route
-  private redirectUri = `${window.location.origin}/auth/google/callback`; 
+  // Updated redirect URI to point to the new callback route
+  private redirectUri = `${window.location.origin}/auth/google/callback`;
   
   /**
    * Step 1: Initiate OAuth flow
