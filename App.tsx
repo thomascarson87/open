@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { HashRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
@@ -19,6 +20,7 @@ import Notifications from './components/Notifications';
 import Network from './components/Network';
 import Login from './components/Login';
 import LandingPage from './components/LandingPage';
+import GoogleAuthCallback from './components/GoogleAuthCallback';
 import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { User, Briefcase } from 'lucide-react';
 import { calculateMatch } from './services/matchingService';
@@ -281,33 +283,8 @@ function MainApp() {
   useEffect(() => {
     if (user) {
         fetchUserProfile();
-        handleGoogleCallback();
     }
   }, [user]);
-
-  const handleGoogleCallback = async () => {
-    // Check for auth code in URL
-    const searchParams = new URLSearchParams(window.location.search);
-    const code = searchParams.get('code');
-    
-    if (code && user) {
-        try {
-            // Clear URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-            
-            // Exchange code
-            const tokens = await googleCalendar.handleCallback(code);
-            await googleCalendar.storeTokens(user.id, tokens);
-            
-            // Notify & Redirect
-            alert('Google Calendar Connected Successfully!');
-            setCurrentView('schedule');
-        } catch (error) {
-            console.error('Google Auth Failed', error);
-            alert('Failed to connect Google Calendar. Check console for details.');
-        }
-    }
-  };
 
   useEffect(() => {
       if (userRole) {
@@ -706,11 +683,14 @@ function MainApp() {
 
 export default function App() {
   return (
-      <HashRouter>
+      <BrowserRouter>
         <AuthProvider>
-            <AuthWrapper />
+            <Routes>
+                <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+                <Route path="/*" element={<AuthWrapper />} />
+            </Routes>
         </AuthProvider>
-      </HashRouter>
+      </BrowserRouter>
   );
 }
 
