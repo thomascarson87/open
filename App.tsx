@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { HashRouter } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -24,6 +22,7 @@ import LandingPage from './components/LandingPage';
 import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { User, Briefcase } from 'lucide-react';
 import { calculateMatch } from './services/matchingService';
+import { googleCalendar } from './services/googleCalendar';
 
 // --- DATA MAPPERS ---
 
@@ -282,8 +281,33 @@ function MainApp() {
   useEffect(() => {
     if (user) {
         fetchUserProfile();
+        handleGoogleCallback();
     }
   }, [user]);
+
+  const handleGoogleCallback = async () => {
+    // Check for auth code in URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const code = searchParams.get('code');
+    
+    if (code && user) {
+        try {
+            // Clear URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Exchange code
+            const tokens = await googleCalendar.handleCallback(code);
+            await googleCalendar.storeTokens(user.id, tokens);
+            
+            // Notify & Redirect
+            alert('Google Calendar Connected Successfully!');
+            setCurrentView('schedule');
+        } catch (error) {
+            console.error('Google Auth Failed', error);
+            alert('Failed to connect Google Calendar. Check console for details.');
+        }
+    }
+  };
 
   useEffect(() => {
       if (userRole) {
