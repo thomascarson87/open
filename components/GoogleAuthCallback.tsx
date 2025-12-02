@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { googleCalendar } from '../services/googleCalendar';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
@@ -12,18 +12,27 @@ const GoogleAuthCallback: React.FC = () => {
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Connecting to Google Calendar...');
+  
+  // Prevent double-execution in React StrictMode
+  const processedRef = useRef(false);
 
   useEffect(() => {
     // Wait for auth to initialize
     if (authLoading) return;
+    
+    // Prevent multiple runs
+    if (processedRef.current) return;
 
     const processCallback = async () => {
+      processedRef.current = true;
+
       // 1. Check for errors from Google
       const error = searchParams.get('error');
       if (error) {
         console.error('❌ Google Auth Error:', error);
         setStatus('error');
         setMessage('Access denied or cancelled.');
+        setTimeout(() => navigate('/schedule'), 3000);
         return;
       }
 
@@ -32,6 +41,7 @@ const GoogleAuthCallback: React.FC = () => {
       if (!code) {
         setStatus('error');
         setMessage('No authorization code received.');
+        setTimeout(() => navigate('/schedule'), 3000);
         return;
       }
 
@@ -51,7 +61,7 @@ const GoogleAuthCallback: React.FC = () => {
         await googleCalendar.storeTokens(user.id, tokens);
         
         setStatus('success');
-        setMessage('Successfully connected!');
+        setMessage('Successfully Connected!');
         
         console.log('✅ Connection complete. Redirecting...');
         setTimeout(() => navigate('/schedule'), 2000);
@@ -59,7 +69,6 @@ const GoogleAuthCallback: React.FC = () => {
         console.error('❌ Callback processing failed:', err);
         setStatus('error');
         setMessage('Failed to connect. Please try again.');
-        // Redirect back to schedule after delay even on error
         setTimeout(() => navigate('/schedule'), 4000);
       }
     };
