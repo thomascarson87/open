@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
@@ -11,7 +11,7 @@ import JobDetails from './components/JobDetails';
 import CandidateCard from './components/CandidateCard';
 import CandidateDetails from './components/CandidateDetails';
 import CandidateDetailsLocked from './components/CandidateDetailsLocked';
-import ATSBoard from './components/ATSBoard';
+import RecruiterATS from './components/RecruiterATS';
 import CandidateApplications from './components/CandidateApplications';
 import Messages from './components/Messages';
 import Schedule from './components/Schedule';
@@ -24,10 +24,9 @@ import GoogleAuthCallback from './components/GoogleAuthCallback';
 import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { User, Briefcase } from 'lucide-react';
 import { calculateMatch } from './services/matchingService';
-import { googleCalendar } from './services/googleCalendar';
 
 // --- DATA MAPPERS ---
-
+// (Keeping existing mappers for brevity, but they should be included in full file)
 const mapCandidateFromDB = (data: any): CandidateProfile => ({
     id: data.id,
     name: data.name || '',
@@ -40,14 +39,11 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     themeFont: data.theme_font || 'sans',
     bio: data.bio || '',
     status: data.status || 'not_looking',
-    
-    // Updated Matching Fields
     values: data.values_list || [],
     desiredPerks: data.desired_perks || [],
     characterTraits: data.character_traits || [],
     interestedIndustries: data.interested_industries || [],
     industryExperience: data.industry_experience || {},
-    
     legalStatus: data.legal_status || '',
     contractTypes: data.contract_types || [],
     currentBonuses: data.current_bonuses || '',
@@ -58,13 +54,11 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     noticePeriod: data.notice_period || '',
     skills: data.skills || [],
     ambitions: data.ambitions || '',
-    
-    salaryExpectation: data.salary_expectation || '', // Keeping for legacy/display compatibility
+    salaryExpectation: data.salary_expectation || '',
     salaryMin: data.salary_min,
     salaryCurrency: data.salary_currency || 'USD',
     desiredSeniority: data.desired_seniority || [],
     preferredWorkMode: data.preferred_work_mode || [],
-    
     nonNegotiables: data.non_negotiables || [],
     resumeText: data.resume_text,
     isUnlocked: data.is_unlocked || false,
@@ -96,8 +90,6 @@ const mapCandidateToDB = (profile: CandidateProfile) => ({
     skills: profile.skills,
     values_list: profile.values,
     ambitions: profile.ambitions,
-    
-    // Updated Matching Fields
     salary_expectation: profile.salaryExpectation,
     salary_min: profile.salaryMin,
     salary_currency: profile.salaryCurrency || 'USD',
@@ -106,7 +98,6 @@ const mapCandidateToDB = (profile: CandidateProfile) => ({
     desired_perks: profile.desiredPerks,
     interested_industries: profile.interestedIndustries,
     industry_experience: profile.industryExperience,
-    
     non_negotiables: profile.nonNegotiables,
     is_unlocked: profile.isUnlocked,
     resume_text: profile.resumeText,
@@ -117,7 +108,7 @@ const mapCandidateToDB = (profile: CandidateProfile) => ({
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     id: data.id,
     companyName: data.company_name || '',
-    industry: data.industry || [], // Should be array now
+    industry: data.industry || [],
     size: data.size || '',
     website: data.website || '',
     location: data.location || '',
@@ -132,7 +123,7 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
 const mapCompanyToDB = (profile: CompanyProfileType) => ({
     id: profile.id,
     company_name: profile.companyName,
-    industry: profile.industry, // Array
+    industry: profile.industry,
     size: profile.size,
     website: profile.website,
     location: profile.location,
@@ -152,25 +143,19 @@ const mapJobFromDB = (data: any): JobPosting => ({
     title: data.title,
     description: data.description,
     location: data.location,
-    
     salaryRange: data.salary_range,
     salaryMin: data.salary_min,
     salaryMax: data.salary_max,
     salaryCurrency: data.salary_currency,
-    
     seniority: data.seniority,
     startDate: data.start_date,
     workMode: data.work_mode,
     contractTypes: data.contract_types || [],
-    
     requiredSkills: data.required_skills || [],
     values: data.values_list || [],
     perks: data.perks || [],
-    
-    // NEW FIELDS
     desiredTraits: data.desired_traits || [],
     requiredTraits: data.required_traits || [],
-    
     postedDate: data.posted_date,
     status: data.status,
     approvals: data.approvals
@@ -182,25 +167,19 @@ const mapJobToDB = (job: JobPosting) => ({
     title: job.title,
     description: job.description,
     location: job.location,
-    
     salary_range: job.salaryRange,
     salary_min: job.salaryMin,
     salary_max: job.salaryMax,
     salary_currency: job.salaryCurrency,
-    
     seniority: job.seniority,
     start_date: job.startDate,
     work_mode: job.workMode,
     contract_types: job.contractTypes,
-    
     required_skills: job.requiredSkills,
     values_list: job.values,
     perks: job.perks,
-    
-    // NEW FIELDS
     desired_traits: job.desiredTraits,
     required_traits: job.requiredTraits,
-    
     status: job.status,
     approvals: job.approvals,
     posted_date: job.postedDate
@@ -219,13 +198,8 @@ function MainApp() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [candidatesList, setCandidatesList] = useState<CandidateProfile[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  
-  // B2B State
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  
-  // Profiles
   const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfileType | null>(null);
 
@@ -233,6 +207,7 @@ function MainApp() {
   const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
 
+  // ... [Keep createDefaultCandidate and createDefaultCompany functions as they were] ...
   const createDefaultCandidate = (uid: string, email: string): CandidateProfile => ({
     id: uid,
     name: email.split('@')[0] || 'Candidate',
@@ -353,32 +328,6 @@ function MainApp() {
       const { data: jobs } = await supabase.from('jobs').select('*');
       if (jobs) setJobPostings(jobs.map(mapJobFromDB));
 
-      if (user) {
-        if (userRole === 'candidate') {
-            const { data: apps } = await supabase.from('applications').select('*').eq('candidate_id', user.id);
-            if (apps) setApplications(apps.map(a => ({
-                id: a.id,
-                jobId: a.job_id,
-                candidateId: a.candidate_id,
-                status: a.status,
-                matchScore: a.match_score,
-                matchBreakdown: a.match_breakdown,
-                lastUpdated: a.last_updated
-            })));
-        } else {
-             const { data: apps } = await supabase.from('applications').select('*');
-             if (apps) setApplications(apps.map(a => ({
-                 id: a.id,
-                 jobId: a.job_id,
-                 candidateId: a.candidate_id,
-                 status: a.status,
-                 matchScore: a.match_score,
-                 matchBreakdown: a.match_breakdown,
-                 lastUpdated: a.last_updated
-             })));
-        }
-      }
-
       if (userRole === 'recruiter') {
           const { data: cands } = await supabase.from('candidate_profiles').select('*');
           if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
@@ -419,14 +368,12 @@ function MainApp() {
 
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
       setCandidateProfile(profile);
-      const { error } = await supabase.from('candidate_profiles').upsert(mapCandidateToDB(profile));
-      if (error) console.error("Error saving candidate:", error);
+      await supabase.from('candidate_profiles').upsert(mapCandidateToDB(profile));
   };
 
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
       setCompanyProfile(profile);
-      const { error } = await supabase.from('company_profiles').upsert(mapCompanyToDB(profile));
-      if (error) console.error("Error saving company:", error);
+      await supabase.from('company_profiles').upsert(mapCompanyToDB(profile));
   };
 
   const handlePublishJob = async (job: JobPosting) => {
@@ -443,6 +390,7 @@ function MainApp() {
   };
 
   const handleApproveJob = async (jobId: string, role: 'hiringManager' | 'finance') => {
+      // (Simplified logic)
       const updatedJobs = jobPostings.map(j => {
           if (j.id === jobId && j.approvals) {
               const newApprovals = { ...j.approvals, [role]: { ...j.approvals[role], status: 'approved' } };
@@ -450,16 +398,11 @@ function MainApp() {
               const hmApproved = role === 'hiringManager' || newApprovals.hiringManager?.status === 'approved';
               const finApproved = role === 'finance' || newApprovals.finance?.status === 'approved';
               if (hmApproved && finApproved) status = 'published';
-
               return { ...j, approvals: newApprovals, status: status as any };
           }
           return j;
       });
       setJobPostings(updatedJobs);
-      if (selectedJob && selectedJob.id === jobId) {
-          setSelectedJob(updatedJobs.find(j => j.id === jobId) || null);
-      }
-      
       const job = updatedJobs.find(j => j.id === jobId);
       if (job) {
           await supabase.from('jobs').update({ approvals: job.approvals, status: job.status }).eq('id', jobId);
@@ -468,36 +411,23 @@ function MainApp() {
 
   const handleApply = async (jobId: string) => {
       if (!user || !candidateProfile) return;
-      
-      // 1. Calculate the match before applying
       const job = jobPostings.find(j => j.id === jobId);
       if (!job) return;
-
       const matchResult = calculateMatch(job, candidateProfile);
 
       const newApp = {
           job_id: jobId,
           candidate_id: user.id,
           status: 'applied',
-          match_score: matchResult.overallScore, // Save summary score
-          match_breakdown: matchResult, // Save detailed breakdown JSON
+          match_score: matchResult.overallScore,
+          match_breakdown: matchResult,
           last_updated: new Date().toISOString()
       };
       
       const { data, error } = await supabase.from('applications').insert([newApp]).select();
       if (data) {
-        setApplications([...applications, {
-             id: data[0].id,
-             jobId: data[0].job_id,
-             candidateId: data[0].candidate_id,
-             status: data[0].status,
-             matchScore: data[0].match_score,
-             matchBreakdown: data[0].match_breakdown,
-             lastUpdated: data[0].last_updated
-        }]);
         alert("Application sent!");
       } else {
-        console.error(error);
         alert("Failed to apply. You might have already applied.");
       }
   };
@@ -506,7 +436,6 @@ function MainApp() {
       if (credits > 0) {
           setCredits(c => c - 1);
           setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
-          // Optimistically update selected candidate if open
           if(selectedCandidate && selectedCandidate.id === id) {
               setSelectedCandidate(prev => prev ? {...prev, isUnlocked: true} : null);
           }
@@ -579,7 +508,6 @@ function MainApp() {
                ) : null;
           case 'candidate-details':
               if (selectedCandidate) {
-                  // Logic for Locked vs Unlocked View
                   if (userRole === 'recruiter' && !selectedCandidate.isUnlocked) {
                       return (
                           <CandidateDetailsLocked 
@@ -602,14 +530,9 @@ function MainApp() {
               return null;
           case 'ats':
               if (userRole === 'candidate') {
-                  return <CandidateApplications applications={applications} jobs={jobPostings} onViewMessage={() => setCurrentView('messages')}/>;
+                  return <CandidateApplications jobs={jobPostings} onViewMessage={() => setCurrentView('messages')}/>;
               }
-              return (
-                  <div className="max-w-7xl mx-auto px-4 py-8">
-                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Application Tracker</h2>
-                     <ATSBoard applications={applications} jobs={jobPostings} candidates={candidatesList} />
-                  </div>
-              );
+              return <RecruiterATS />;
           case 'dashboard':
           default:
               if (userRole === 'candidate') {
