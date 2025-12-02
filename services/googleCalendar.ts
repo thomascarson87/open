@@ -21,7 +21,7 @@ class GoogleCalendarService {
   private clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
   private clientSecret = (import.meta as any).env?.VITE_GOOGLE_CLIENT_SECRET || '';
   // Ensure this matches the Authorized redirect URI in Google Console
-  private redirectUri = `${window.location.origin}`; 
+  private redirectUri = `${window.location.origin}/auth/google/callback`; 
   
   /**
    * Step 1: Initiate OAuth flow
