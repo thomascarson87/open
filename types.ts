@@ -1,5 +1,4 @@
 
-
 export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
@@ -55,14 +54,14 @@ export interface Experience {
   id: string;
   role: string;
   company: string;
-  duration: string; // Display string e.g., "Jan 2020 - Present • 4 years"
-  startDate: string; // YYYY-MM
-  endDate: string | null; // YYYY-MM or null for Present
+  duration: string;
+  startDate: string;
+  endDate: string | null;
   isCurrentRole: boolean;
   type: string;
-  description?: string; // Detailed responsibilities
-  achievements?: string[]; // Key accomplishments
-  skillsAcquired?: string[]; // specific skills used in this role
+  description?: string;
+  achievements?: string[];
+  skillsAcquired?: string[];
 }
 
 export interface Certificate {
@@ -75,7 +74,7 @@ export interface Certificate {
 
 export interface PortfolioItem {
     id: string;
-    platform: string; // e.g. GitHub, Figma, Behance
+    platform: string;
     url: string;
 }
 
@@ -85,7 +84,7 @@ export interface Reference {
     authorRole: string;
     authorCompany: string;
     relationship: 'Manager' | 'Peer' | 'Direct Report' | 'Client' | 'Mentor';
-    content: string; // The written text
+    content: string;
     assessment: 'Top 1% Talent' | 'Exceptional' | 'Highly Recommended' | 'Strong Performer';
     status: 'pending' | 'verified';
     date: string;
@@ -98,52 +97,33 @@ export interface CandidateProfile {
   headline: string;
   email: string;
   location: string;
-  
-  // Media
-  avatarUrls: string[]; // Array for multiple profile pics
+  avatarUrls: string[];
   videoIntroUrl?: string;
-  
-  // Theming
   themeColor: ThemeColor;
   themeFont: ThemeFont;
-
-  // Bio & Status
   bio: string;
   status: 'actively_looking' | 'open_to_offers' | 'happy_but_listening' | 'not_looking';
-  
-  // ENHANCED FIELDS
-  characterTraits: string[]; // Now uses ALL_CHARACTER_TRAITS
-  
-  // Logistics
-  legalStatus: string; // Visa, Citizenship
+  characterTraits: string[];
+  legalStatus: string;
   contractTypes: JobType[];
-  currentBonuses: string; // Description of current bonus structure
-  
+  currentBonuses: string;
   experience: Experience[];
   certificates?: Certificate[];
   portfolio: PortfolioItem[];
   references: Reference[];
-  
   noticePeriod: string; 
   skills: Skill[];
-  values: string[]; // Now uses CULTURAL_VALUES
+  values: string[];
   ambitions: string;
-  
-  // Matching Fields
-  salaryExpectation: string; // Deprecated in favor of salaryMin
+  salaryExpectation: string;
   salaryMin?: number;
   salaryCurrency?: string;
-  
-  desiredSeniority: string[]; // e.g. ['Senior', 'Lead']
+  desiredSeniority: string[];
   preferredWorkMode: WorkMode[];
-  desiredPerks: string[]; // Now uses ALL_PERKS
-  
-  // NEW FIELDS
-  interestedIndustries: string[];  // From INDUSTRIES
-  industryExperience?: Record<string, string>;  // e.g., {"Fintech": "5 years"}
-  
-  // Logic
-  nonNegotiables: string[]; // Array of field keys that are non-negotiable
+  desiredPerks: string[];
+  interestedIndustries: string[];
+  industryExperience?: Record<string, string>;
+  nonNegotiables: string[];
   resumeText?: string;
   isUnlocked?: boolean;
   matchScore?: number;
@@ -153,15 +133,13 @@ export interface CandidateProfile {
 export interface CompanyProfile {
   id?: string;
   companyName: string;
-  industry: string[]; // Changed from string to array
+  industry: string[];
   size: string;
   website: string;
   location: string;
   about: string;
   paymentMethod?: { last4: string; brand: string };
   logoUrl?: string;
-  
-  // NEW FIELDS
   values?: string[];
   perks?: string[];
   desiredTraits?: string[];
@@ -171,14 +149,14 @@ export interface Connection {
   id: string;
   name: string;
   headline: string;
-  company: string; // Current company
-  sharedHistory: string; // Where you worked together
+  company: string;
+  sharedHistory: string;
   isVerified: boolean;
   avatar?: string;
 }
 
 export interface ApprovalState {
-    assignedTo: string; // user_id of the stakeholder
+    assignedTo: string;
     status: 'pending' | 'approved' | 'rejected';
     feedback?: string;
     date?: string;
@@ -197,29 +175,20 @@ export interface JobPosting {
   title: string;
   description: string;
   location: string;
-  companyIndustry?: string[]; // For quick display
-  
-  // Salary
-  salaryRange: string; // Display string
+  companyIndustry?: string[];
+  salaryRange: string;
   salaryMin?: number;
   salaryMax?: number;
   salaryCurrency?: string;
-  
   seniority: SeniorityLevel;
   contractTypes: JobType[];
-  
   startDate?: string;
   workMode: WorkMode;
-  
-  requiredSkills: JobSkill[]; // Structured skills
-  
+  requiredSkills: JobSkill[];
   values: string[];
   perks: string[];
-  
-  // NEW FIELDS
-  desiredTraits: string[];  // From ALL_CHARACTER_TRAITS (nice to have)
-  requiredTraits: string[];  // From ALL_CHARACTER_TRAITS (must have)
-  
+  desiredTraits: string[];
+  requiredTraits: string[];
   postedDate: string;
   status: 'draft' | 'pending_approval' | 'published' | 'closed';
   approvals?: JobApprovals;
@@ -241,24 +210,27 @@ export interface MatchBreakdown {
     contract: MatchDetails;
     culture: MatchDetails;
     perks: MatchDetails;
-    industry: MatchDetails; // NEW
-    traits: MatchDetails; // NEW
+    industry: MatchDetails;
+    traits: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
 }
 
-export type ApplicationStatus = 
-  | 'applied' 
-  | 'screening' 
-  | 'hr_interview' 
-  | 'technical_test' 
-  | 'manager_interview' 
-  | 'exec_interview' 
-  | 'offer' 
-  | 'contracting' 
-  | 'hired' 
-  | 'rejected';
+export type ApplicationStatus =
+  | 'applied'
+  | 'reviewing'
+  | 'phone_screen_scheduled'
+  | 'phone_screen_completed'
+  | 'technical_scheduled'
+  | 'technical_completed'
+  | 'final_round_scheduled'
+  | 'final_round_completed'
+  | 'offer_extended'
+  | 'offer_accepted'
+  | 'hired'
+  | 'rejected'
+  | 'withdrawn';
 
 export interface Application {
   id: string;
@@ -266,20 +238,37 @@ export interface Application {
   candidateId: string;
   status: ApplicationStatus;
   matchScore: number;
-  matchBreakdown?: MatchBreakdown; // Detailed scoring
+  matchBreakdown?: MatchBreakdown;
   aiAnalysis?: string;
   lastUpdated: string;
   interviewers?: { [stage: string]: string[] };
+  conversationId?: string;
+  rejectionReason?: string;
+  rejectionNotes?: string;
+  source?: string;
+}
+
+export interface ApplicationStatusHistory {
+  id: string;
+  applicationId: string;
+  oldStatus: ApplicationStatus | null;
+  newStatus: ApplicationStatus;
+  changedBy: string;
+  changeType: 'manual' | 'automatic' | 'system';
+  notes?: string;
+  createdAt: string;
 }
 
 export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  senderName: string;
+  senderName?: string; // Hydrated on fetch
   text: string;
   timestamp: string;
   isRead: boolean;
+  isSystemMessage: boolean;
+  metadata?: any;
 }
 
 export interface Conversation {
@@ -287,22 +276,41 @@ export interface Conversation {
   participants: { id: string, name: string, avatar?: string }[];
   lastMessage: Message;
   unreadCount: number;
+  applicationId?: string; // Linked application
+  jobTitle?: string;
+  companyName?: string;
+  candidateName?: string;
 }
 
 export interface CalendarEvent {
   id: string;
   title: string;
-  date: string; // ISO string
-  duration: number; // minutes
-  attendees: string[];
-  type: 'interview' | 'screening' | 'sync';
+  description?: string;
+  event_type: 'interview' | 'screening' | 'technical_test' | 'sync' | 'other';
+  start_time: string;
+  end_time: string;
+  video_link?: string;
+  attendees: any[];
+  status: string;
+  is_synced: boolean;
+  google_event_id?: string;
 }
 
 export interface Notification {
   id: string;
   title: string;
   description: string;
-  type: 'match' | 'message' | 'system' | 'application';
+  type: 'match' | 'message' | 'system' | 'application' | 'profile_viewed' | 'interview_scheduled';
   isRead: boolean;
   timestamp: string;
+  link?: string;
+  metadata?: any;
+}
+
+export interface ProfileView {
+  id: string;
+  candidate_id: string;
+  company_id: string;
+  viewed_at: string;
+  unlocked: boolean;
 }
