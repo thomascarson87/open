@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { JobPosting, TeamMember } from '../types';
-import { ArrowLeft, MapPin, DollarSign, Clock, Building2, CheckCircle, Calendar, ShieldCheck, XCircle } from 'lucide-react';
+import { ArrowLeft, Building2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { messageService } from '../services/messageService';
 import { supabase } from '../services/supabaseClient';
@@ -23,15 +23,10 @@ const JobDetails: React.FC<Props> = ({ job, onBack, onApply, teamMembers, onAppr
       // Auto-create conversation
       if (user) {
           try {
-             // Need candidate ID
-             const { data: cand } = await supabase.from('candidate_profiles').select('id').eq('user_id', user.id).single();
+             // Need candidate ID. In this schema, candidate_profile.id IS the user_id.
+             const { data: cand } = await supabase.from('candidate_profiles').select('id').eq('id', user.id).single();
              if (cand) {
-                // Determine recruiter ID (company owner for now)
                 const recruiterId = job.company_id; 
-                
-                // Get application ID (Need to wait for onApply to finish in parent, but assuming eventual consistency here or independent check)
-                // Better approach: onApply returns app ID. For now we will try to get/create conversation loosely.
-                
                 await messageService.getOrCreateConversation(recruiterId, cand.id, null, job.id);
              }
           } catch (e) {
