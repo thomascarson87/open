@@ -1,317 +1,393 @@
 
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { supabase } from './services/supabaseClient';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Navigation from './components/Navigation';
-import CandidateProfileForm from './components/CandidateProfileForm';
-import CompanyProfile from './components/CompanyProfile';
-import JobCard from './components/JobCard';
-import JobDetails from './components/JobDetails';
-import CandidateCard from './components/CandidateCard';
-import CandidateDetails from './components/CandidateDetails';
-import CandidateDetailsLocked from './components/CandidateDetailsLocked';
-import RecruiterATS from './components/RecruiterATS';
-import CandidateApplications from './components/CandidateApplications';
-import Messages from './components/Messages';
-import Schedule from './components/Schedule';
-import CreateJob from './components/CreateJob';
-import Notifications from './components/Notifications';
-import Network from './components/Network';
-import Login from './components/Login';
-import LandingPage from './components/LandingPage';
-import GoogleAuthCallback from './components/GoogleAuthCallback';
-import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
-import { Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
+import { generateJobDescription } from '../services/geminiService';
+import { ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck } from 'lucide-react';
+import GroupedMultiSelect from './GroupedMultiSelect';
+import { 
+  CULTURAL_VALUES, 
+  PERKS_CATEGORIES,
+  CHARACTER_TRAITS_CATEGORIES,
+  SKILLS_LIST
+} from '../constants/matchingData';
 
-// Mappers with strict default values to prevent "undefined includes" crashes
-const mapJobFromDB = (data: any): JobPosting => ({ 
-    ...data, 
-    requiredSkills: data.required_skills || [], 
-    values: data.values_list || [],
-    perks: data.perks || [],
-    desiredTraits: data.desired_traits || [],
-    requiredTraits: data.required_traits || [],
-    companyIndustry: data.company_industry || [] // Ensure this maps from DB column usually 'industry' text[]
-});
-
-const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
-    ...data, 
-    avatarUrls: data.avatar_urls || [], 
-    skills: data.skills || [],
-    contractTypes: data.contract_types || [],
-    preferredWorkMode: data.preferred_work_mode || [],
-    desiredPerks: data.desired_perks || [],
-    interestedIndustries: data.interested_industries || [],
-    characterTraits: data.character_traits || [],
-    values: data.values_list || [],
-    nonNegotiables: data.non_negotiables || [],
-    portfolio: data.portfolio || [],
-    references: data.references_list || [],
-    experience: data.experience || [],
-    desiredSeniority: data.desired_seniority || [] // Important: DB column might differ, check exact name if issues persist
-});
-
-const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
-    ...data, 
-    logoUrl: data.logo_url,
-    industry: data.industry || [], 
-    values: data.values || [],
-    perks: data.perks || [],
-    desiredTraits: data.desired_traits || []
-});
-
-function MainApp() {
-  const { user, signOut } = useAuth();
-  const [userRole, setUserRole] = useState<Role>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard');
-  
-  // Data State
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
-  const [candidatesList, setCandidatesList] = useState<CandidateProfile[]>([]);
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
-  const [companyProfile, setCompanyProfile] = useState<CompanyProfileType | null>(null);
-
-  // Selections
-  const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
-
-  useEffect(() => {
-    if (user) {
-        fetchUserProfile();
-        fetchNotifications();
-    }
-  }, [user]);
-
-  useEffect(() => {
-      if (userRole) {
-          fetchData();
-      }
-  }, [userRole]);
-
-  const fetchUserProfile = async () => {
-    try {
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', user?.id).maybeSingle(); 
-        if (data && data.role) {
-             setUserRole(data.role as Role);
-             loadRoleData(data.role as Role);
-        } else {
-             const pendingRole = localStorage.getItem('open_selected_role');
-             if (pendingRole && (pendingRole === 'candidate' || pendingRole === 'recruiter')) {
-                 await handleCreateProfile(pendingRole as Role);
-                 localStorage.removeItem('open_selected_role');
-             } else {
-                 setUserRole(null);
-                 setIsLoadingProfile(false);
-             }
-        }
-    } catch (error) {
-        setIsLoadingProfile(false);
-    }
-  };
-
-  const fetchNotifications = async () => {
-      if (!user) return;
-      const { data } = await supabase.from('notifications').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (data) {
-          setNotifications(data.map((n: any) => ({
-              id: n.id,
-              title: n.title,
-              description: n.description,
-              type: n.type,
-              isRead: n.is_read,
-              timestamp: n.created_at,
-              link: n.link,
-              metadata: n.metadata
-          })));
-      }
-  };
-
-  const loadRoleData = async (role: Role) => {
-        try {
-            if (role === 'candidate') {
-                    // ID is the User ID in this schema
-                    const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
-                    if (cand) setCandidateProfile(mapCandidateFromDB(cand));
-            } else {
-                    const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
-                    if (comp) setCompanyProfile(mapCompanyFromDB(comp));
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsLoadingProfile(false);
-        }
-  };
-
-  const fetchData = async () => {
-      const { data: jobs } = await supabase.from('jobs').select('*');
-      if (jobs) setJobPostings(jobs.map(mapJobFromDB));
-      if (userRole === 'recruiter') {
-          const { data: cands } = await supabase.from('candidate_profiles').select('*');
-          if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
-      }
-  };
-
-  const handleCreateProfile = async (role: Role) => {
-      if (!user) return;
-      try {
-          setIsLoadingProfile(true);
-          await supabase.from('profiles').upsert({ id: user.id, email: user.email, role: role });
-          // Also init detailed profile
-          if (role === 'candidate') {
-              await supabase.from('candidate_profiles').upsert({ id: user.id, name: user.email?.split('@')[0], email: user.email });
-          } else {
-              await supabase.from('company_profiles').upsert({ id: user.id, company_name: 'My Company' });
-          }
-          setUserRole(role);
-      } catch (e) {
-          console.error(e);
-      } finally {
-          setIsLoadingProfile(false);
-      }
-  };
-
-  // Handlers
-  const handleUpdateCandidate = async (profile: CandidateProfile) => {
-      /* Update logic would go here, usually calling supabase update */
-      setCandidateProfile(profile);
-      setCurrentView('dashboard');
-  };
-  const handleUpdateCompany = async (profile: CompanyProfileType) => {
-      /* Update logic would go here */
-      setCompanyProfile(profile);
-      setCurrentView('dashboard');
-  };
-  const handlePublishJob = async (job: JobPosting) => { 
-      // Insert job logic
-      await supabase.from('jobs').insert([{
-         ...job,
-         company_id: user?.id,
-         company_name: companyProfile?.companyName,
-         // Map back to snake_case for DB
-         required_skills: job.requiredSkills,
-         values_list: job.values,
-         desired_traits: job.desiredTraits,
-         required_traits: job.requiredTraits
-      }]);
-      fetchData();
-      setCurrentView('dashboard'); 
-  };
-  
-  const handleUnlockCandidate = (id: string) => { 
-      setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
-  };
-  const handleApply = async (jobId: string) => { 
-      if (!userRole || userRole !== 'candidate') return;
-      try {
-          await supabase.from('applications').insert({
-              job_id: jobId,
-              candidate_id: user?.id
-          });
-          alert("Applied successfully!");
-      } catch (e) {
-          console.error(e);
-      }
-  };
-
-  if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /></div>;
-
-  if (!userRole) return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-gray-50">
-          <h2 className="text-2xl font-bold mb-4">Complete Your Setup</h2>
-          <p className="text-gray-500 mb-8">It looks like your profile role isn't set.</p>
-          <div className="flex gap-4">
-              <button onClick={() => handleCreateProfile('candidate')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">I'm Talent</button>
-              <button onClick={() => handleCreateProfile('recruiter')} className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">I'm Hiring</button>
-          </div>
-          <button onClick={signOut} className="mt-8 text-gray-400 text-sm underline">Sign Out</button>
-      </div>
-  );
-
-  const renderContent = () => {
-      switch (currentView) {
-          case 'profile':
-              return userRole === 'recruiter' && companyProfile ? <CompanyProfile profile={companyProfile} onSave={handleUpdateCompany} /> : <CandidateProfileForm profile={candidateProfile!} onSave={handleUpdateCandidate} />;
-          case 'network': return <Network connections={connections} />;
-          case 'messages': return <Messages />;
-          case 'schedule': return <Schedule />;
-          case 'notifications': return <Notifications notifications={notifications} />;
-          case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} />;
-          case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
-          case 'candidate-details': return selectedCandidate ? (
-             userRole === 'recruiter' && !selectedCandidate.isUnlocked ? 
-             <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={handleUnlockCandidate} onBack={() => setCurrentView('dashboard')} /> :
-             <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={handleUnlockCandidate} onMessage={() => setCurrentView('messages')} onSchedule={() => setCurrentView('schedule')} />
-          ) : null;
-          case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={() => setCurrentView('messages')} /> : <RecruiterATS />;
-          default: return userRole === 'candidate' ? 
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                {jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}
-            </div> : 
-            <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={() => setCurrentView('messages')} onSchedule={() => setCurrentView('schedule')} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}
-            </div>;
-      }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50/50">
-      <Navigation role={userRole} currentView={currentView} setCurrentView={setCurrentView} onLogout={signOut} notificationCount={notifications.filter(n => !n.isRead).length} />
-      <div className="pt-6 pb-20 md:pb-6">{renderContent()}</div>
-    </div>
-  );
+interface Props {
+    onPublish: (job: JobPosting) => void;
+    onCancel: () => void;
+    teamMembers: TeamMember[];
 }
 
-function AuthWrapper() {
-    const { session, loading } = useAuth();
-    // Check local storage for pre-selected role (persists across reloads on login screen)
-    const [selectedRole, setSelectedRole] = useState<Role>(() => {
-        const stored = localStorage.getItem('open_selected_role');
-        return (stored === 'candidate' || stored === 'recruiter') ? stored : null;
+const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
+    const [step, setStep] = useState(1);
+    const [jobData, setJobData] = useState<Partial<JobPosting>>({
+        companyName: "TechFlow Inc.", // In real app, pre-fill from CompanyProfile
+        workMode: WorkMode.REMOTE,
+        requiredSkills: [],
+        values: [],
+        perks: [],
+        desiredTraits: [],
+        requiredTraits: [],
+        seniority: SeniorityLevel.SENIOR,
+        contractTypes: [JobType.FULL_TIME],
+        salaryCurrency: 'USD',
+        approvals: { hiringManager: { status: 'pending', assignedTo: '' }, finance: { status: 'pending', assignedTo: '' } }
     });
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
+    const [isLoading, setIsLoading] = useState(false);
 
-    if (session) return <MainApp />;
+    const handleSuggest = async () => {
+        if (!jobData.title) return;
+        setIsLoading(true);
+        try {
+            const desc = await generateJobDescription(jobData.title, jobData.requiredSkills || []);
+            setJobData(prev => ({ ...prev, description: desc }));
+        } catch (error) {
+            console.error("AI Generation failed", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    // If a role is selected (but not logged in), show Login
-    if (selectedRole) {
-        return (
-            <Login 
-                selectedRole={selectedRole} 
-                onBack={() => {
-                    localStorage.removeItem('open_selected_role');
-                    setSelectedRole(null);
-                }} 
-            />
-        );
-    }
+    const updateSkill = (name: string, field: keyof JobSkill, value: any) => {
+        setJobData(prev => ({
+            ...prev,
+            requiredSkills: prev.requiredSkills?.map(s => s.name === name ? { ...s, [field]: value } : s)
+        }));
+    };
 
-    // Default to Landing Page
+    const handleSubmit = () => {
+        onPublish(jobData as JobPosting);
+    };
+
     return (
-        <LandingPage 
-            onSelectRole={(r) => { 
-                localStorage.setItem('open_selected_role', r); 
-                setSelectedRole(r); 
-            }} 
-        />
-    );
-}
+        <div className="max-w-5xl mx-auto my-8 px-4 pb-24">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-4">
+                    <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <ArrowLeft className="w-5 h-5 text-gray-500"/>
+                    </button>
+                    <h1 className="text-3xl font-bold text-gray-900">Post a Job</h1>
+                </div>
+                <div className="text-sm text-gray-500 font-medium">
+                    Draft saved automatically
+                </div>
+            </div>
 
-export default function App() {
-  return (
-      <BrowserRouter>
-        <AuthProvider>
-            <Routes>
-                <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-                <Route path="/*" element={<AuthWrapper />} />
-            </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-  );
-}
+            {/* Progress Bar */}
+            <div className="flex items-center justify-center mb-10">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${step >= 1 ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-200 text-gray-500'}`}>1</div>
+                <div className={`w-24 h-1 mx-2 transition-colors ${step >= 2 ? 'bg-gray-900' : 'bg-gray-200'}`}></div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${step >= 2 ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-200 text-gray-500'}`}>2</div>
+                <div className={`w-24 h-1 mx-2 transition-colors ${step >= 3 ? 'bg-gray-900' : 'bg-gray-200'}`}></div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${step >= 3 ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-200 text-gray-500'}`}>3</div>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden min-h-[600px] flex flex-col">
+                <div className="flex-1 p-8">
+                {step === 1 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <label className="block text-sm font-bold text-gray-700">Role Title</label>
+                                <input 
+                                    value={jobData.title || ''}
+                                    onChange={e => setJobData({...jobData, title: e.target.value})}
+                                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                                    placeholder="e.g. Senior Frontend Engineer"
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="space-y-4">
+                                <label className="block text-sm font-bold text-gray-700">Location</label>
+                                <input
+                                    value={jobData.location || ''}
+                                    onChange={e => setJobData({...jobData, location: e.target.value})}
+                                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium outline-none"
+                                    placeholder="e.g. London, UK (or Remote)"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                             <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Seniority</label>
+                                <select 
+                                    value={jobData.seniority}
+                                    onChange={e => setJobData({...jobData, seniority: e.target.value as SeniorityLevel})}
+                                    className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none"
+                                >
+                                    {Object.values(SeniorityLevel).map(l => <option key={l} value={l}>{l}</option>)}
+                                </select>
+                             </div>
+                             <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Work Mode</label>
+                                <select 
+                                    value={jobData.workMode}
+                                    onChange={e => setJobData({...jobData, workMode: e.target.value as WorkMode})}
+                                    className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none"
+                                >
+                                    {Object.values(WorkMode).map(m => <option key={m} value={m}>{m}</option>)}
+                                </select>
+                             </div>
+                             <div className="col-span-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Salary Range ({jobData.salaryCurrency})</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="number"
+                                        placeholder="Min"
+                                        value={jobData.salaryMin || ''}
+                                        onChange={e => setJobData({...jobData, salaryMin: parseInt(e.target.value)})}
+                                        className="w-full p-3 border border-gray-200 rounded-xl"
+                                    />
+                                    <input 
+                                        type="number"
+                                        placeholder="Max"
+                                        value={jobData.salaryMax || ''}
+                                        onChange={e => setJobData({...jobData, salaryMax: parseInt(e.target.value)})}
+                                        className="w-full p-3 border border-gray-200 rounded-xl"
+                                    />
+                                </div>
+                             </div>
+                        </div>
+                        
+                        <div>
+                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Contract Type</label>
+                             <div className="flex gap-2 flex-wrap">
+                                 {Object.values(JobType).map(type => (
+                                     <button
+                                        key={type}
+                                        onClick={() => setJobData(prev => ({
+                                            ...prev, 
+                                            contractTypes: prev.contractTypes?.includes(type)
+                                                ? prev.contractTypes.filter(t => t !== type)
+                                                : [...(prev.contractTypes || []), type]
+                                        }))}
+                                        className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                                            jobData.contractTypes?.includes(type)
+                                                ? 'bg-gray-900 text-white border-gray-900'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                        }`}
+                                     >
+                                         {type}
+                                     </button>
+                                 ))}
+                             </div>
+                        </div>
+
+                        <div>
+                             <div className="flex justify-between items-center mb-2">
+                                 <label className="block text-sm font-bold text-gray-700">Job Description</label>
+                                 <button 
+                                    onClick={handleSuggest} 
+                                    disabled={!jobData.title || isLoading}
+                                    className="text-xs flex items-center bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                                 >
+                                     <Zap className="w-3 h-3 mr-1" /> {isLoading ? 'Generating...' : 'Auto-Generate with AI'}
+                                 </button>
+                             </div>
+                             <textarea 
+                                value={jobData.description || ''}
+                                onChange={e => setJobData({...jobData, description: e.target.value})}
+                                className="w-full h-48 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm leading-relaxed outline-none focus:bg-white focus:ring-2 focus:ring-gray-100 transition-all"
+                                placeholder="Describe the role, responsibilities, and what makes your team unique..."
+                             />
+                        </div>
+                    </div>
+                )}
+
+                {step === 2 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+                         {/* Skills */}
+                         <div>
+                             <h3 className="text-lg font-bold mb-4 flex items-center"><Award className="w-5 h-5 mr-2" /> Technical Skills & Requirements</h3>
+                             <GroupedMultiSelect 
+                                label="Add Skills"
+                                options={SKILLS_LIST}
+                                selected={jobData.requiredSkills?.map(s => s.name) || []}
+                                onChange={(names) => {
+                                    // Remove unselected
+                                    const current = jobData.requiredSkills || [];
+                                    const filtered = current.filter(s => names.includes(s.name));
+                                    // Add new
+                                    names.forEach(n => {
+                                        if(!filtered.find(s => s.name === n)) {
+                                            filtered.push({ name: n, minimumYears: 2, weight: 'preferred' });
+                                        }
+                                    });
+                                    setJobData({...jobData, requiredSkills: filtered});
+                                }}
+                                grouped={true}
+                                searchable={true}
+                             />
+                             
+                             <div className="space-y-3 mt-4">
+                                 {jobData.requiredSkills?.map((skill, idx) => (
+                                     <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                         <span className="font-bold text-gray-700 w-1/3">{skill.name}</span>
+                                         <div className="flex items-center space-x-4">
+                                             <div className="flex items-center space-x-2">
+                                                 <span className="text-xs text-gray-500 uppercase">Min Years:</span>
+                                                 <input 
+                                                    type="number" 
+                                                    value={skill.minimumYears}
+                                                    onChange={e => updateSkill(skill.name, 'minimumYears', parseInt(e.target.value))}
+                                                    className="w-16 p-1 border rounded text-center font-bold"
+                                                    min={0}
+                                                 />
+                                             </div>
+                                             <div className="flex gap-1">
+                                                 <button 
+                                                    onClick={() => updateSkill(skill.name, 'weight', 'preferred')}
+                                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${skill.weight === 'preferred' ? 'bg-blue-100 text-blue-700' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                 >
+                                                     Nice to have
+                                                 </button>
+                                                 <button 
+                                                    onClick={() => updateSkill(skill.name, 'weight', 'required')}
+                                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${skill.weight === 'required' ? 'bg-red-100 text-red-700' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                 >
+                                                     Required
+                                                 </button>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 ))}
+                             </div>
+                         </div>
+
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100">
+                             <div>
+                                 <h3 className="text-lg font-bold mb-4 flex items-center"><Heart className="w-5 h-5 mr-2" /> Culture & Values</h3>
+                                 <GroupedMultiSelect
+                                    label="Team Values"
+                                    options={CULTURAL_VALUES}
+                                    selected={jobData.values || []}
+                                    onChange={vals => setJobData({...jobData, values: vals})}
+                                    placeholder="Select values..."
+                                    maxSelections={5}
+                                 />
+                             </div>
+                             <div>
+                                 <h3 className="text-lg font-bold mb-4 flex items-center"><UserCheck className="w-5 h-5 mr-2" /> Personality Traits</h3>
+                                 <GroupedMultiSelect
+                                    label="Desired Traits"
+                                    options={CHARACTER_TRAITS_CATEGORIES}
+                                    selected={jobData.desiredTraits || []}
+                                    onChange={traits => setJobData({...jobData, desiredTraits: traits})}
+                                    grouped={true}
+                                    maxSelections={5}
+                                 />
+                             </div>
+                         </div>
+
+                         <div>
+                             <h3 className="text-lg font-bold mb-4">Perks & Benefits</h3>
+                             <GroupedMultiSelect
+                                label="What do you offer?"
+                                options={PERKS_CATEGORIES}
+                                selected={jobData.perks || []}
+                                onChange={p => setJobData({...jobData, perks: p})}
+                                grouped={true}
+                             />
+                         </div>
+                    </div>
+                )}
+
+                {step === 3 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500 max-w-2xl mx-auto">
+                        <div className="text-center mb-8">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle className="w-8 h-8 text-green-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold">Almost There!</h2>
+                            <p className="text-gray-500">Configure approval workflows before publishing.</p>
+                        </div>
+
+                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 space-y-6">
+                            <h3 className="font-bold text-gray-900 flex items-center">
+                                <Users className="w-5 h-5 mr-2" /> Approval Chain
+                            </h3>
+                            
+                            {/* Hiring Manager */}
+                            <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                                <div>
+                                    <div className="font-bold text-sm">Hiring Manager</div>
+                                    <div className="text-xs text-gray-500">Must approve job details</div>
+                                </div>
+                                <select 
+                                    className="p-2 border rounded-lg text-sm min-w-[200px]"
+                                    value={jobData.approvals?.hiringManager?.assignedTo || ''}
+                                    onChange={e => setJobData({
+                                        ...jobData, 
+                                        approvals: { 
+                                            ...jobData.approvals, 
+                                            hiringManager: { status: 'pending', assignedTo: e.target.value } 
+                                        } 
+                                    })}
+                                >
+                                    <option value="">Select Manager...</option>
+                                    {teamMembers.filter(m => m.role === 'hiring_manager' || m.role === 'admin').map(m => (
+                                        <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Finance */}
+                            <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                                <div>
+                                    <div className="font-bold text-sm">Finance Controller</div>
+                                    <div className="text-xs text-gray-500">Must approve salary budget</div>
+                                </div>
+                                <select 
+                                    className="p-2 border rounded-lg text-sm min-w-[200px]"
+                                    value={jobData.approvals?.finance?.assignedTo || ''}
+                                    onChange={e => setJobData({
+                                        ...jobData, 
+                                        approvals: { 
+                                            ...jobData.approvals, 
+                                            finance: { status: 'pending', assignedTo: e.target.value } 
+                                        } 
+                                    })}
+                                >
+                                    <option value="">Select Finance Rep...</option>
+                                    {teamMembers.filter(m => m.role === 'finance' || m.role === 'admin').map(m => (
+                                        <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-700 border border-blue-100 flex items-start">
+                            <Zap className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                            <div>
+                                Once submitted, this job will be in <b>Pending Approval</b> state until all stakeholders approve.
+                            </div>
+                        </div>
+                    </div>
+                )}
+                </div>
+
+                <div className="bg-gray-50 p-8 border-t border-gray-100 flex justify-between items-center">
+                    {step > 1 ? (
+                        <button onClick={() => setStep(s => s - 1)} className="flex items-center text-gray-600 font-bold hover:text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                            <ArrowLeft className="w-4 h-4 mr-2"/> Back
+                        </button>
+                    ) : <div></div>}
+                    
+                    {step < 3 ? (
+                        <button onClick={() => setStep(s => s + 1)} className="flex items-center bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black shadow-lg transition-transform hover:-translate-y-0.5">
+                            Next Step <ArrowRight className="w-4 h-4 ml-2"/>
+                        </button>
+                    ) : (
+                        <button onClick={handleSubmit} className="flex items-center bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg transition-transform hover:-translate-y-0.5">
+                            <CheckCircle className="w-4 h-4 mr-2"/> Submit for Approval
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default CreateJob;
