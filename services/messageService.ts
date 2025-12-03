@@ -20,31 +20,20 @@ class MessageService {
     // Update conversation timestamp
     await supabase
         .from('conversations')
-        .update({ updated_at: new Date().toISOString() }) // Assuming you have this column or want to trigger order change
+        .update({ updated_at: new Date().toISOString() }) 
         .eq('id', conversationId);
 
     return data;
   }
 
   async sendSystemMessage(conversationId: string, text: string, metadata?: any) {
-    // For system messages, we might use a specific system UUID or leave sender_id null if schema allows
-    // Assuming schema requires a sender, we use a placeholder or the triggering user.
-    // Ideally, make sender_id nullable for system messages.
-    // Here we will use '00000000-0000-0000-0000-000000000000' as a convention for System if sender_id is not nullable, 
-    // BUT we need to ensure that UUID exists in auth.users or disable FK.
-    // A safer bet for now is to just insert it with a flag 'is_system_message'.
-    
-    // We will assume the schema update allows nullable sender OR we rely on the implementation to handle it.
-    // Since we can't easily fetch a "system user", we'll just insert. 
-    // IF strict FK, we might fail. Let's assume the schema update allowed nullable or we use the current user as the "trigger".
-    
     const { data: { user } } = await supabase.auth.getUser();
     
     const { data, error } = await supabase
       .from('messages')
       .insert([{
         conversation_id: conversationId,
-        sender_id: user?.id, // Attributed to the user who triggered the action
+        sender_id: user?.id,
         text: text,
         is_read: false,
         is_system_message: true,
@@ -59,20 +48,11 @@ class MessageService {
     return data;
   }
 
-  async createConversation(applicationId: string, candidateId: string, companyId: string, recruiterId: string) {
-      // Check if exists
-      const { data: existing } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('application_id', applicationId)
-        .maybeSingle();
-      
-      if (existing) return existing.id;
-
-      // Create new
+  async createConversation(applicationId: string | null, candidateId: string, recruiterId: string) {
+      // Create new conversation
       const { data: conv, error } = await supabase
         .from('conversations')
-        .insert([{ application_id: applicationId }]) // Add other fields if needed
+        .insert([{ application_id: applicationId }])
         .select()
         .single();
       
@@ -85,6 +65,41 @@ class MessageService {
       ]);
       
       return conv.id;
+  }
+
+  async getOrCreateConversation(recruiterId: string, candidateId: string, applicationId: string | null = null, jobId: string | null = null): Promise<string> {
+      // 1. Try to find existing conversation between these two users
+      const { data: recruiterConvs } = await supabase
+          .from('conversation_participants')
+          .select('conversation_id')
+          .eq('user_id', recruiterId);
+
+      if (recruiterConvs && recruiterConvs.length > 0) {
+          const convIds = recruiterConvs.map(c => c.conversation_id);
+          
+          const { data: shared } = await supabase
+              .from('conversation_participants')
+              .select('conversation_id')
+              .eq('user_id', candidateId)
+              .in('conversation_id', convIds)
+              .limit(1)
+              .maybeSingle();
+
+          if (shared) {
+              // If application ID provided, link it if missing
+              if (applicationId) {
+                  await supabase
+                      .from('conversations')
+                      .update({ application_id: applicationId })
+                      .eq('id', shared.conversation_id)
+                      .is('application_id', null);
+              }
+              return shared.conversation_id;
+          }
+      }
+
+      // 2. No existing conversation, create new
+      return await this.createConversation(applicationId, candidateId, recruiterId);
   }
 }
 
