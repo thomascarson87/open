@@ -1,10 +1,12 @@
 
+
 export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
 
 export interface TeamMember {
-  id: string; // This is the user_id
+  id: string; // This is the row id in team_members table
+  user_id?: string; // The auth user id (nullable if pending invite)
   company_id: string;
   email: string;
   name: string;
@@ -138,11 +140,12 @@ export interface CompanyProfile {
   website: string;
   location: string;
   about: string;
-  paymentMethod?: { last4: string; brand: string };
   logoUrl?: string;
   values?: string[];
   perks?: string[];
   desiredTraits?: string[];
+  billing_plan?: string;
+  credits?: number;
 }
 
 export interface Connection {
@@ -294,6 +297,8 @@ export interface CalendarEvent {
   status: string;
   is_synced: boolean;
   google_event_id?: string;
+  candidate_id?: string;
+  user_id: string;
 }
 
 export interface Notification {
