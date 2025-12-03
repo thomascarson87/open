@@ -24,10 +24,42 @@ import GoogleAuthCallback from './components/GoogleAuthCallback';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 
-// Mock mappers for compilation
-const mapJobFromDB = (data: any): JobPosting => ({ ...data, requiredSkills: data.required_skills || [], values: data.values_list || [] });
-const mapCandidateFromDB = (data: any): CandidateProfile => ({ ...data, avatarUrls: data.avatar_urls || [], skills: data.skills || [] });
-const mapCompanyFromDB = (data: any): CompanyProfileType => ({ ...data, logoUrl: data.logo_url });
+// Mappers with strict default values to prevent "undefined includes" crashes
+const mapJobFromDB = (data: any): JobPosting => ({ 
+    ...data, 
+    requiredSkills: data.required_skills || [], 
+    values: data.values_list || [],
+    perks: data.perks || [],
+    desiredTraits: data.desired_traits || [],
+    requiredTraits: data.required_traits || [],
+    companyIndustry: data.company_industry || [] // Ensure this maps from DB column usually 'industry' text[]
+});
+
+const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
+    ...data, 
+    avatarUrls: data.avatar_urls || [], 
+    skills: data.skills || [],
+    contractTypes: data.contract_types || [],
+    preferredWorkMode: data.preferred_work_mode || [],
+    desiredPerks: data.desired_perks || [],
+    interestedIndustries: data.interested_industries || [],
+    characterTraits: data.character_traits || [],
+    values: data.values_list || [],
+    nonNegotiables: data.non_negotiables || [],
+    portfolio: data.portfolio || [],
+    references: data.references_list || [],
+    experience: data.experience || [],
+    desiredSeniority: data.desired_seniority || [] // Important: DB column might differ, check exact name if issues persist
+});
+
+const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
+    ...data, 
+    logoUrl: data.logo_url,
+    industry: data.industry || [], 
+    values: data.values || [],
+    perks: data.perks || [],
+    desiredTraits: data.desired_traits || []
+});
 
 function MainApp() {
   const { user, signOut } = useAuth();
@@ -102,6 +134,7 @@ function MainApp() {
   const loadRoleData = async (role: Role) => {
         try {
             if (role === 'candidate') {
+                    // ID is the User ID in this schema
                     const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
                     if (cand) setCandidateProfile(mapCandidateFromDB(cand));
             } else {
@@ -129,6 +162,12 @@ function MainApp() {
       try {
           setIsLoadingProfile(true);
           await supabase.from('profiles').upsert({ id: user.id, email: user.email, role: role });
+          // Also init detailed profile
+          if (role === 'candidate') {
+              await supabase.from('candidate_profiles').upsert({ id: user.id, name: user.email?.split('@')[0], email: user.email });
+          } else {
+              await supabase.from('company_profiles').upsert({ id: user.id, company_name: 'My Company' });
+          }
           setUserRole(role);
       } catch (e) {
           console.error(e);
@@ -139,7 +178,7 @@ function MainApp() {
 
   // Handlers
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
-      /* Update logic would go here */
+      /* Update logic would go here, usually calling supabase update */
       setCandidateProfile(profile);
       setCurrentView('dashboard');
   };
@@ -148,12 +187,36 @@ function MainApp() {
       setCompanyProfile(profile);
       setCurrentView('dashboard');
   };
-  const handlePublishJob = async (job: JobPosting) => { setCurrentView('dashboard'); };
+  const handlePublishJob = async (job: JobPosting) => { 
+      // Insert job logic
+      await supabase.from('jobs').insert([{
+         ...job,
+         company_id: user?.id,
+         company_name: companyProfile?.companyName,
+         // Map back to snake_case for DB
+         required_skills: job.requiredSkills,
+         values_list: job.values,
+         desired_traits: job.desiredTraits,
+         required_traits: job.requiredTraits
+      }]);
+      fetchData();
+      setCurrentView('dashboard'); 
+  };
+  
   const handleUnlockCandidate = (id: string) => { 
       setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
   };
   const handleApply = async (jobId: string) => { 
-      // This is handled in JobDetails usually, or we show a toast here
+      if (!userRole || userRole !== 'candidate') return;
+      try {
+          await supabase.from('applications').insert({
+              job_id: jobId,
+              candidate_id: user?.id
+          });
+          alert("Applied successfully!");
+      } catch (e) {
+          console.error(e);
+      }
   };
 
   if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /></div>;
