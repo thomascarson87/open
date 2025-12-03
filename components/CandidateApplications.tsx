@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,7 +8,6 @@ import { Application, JobPosting, ApplicationStatus } from '../types';
 import { Building2, Calendar, ChevronRight, MessageSquare, Clock } from 'lucide-react';
 
 interface Props {
-  applications?: Application[]; // Legacy prop, we fetch fresh data
   jobs: JobPosting[];
   onViewMessage: (appId: string) => void;
 }
@@ -25,8 +25,8 @@ const CandidateApplications: React.FC<Props> = ({ onViewMessage }) => {
 
   const loadApps = async () => {
     setLoading(true);
-    // Find candidate profile ID first
-    const { data: profile } = await supabase.from('candidate_profiles').select('id').eq('user_id', user!.id).maybeSingle();
+    // Profile ID is the User ID in this schema
+    const { data: profile } = await supabase.from('candidate_profiles').select('id').eq('id', user!.id).maybeSingle();
     
     if (profile) {
         const { data } = await supabase
@@ -93,7 +93,7 @@ const CandidateApplications: React.FC<Props> = ({ onViewMessage }) => {
                                    </button>
                                    {app.conversation?.[0]?.id && (
                                        <button 
-                                          onClick={() => onViewMessage(app.id)} // Assuming this navigates correctly
+                                          onClick={() => onViewMessage(app.id)} 
                                           className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center"
                                        >
                                            <MessageSquare className="w-4 h-4 mr-2"/> Message
