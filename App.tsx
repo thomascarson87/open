@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
@@ -23,6 +23,7 @@ import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
+import { messageService } from './services/messageService';
 
 // Mappers with strict default values to prevent "undefined includes" crashes
 const mapJobFromDB = (data: any): JobPosting => ({ 
@@ -32,7 +33,7 @@ const mapJobFromDB = (data: any): JobPosting => ({
     perks: data.perks || [],
     desiredTraits: data.desired_traits || [],
     requiredTraits: data.required_traits || [],
-    companyIndustry: data.company_industry || [] // Ensure this maps from DB column usually 'industry' text[]
+    companyIndustry: data.company_industry || [] 
 });
 
 const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
@@ -49,7 +50,7 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     portfolio: data.portfolio || [],
     references: data.references_list || [],
     experience: data.experience || [],
-    desiredSeniority: data.desired_seniority || [] // Important: DB column might differ, check exact name if issues persist
+    desiredSeniority: data.desired_seniority || [] 
 });
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
@@ -58,7 +59,9 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     industry: data.industry || [], 
     values: data.values || [],
     perks: data.perks || [],
-    desiredTraits: data.desired_traits || []
+    desiredTraits: data.desired_traits || [],
+    billing_plan: data.billing_plan || 'pay_per_hire',
+    credits: data.credits || 0
 });
 
 function MainApp() {
@@ -66,6 +69,7 @@ function MainApp() {
   const [userRole, setUserRole] = useState<Role>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Data State
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -92,6 +96,14 @@ function MainApp() {
           fetchData();
       }
   }, [userRole]);
+
+  // Handle URL based routing for direct links
+  useEffect(() => {
+      const view = searchParams.get('view');
+      if (view) {
+          setCurrentView(view);
+      }
+  }, [searchParams]);
 
   const fetchUserProfile = async () => {
     try {
@@ -134,12 +146,15 @@ function MainApp() {
   const loadRoleData = async (role: Role) => {
         try {
             if (role === 'candidate') {
-                    // ID is the User ID in this schema
                     const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
                     if (cand) setCandidateProfile(mapCandidateFromDB(cand));
             } else {
                     const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
                     if (comp) setCompanyProfile(mapCompanyFromDB(comp));
+                    
+                    // Load team members
+                    const { data: team } = await supabase.from('team_members').select('*').eq('company_id', user?.id);
+                    if (team) setTeamMembers(team);
             }
         } catch (e) {
             console.error(e);
@@ -178,26 +193,41 @@ function MainApp() {
 
   // Handlers
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
-      /* Update logic would go here, usually calling supabase update */
       setCandidateProfile(profile);
       setCurrentView('dashboard');
   };
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
-      /* Update logic would go here */
+      await supabase.from('company_profiles').update({
+          company_name: profile.companyName,
+          website: profile.website,
+          about: profile.about,
+          values: profile.values,
+          perks: profile.perks,
+          desired_traits: profile.desiredTraits,
+          industry: profile.industry
+      }).eq('id', user?.id);
+      
       setCompanyProfile(profile);
-      setCurrentView('dashboard');
+      // No view change, just save
   };
+  
+  const handleTeamMemberUpdate = async () => {
+      if (userRole === 'recruiter') {
+         const { data: team } = await supabase.from('team_members').select('*').eq('company_id', user?.id);
+         if (team) setTeamMembers(team);
+      }
+  };
+
   const handlePublishJob = async (job: JobPosting) => { 
-      // Insert job logic
       await supabase.from('jobs').insert([{
          ...job,
          company_id: user?.id,
          company_name: companyProfile?.companyName,
-         // Map back to snake_case for DB
          required_skills: job.requiredSkills,
          values_list: job.values,
          desired_traits: job.desiredTraits,
-         required_traits: job.requiredTraits
+         required_traits: job.requiredTraits,
+         perks: job.perks
       }]);
       fetchData();
       setCurrentView('dashboard'); 
@@ -206,6 +236,7 @@ function MainApp() {
   const handleUnlockCandidate = (id: string) => { 
       setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
   };
+  
   const handleApply = async (jobId: string) => { 
       if (!userRole || userRole !== 'candidate') return;
       try {
@@ -217,6 +248,22 @@ function MainApp() {
       } catch (e) {
           console.error(e);
       }
+  };
+
+  // Improved Navigation Handlers
+  const navigateToMessage = async (candidateId: string) => {
+      try {
+        const convId = await messageService.getOrCreateConversation(user!.id, candidateId);
+        setSearchParams({ conversationId: convId });
+        setCurrentView('messages');
+      } catch (e) {
+          console.error("Failed to start conversation", e);
+      }
+  };
+
+  const navigateToSchedule = (candidateId: string) => {
+      setSearchParams({ candidateId });
+      setCurrentView('schedule');
   };
 
   if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /></div>;
@@ -236,7 +283,14 @@ function MainApp() {
   const renderContent = () => {
       switch (currentView) {
           case 'profile':
-              return userRole === 'recruiter' && companyProfile ? <CompanyProfile profile={companyProfile} onSave={handleUpdateCompany} /> : <CandidateProfileForm profile={candidateProfile!} onSave={handleUpdateCandidate} />;
+              return userRole === 'recruiter' && companyProfile ? 
+                <CompanyProfile 
+                    profile={companyProfile} 
+                    onSave={handleUpdateCompany} 
+                    teamMembers={teamMembers} 
+                    onTeamUpdate={handleTeamMemberUpdate}
+                /> : 
+                <CandidateProfileForm profile={candidateProfile!} onSave={handleUpdateCandidate} />;
           case 'network': return <Network connections={connections} />;
           case 'messages': return <Messages />;
           case 'schedule': return <Schedule />;
@@ -246,15 +300,21 @@ function MainApp() {
           case 'candidate-details': return selectedCandidate ? (
              userRole === 'recruiter' && !selectedCandidate.isUnlocked ? 
              <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={handleUnlockCandidate} onBack={() => setCurrentView('dashboard')} /> :
-             <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={handleUnlockCandidate} onMessage={() => setCurrentView('messages')} onSchedule={() => setCurrentView('schedule')} />
+             <CandidateDetails 
+                candidate={selectedCandidate} 
+                onBack={() => setCurrentView('dashboard')} 
+                onUnlock={handleUnlockCandidate} 
+                onMessage={navigateToMessage} 
+                onSchedule={navigateToSchedule} 
+             />
           ) : null;
-          case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={() => setCurrentView('messages')} /> : <RecruiterATS />;
+          case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={(id) => setCurrentView('messages')} /> : <RecruiterATS />;
           default: return userRole === 'candidate' ? 
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}
             </div> : 
             <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={() => setCurrentView('messages')} onSchedule={() => setCurrentView('schedule')} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}
+                {candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={navigateToMessage} onSchedule={navigateToSchedule} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}
             </div>;
       }
   };
