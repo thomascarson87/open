@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
 import { generateJobDescription } from '../services/geminiService';
+import { supabase } from '../services/supabaseClient';
 import { ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import { 
   CULTURAL_VALUES, 
-  PERKS_CATEGORIES,
+  PERKS_CATEGORIES, 
   CHARACTER_TRAITS_CATEGORIES,
   SKILLS_LIST
 } from '../constants/matchingData';
@@ -20,7 +21,7 @@ interface Props {
 const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const [step, setStep] = useState(1);
     const [jobData, setJobData] = useState<Partial<JobPosting>>({
-        companyName: "TechFlow Inc.", // In real app, pre-fill from CompanyProfile
+        companyName: "TechFlow Inc.",
         workMode: WorkMode.REMOTE,
         requiredSkills: [],
         values: [],
@@ -38,14 +39,9 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const handleSuggest = async () => {
         if (!jobData.title) return;
         setIsLoading(true);
-        try {
-            const desc = await generateJobDescription(jobData.title, jobData.requiredSkills || []);
-            setJobData(prev => ({ ...prev, description: desc }));
-        } catch (error) {
-            console.error("AI Generation failed", error);
-        } finally {
-            setIsLoading(false);
-        }
+        const desc = await generateJobDescription(jobData.title, []);
+        setJobData(prev => ({ ...prev, description: desc }));
+        setIsLoading(false);
     };
 
     const updateSkill = (name: string, field: keyof JobSkill, value: any) => {
@@ -63,15 +59,8 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
         <div className="max-w-5xl mx-auto my-8 px-4 pb-24">
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-4">
-                    <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <ArrowLeft className="w-5 h-5 text-gray-500"/>
-                    </button>
-                    <h1 className="text-3xl font-bold text-gray-900">Post a Job</h1>
-                </div>
-                <div className="text-sm text-gray-500 font-medium">
-                    Draft saved automatically
-                </div>
+                <h1 className="text-3xl font-bold text-gray-900">Post a Job</h1>
+                <button onClick={onCancel} className="text-gray-500 hover:text-gray-900">Cancel</button>
             </div>
 
             {/* Progress Bar */}
@@ -93,7 +82,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                 <input 
                                     value={jobData.title || ''}
                                     onChange={e => setJobData({...jobData, title: e.target.value})}
-                                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium focus:ring-2 focus:ring-gray-900 outline-none"
                                     placeholder="e.g. Senior Frontend Engineer"
                                     autoFocus
                                 />
@@ -104,7 +93,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                     value={jobData.location || ''}
                                     onChange={e => setJobData({...jobData, location: e.target.value})}
                                     className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium outline-none"
-                                    placeholder="e.g. London, UK (or Remote)"
+                                    placeholder="e.g. London, UK"
                                 />
                             </div>
                         </div>
@@ -131,7 +120,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                 </select>
                              </div>
                              <div className="col-span-2">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Salary Range ({jobData.salaryCurrency})</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Salary Range</label>
                                 <div className="flex gap-2">
                                     <input 
                                         type="number"
@@ -150,30 +139,6 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                 </div>
                              </div>
                         </div>
-                        
-                        <div>
-                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Contract Type</label>
-                             <div className="flex gap-2 flex-wrap">
-                                 {Object.values(JobType).map(type => (
-                                     <button
-                                        key={type}
-                                        onClick={() => setJobData(prev => ({
-                                            ...prev, 
-                                            contractTypes: prev.contractTypes?.includes(type)
-                                                ? prev.contractTypes.filter(t => t !== type)
-                                                : [...(prev.contractTypes || []), type]
-                                        }))}
-                                        className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                                            jobData.contractTypes?.includes(type)
-                                                ? 'bg-gray-900 text-white border-gray-900'
-                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                                        }`}
-                                     >
-                                         {type}
-                                     </button>
-                                 ))}
-                             </div>
-                        </div>
 
                         <div>
                              <div className="flex justify-between items-center mb-2">
@@ -181,7 +146,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                  <button 
                                     onClick={handleSuggest} 
                                     disabled={!jobData.title || isLoading}
-                                    className="text-xs flex items-center bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                                    className="text-xs flex items-center bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100 disabled:opacity-50"
                                  >
                                      <Zap className="w-3 h-3 mr-1" /> {isLoading ? 'Generating...' : 'Auto-Generate with AI'}
                                  </button>
@@ -189,7 +154,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                              <textarea 
                                 value={jobData.description || ''}
                                 onChange={e => setJobData({...jobData, description: e.target.value})}
-                                className="w-full h-48 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm leading-relaxed outline-none focus:bg-white focus:ring-2 focus:ring-gray-100 transition-all"
+                                className="w-full h-64 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm leading-relaxed outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
                                 placeholder="Describe the role, responsibilities, and what makes your team unique..."
                              />
                         </div>
@@ -233,19 +198,18 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                                     value={skill.minimumYears}
                                                     onChange={e => updateSkill(skill.name, 'minimumYears', parseInt(e.target.value))}
                                                     className="w-16 p-1 border rounded text-center font-bold"
-                                                    min={0}
                                                  />
                                              </div>
                                              <div className="flex gap-1">
                                                  <button 
                                                     onClick={() => updateSkill(skill.name, 'weight', 'preferred')}
-                                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${skill.weight === 'preferred' ? 'bg-blue-100 text-blue-700' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                    className={`px-3 py-1 rounded text-xs font-bold ${skill.weight === 'preferred' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}
                                                  >
                                                      Nice to have
                                                  </button>
                                                  <button 
                                                     onClick={() => updateSkill(skill.name, 'weight', 'required')}
-                                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${skill.weight === 'required' ? 'bg-red-100 text-red-700' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                    className={`px-3 py-1 rounded text-xs font-bold ${skill.weight === 'required' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-400'}`}
                                                  >
                                                      Required
                                                  </button>
@@ -358,11 +322,8 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                             </div>
                         </div>
 
-                        <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-700 border border-blue-100 flex items-start">
-                            <Zap className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-                            <div>
-                                Once submitted, this job will be in <b>Pending Approval</b> state until all stakeholders approve.
-                            </div>
+                        <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-700 border border-blue-100">
+                            Once submitted, this job will be in <b>Pending Approval</b> state until all stakeholders approve.
                         </div>
                     </div>
                 )}
