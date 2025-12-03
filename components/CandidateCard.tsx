@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { CandidateProfile } from '../types';
 import { Lock, Mail, Calendar, MapPin, DollarSign, Eye } from 'lucide-react';
