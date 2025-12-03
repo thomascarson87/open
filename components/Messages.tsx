@@ -8,7 +8,6 @@ import { ApplicationStatus, Conversation, Message } from '../types';
 import StatusBadge from './StatusBadge';
 import ScheduleCallModal from './ScheduleCallModal';
 import { messageService } from '../services/messageService';
-import { atsService } from '../services/atsService';
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
@@ -33,8 +32,11 @@ const Messages: React.FC = () => {
     // Auto-select conversation from URL
     useEffect(() => {
         const urlConvId = searchParams.get('conversationId');
-        if (urlConvId && !loading && conversations.some(c => c.id === urlConvId)) {
-            setActiveId(urlConvId);
+        if (urlConvId && !loading) {
+            // Check if it exists in loaded conversations, if not, we might need to wait or it will select when loaded
+            if (conversations.some(c => c.id === urlConvId)) {
+                setActiveId(urlConvId);
+            }
         }
     }, [searchParams, loading, conversations]);
 
@@ -60,6 +62,7 @@ const Messages: React.FC = () => {
                         setMessages(prev => [...prev, newMsg]);
                         scrollToBottom();
                     }
+                    // Refresh conversations list to update snippet/unread
                     fetchConversations();
                 })
                 .subscribe();
@@ -77,30 +80,40 @@ const Messages: React.FC = () => {
     }, [activeId]);
 
     const fetchConversations = async () => {
-        // ... (Logic to fetch conversations - same as before, simplified for this snippet)
-        // Fetches conversation_participants -> conversations -> hydration
+        // Fetch conversation participations for current user
         const { data: participations } = await supabase.from('conversation_participants').select('conversation_id').eq('user_id', user?.id);
+        
         if (!participations || participations.length === 0) {
             setConversations([]);
             setLoading(false);
             return;
         }
+        
         const convIds = participations.map(p => p.conversation_id);
         const { data: convData } = await supabase.from('conversations').select('*').in('id', convIds).order('updated_at', { ascending: false });
 
         if (!convData) { setLoading(false); return; }
 
         const hydrated = await Promise.all(convData.map(async (c: any) => {
+             // Get the OTHER participant
              const { data: parts } = await supabase.from('conversation_participants').select('user_id').eq('conversation_id', c.id).neq('user_id', user?.id).single();
+             
              let name = 'User';
              let avatar = undefined;
+             
              if (parts) {
+                 // Try fetching from candidate_profiles first
                  const { data: cand } = await supabase.from('candidate_profiles').select('name, avatar_urls').eq('id', parts.user_id).maybeSingle();
-                 if (cand) { name = cand.name; avatar = cand.avatar_urls?.[0]; }
-                 else {
-                     // Try company profile if current user is candidate
+                 if (cand) { 
+                     name = cand.name; 
+                     avatar = cand.avatar_urls?.[0]; 
+                 } else {
+                     // Try company profile
                      const { data: comp } = await supabase.from('company_profiles').select('company_name, logo_url').eq('id', parts.user_id).maybeSingle();
-                     if (comp) { name = comp.company_name; avatar = comp.logo_url; }
+                     if (comp) { 
+                         name = comp.company_name; 
+                         avatar = comp.logo_url; 
+                     }
                  }
              }
              
@@ -126,7 +139,7 @@ const Messages: React.FC = () => {
                 id: m.id, conversationId: m.conversation_id, senderId: m.sender_id, text: m.text,
                 timestamp: m.created_at, isRead: m.is_read, isSystemMessage: m.is_system_message, metadata: m.metadata
             })));
-            scrollToBottom();
+            setTimeout(scrollToBottom, 100);
         }
     };
 
@@ -144,6 +157,7 @@ const Messages: React.FC = () => {
 
     const loadUnlockedCandidates = async () => {
         // Fetch candidates that are unlocked
+        // IMPORTANT: Ensure we select where is_unlocked is true
         const { data } = await supabase.from('candidate_profiles').select('id, name, headline, avatar_urls').eq('is_unlocked', true);
         if (data) setUnlockedCandidates(data);
     };
@@ -164,17 +178,26 @@ const Messages: React.FC = () => {
                     <button 
                         onClick={() => { loadUnlockedCandidates(); setShowNewMessageModal(true); }}
                         className="p-2 bg-gray-900 text-white rounded-full hover:bg-black transition-colors"
+                        title="New Message"
                     >
                         <Plus className="w-4 h-4" />
                     </button>
                 </div>
                 {/* Conversation List */}
                 <div className="flex-1 overflow-y-auto">
-                    {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin mx-auto"/></div> : 
+                    {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin mx-auto text-gray-400"/></div> : 
+                     conversations.length === 0 ? <div className="p-4 text-center text-gray-500 text-sm">No conversations yet.</div> :
                      conversations.map(c => (
                         <div key={c.id} onClick={() => setActiveId(c.id)} className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${activeId === c.id ? 'bg-blue-50' : ''}`}>
-                            <div className="font-bold text-sm text-gray-900">{c.participants[0]?.name}</div>
-                            <div className="text-xs text-gray-500 truncate">{c.lastMessage.text}</div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-xs text-gray-600 overflow-hidden">
+                                    {c.participants[0]?.avatar ? <img src={c.participants[0].avatar} className="w-full h-full object-cover"/> : c.participants[0]?.name.charAt(0)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-bold text-sm text-gray-900 truncate">{c.participants[0]?.name}</div>
+                                    <div className="text-xs text-gray-500 truncate">{c.lastMessage.text}</div>
+                                </div>
+                            </div>
                         </div>
                      ))}
                 </div>
@@ -185,51 +208,66 @@ const Messages: React.FC = () => {
                 {activeId ? (
                     <>
                         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                            <button onClick={() => setActiveId(null)} className="md:hidden"><ArrowLeft className="w-5 h-5"/></button>
-                            <span className="font-bold">{conversations.find(c => c.id === activeId)?.participants[0]?.name}</span>
-                            <button onClick={() => setShowScheduleModal(true)} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200"><Calendar className="w-4 h-4"/></button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setActiveId(null)} className="md:hidden"><ArrowLeft className="w-5 h-5"/></button>
+                                <span className="font-bold">{conversations.find(c => c.id === activeId)?.participants[0]?.name}</span>
+                            </div>
+                            <button onClick={() => setShowScheduleModal(true)} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200" title="Schedule Interview"><Calendar className="w-4 h-4"/></button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
                             {messages.map(msg => (
-                                <div key={msg.id} className={`flex ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`p-3 rounded-lg max-w-xs text-sm ${msg.isSystemMessage ? 'bg-gray-200 text-center text-xs w-full max-w-none' : (msg.senderId === user?.id ? 'bg-blue-600 text-white' : 'bg-white border')}`}>
+                                <div key={msg.id} className={`flex ${msg.isSystemMessage ? 'justify-center' : (msg.senderId === user?.id ? 'justify-end' : 'justify-start')}`}>
+                                    <div className={`p-3 rounded-xl max-w-xs text-sm ${
+                                        msg.isSystemMessage 
+                                            ? 'bg-gray-200 text-center text-xs text-gray-600 w-full max-w-sm rounded-full' 
+                                            : (msg.senderId === user?.id ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none')
+                                    }`}>
                                         {msg.text}
                                     </div>
                                 </div>
                             ))}
                             <div ref={messagesEndRef} />
                         </div>
-                        <div className="p-4 border-t flex gap-2">
-                            <input value={inputText} onChange={e => setInputText(e.target.value)} className="flex-1 p-2 border rounded-lg" placeholder="Type a message..." onKeyDown={e => e.key === 'Enter' && handleSendMessage()}/>
-                            <button onClick={handleSendMessage} className="bg-blue-600 text-white p-2 rounded-lg"><Send className="w-4 h-4"/></button>
+                        <div className="p-4 border-t flex gap-2 bg-white">
+                            <input value={inputText} onChange={e => setInputText(e.target.value)} className="flex-1 p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Type a message..." onKeyDown={e => e.key === 'Enter' && handleSendMessage()}/>
+                            <button onClick={handleSendMessage} className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition-colors"><Send className="w-4 h-4"/></button>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-400">Select a conversation</div>
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                        <MessageSquare className="w-12 h-12 mb-2 opacity-20"/>
+                        <p>Select a conversation to start chatting</p>
+                    </div>
                 )}
             </div>
 
             {/* New Message Modal */}
             {showNewMessageModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl w-full max-w-md p-6 h-[80vh] flex flex-col">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 h-[60vh] flex flex-col shadow-2xl">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold">New Message</h3>
-                            <button onClick={() => setShowNewMessageModal(false)}><X className="w-5 h-5"/></button>
+                            <h3 className="font-bold text-lg">New Message</h3>
+                            <button onClick={() => setShowNewMessageModal(false)}><X className="w-5 h-5 text-gray-400 hover:text-gray-900"/></button>
                         </div>
-                        <div className="flex-1 overflow-y-auto space-y-2">
-                            {unlockedCandidates.map(c => (
-                                <button key={c.id} onClick={() => startNewConversation(c.id)} className="w-full text-left p-3 hover:bg-gray-50 rounded-lg flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold">
-                                        {c.avatar_urls?.[0] ? <img src={c.avatar_urls[0]} className="w-full h-full rounded-full object-cover"/> : c.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-sm">{c.name}</div>
-                                        <div className="text-xs text-gray-500">{c.headline}</div>
-                                    </div>
-                                </button>
-                            ))}
-                            {unlockedCandidates.length === 0 && <div className="text-center text-gray-500 mt-4">No unlocked candidates found.</div>}
+                        <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+                            {unlockedCandidates.length > 0 ? (
+                                unlockedCandidates.map(c => (
+                                    <button key={c.id} onClick={() => startNewConversation(c.id)} className="w-full text-left p-3 hover:bg-gray-50 rounded-xl flex items-center gap-3 transition-colors border border-transparent hover:border-gray-100">
+                                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600 overflow-hidden">
+                                            {c.avatar_urls?.[0] ? <img src={c.avatar_urls[0]} className="w-full h-full object-cover"/> : c.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-sm text-gray-900">{c.name}</div>
+                                            <div className="text-xs text-gray-500 truncate max-w-[200px]">{c.headline}</div>
+                                        </div>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="text-center text-gray-500 mt-8">
+                                    <p className="mb-2">No unlocked candidates.</p>
+                                    <p className="text-xs">Unlock a candidate from the dashboard first.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
