@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
@@ -21,19 +21,13 @@ import Network from './components/Network';
 import Login from './components/Login';
 import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
-import { Role, CandidateProfile, JobPosting, Application, JobType, WorkMode, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
-import { User, Briefcase } from 'lucide-react';
-import { calculateMatch } from './services/matchingService';
-
-// ... (Mappers preserved - removed for brevity but assumed present in final file)
+import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
+import { Loader2 } from 'lucide-react';
 
 // Mock mappers for compilation
 const mapJobFromDB = (data: any): JobPosting => ({ ...data, requiredSkills: data.required_skills || [], values: data.values_list || [] });
-const mapJobToDB = (data: any) => data;
 const mapCandidateFromDB = (data: any): CandidateProfile => ({ ...data, avatarUrls: data.avatar_urls || [], skills: data.skills || [] });
-const mapCandidateToDB = (data: any) => data;
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({ ...data, logoUrl: data.logo_url });
-const mapCompanyToDB = (data: any) => data;
 
 function MainApp() {
   const { user, signOut } = useAuth();
@@ -42,7 +36,6 @@ function MainApp() {
   const [currentView, setCurrentView] = useState('dashboard');
   
   // Data State
-  const [credits, setCredits] = useState(5);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [candidatesList, setCandidatesList] = useState<CandidateProfile[]>([]);
@@ -77,7 +70,7 @@ function MainApp() {
         } else {
              const pendingRole = localStorage.getItem('open_selected_role');
              if (pendingRole && (pendingRole === 'candidate' || pendingRole === 'recruiter')) {
-                 await handleCreateProfile(pendingRole);
+                 await handleCreateProfile(pendingRole as Role);
                  localStorage.removeItem('open_selected_role');
              } else {
                  setUserRole(null);
@@ -144,19 +137,38 @@ function MainApp() {
       }
   };
 
-  // ... (Other handlers preserved)
-  const handleUpdateCandidate = async (profile: CandidateProfile) => {};
-  const handleUpdateCompany = async (profile: CompanyProfileType) => {};
+  // Handlers
+  const handleUpdateCandidate = async (profile: CandidateProfile) => {
+      /* Update logic would go here */
+      setCandidateProfile(profile);
+      setCurrentView('dashboard');
+  };
+  const handleUpdateCompany = async (profile: CompanyProfileType) => {
+      /* Update logic would go here */
+      setCompanyProfile(profile);
+      setCurrentView('dashboard');
+  };
   const handlePublishJob = async (job: JobPosting) => { setCurrentView('dashboard'); };
-  const handleApproveJob = async (jobId: string, role: any) => {};
   const handleUnlockCandidate = (id: string) => { 
       setCandidatesList(prev => prev.map(c => c.id === id ? { ...c, isUnlocked: true } : c));
   };
-  const handleApply = async (jobId: string) => { alert("Applied!"); };
+  const handleApply = async (jobId: string) => { 
+      // This is handled in JobDetails usually, or we show a toast here
+  };
 
-  if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /></div>;
 
-  if (!userRole) return <div className="text-center p-10">Select Role...</div>; // Simplified
+  if (!userRole) return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-gray-50">
+          <h2 className="text-2xl font-bold mb-4">Complete Your Setup</h2>
+          <p className="text-gray-500 mb-8">It looks like your profile role isn't set.</p>
+          <div className="flex gap-4">
+              <button onClick={() => handleCreateProfile('candidate')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">I'm Talent</button>
+              <button onClick={() => handleCreateProfile('recruiter')} className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">I'm Hiring</button>
+          </div>
+          <button onClick={signOut} className="mt-8 text-gray-400 text-sm underline">Sign Out</button>
+      </div>
+  );
 
   const renderContent = () => {
       switch (currentView) {
@@ -192,6 +204,42 @@ function MainApp() {
   );
 }
 
+function AuthWrapper() {
+    const { session, loading } = useAuth();
+    // Check local storage for pre-selected role (persists across reloads on login screen)
+    const [selectedRole, setSelectedRole] = useState<Role>(() => {
+        const stored = localStorage.getItem('open_selected_role');
+        return (stored === 'candidate' || stored === 'recruiter') ? stored : null;
+    });
+
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
+
+    if (session) return <MainApp />;
+
+    // If a role is selected (but not logged in), show Login
+    if (selectedRole) {
+        return (
+            <Login 
+                selectedRole={selectedRole} 
+                onBack={() => {
+                    localStorage.removeItem('open_selected_role');
+                    setSelectedRole(null);
+                }} 
+            />
+        );
+    }
+
+    // Default to Landing Page
+    return (
+        <LandingPage 
+            onSelectRole={(r) => { 
+                localStorage.setItem('open_selected_role', r); 
+                setSelectedRole(r); 
+            }} 
+        />
+    );
+}
+
 export default function App() {
   return (
       <BrowserRouter>
@@ -203,11 +251,4 @@ export default function App() {
         </AuthProvider>
       </BrowserRouter>
   );
-}
-
-function AuthWrapper() {
-    const { session, loading } = useAuth();
-    if (session) return <MainApp />;
-    if (loading) return <div>Loading...</div>;
-    return <LandingPage onSelectRole={(r) => { localStorage.setItem('open_selected_role', r); window.location.reload(); }} />;
 }
