@@ -1,10 +1,8 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CandidateProfile, ThemeColor, ThemeFont } from '../types';
-import { Lock, MapPin, DollarSign, Briefcase, Clock, ArrowLeft, Mail, CheckCircle, Video, Github, Globe, Award, Info, Edit, Trophy, Zap, Quote } from 'lucide-react';
+import { Lock, MapPin, DollarSign, Briefcase, Clock, ArrowLeft, Mail, CheckCircle, Edit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { messageService } from '../services/messageService';
 import { notificationService } from '../services/notificationService';
 import { supabase } from '../services/supabaseClient';
 
@@ -12,8 +10,8 @@ interface Props {
   candidate: CandidateProfile;
   onBack: () => void;
   onUnlock: (id: string) => void;
-  onMessage: (id: string) => void;
-  onSchedule: (id: string) => void;
+  onMessage: (candidateId: string) => void;
+  onSchedule: (candidateId: string) => void;
   isOwner?: boolean;
   onEdit?: () => void;
 }
@@ -34,28 +32,12 @@ const FONT_CLASSES: Record<ThemeFont, string> = {
     display: 'font-sans tracking-tight'
 };
 
-const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwner = false, onEdit }) => {
+const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwner = false, onEdit, onMessage, onSchedule }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isLocked = !isOwner && !candidate.isUnlocked;
   const theme = THEME_STYLES[candidate.themeColor || 'blue'];
   const fontClass = FONT_CLASSES[candidate.themeFont || 'sans'];
   const [activePhoto, setActivePhoto] = useState(0);
-
-  const handleMessage = async () => {
-    if (!user) return;
-    try {
-        const convId = await messageService.getOrCreateConversation(user.id, candidate.id);
-        navigate(`/messages?conversationId=${convId}`);
-    } catch (e) {
-        console.error("Error creating conversation", e);
-        alert("Could not start conversation.");
-    }
-  };
-
-  const handleSchedule = () => {
-    navigate(`/schedule?candidateId=${candidate.id}`);
-  };
 
   const handleUnlockProfile = async () => {
       onUnlock(candidate.id);
@@ -155,8 +137,8 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                      </button>
                  ) : (
                      <div className="flex gap-4">
-                        <button onClick={handleSchedule} className="bg-white border border-gray-200 text-gray-900 px-6 py-2 rounded-xl font-bold hover:bg-gray-50">Schedule Interview</button>
-                        <button onClick={handleMessage} className={`px-6 py-2 rounded-xl font-bold text-white shadow-md flex items-center ${theme.accent}`}>
+                        <button onClick={() => onSchedule(candidate.id)} className="bg-white border border-gray-200 text-gray-900 px-6 py-2 rounded-xl font-bold hover:bg-gray-50">Schedule Interview</button>
+                        <button onClick={() => onMessage(candidate.id)} className={`px-6 py-2 rounded-xl font-bold text-white shadow-md flex items-center ${theme.accent}`}>
                             <Mail className="w-4 h-4 mr-2" /> Message
                         </button>
                      </div>
@@ -165,9 +147,7 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
          </div>
       </div>
       
-      {/* ... Rest of profile details (Skills, Experience etc) would go here, preserved from original ... */}
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Detailed sections preserved for brevity */}
           <div className="lg:col-span-2 space-y-8">
              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                   <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center"><Briefcase className={`w-6 h-6 mr-3 ${theme.text}`}/> Work History</h3>
@@ -177,11 +157,30 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                               <h4 className="text-xl font-bold text-gray-900">{exp.role}</h4>
                               <div className="text-lg text-gray-600 font-medium mb-1">{exp.company}</div>
                               <div className="text-sm text-gray-400 font-mono mb-4 uppercase tracking-wider">{exp.duration}</div>
+                              <p className="text-gray-700 leading-relaxed mb-4">{exp.description}</p>
+                              {exp.achievements && exp.achievements.length > 0 && (
+                                  <ul className="list-disc list-inside space-y-1 text-gray-600">
+                                      {exp.achievements.map((ach, i) => <li key={i}>{ach}</li>)}
+                                  </ul>
+                              )}
                           </div>
                       ))}
                   </div>
               </div>
           </div>
+          
+           <div className="space-y-6">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="font-bold text-gray-900 mb-4">Skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {candidate.skills.map((skill, i) => (
+                            <span key={i} className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium border border-gray-100">
+                                {skill.name}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+           </div>
        </div>
     </div>
   );
