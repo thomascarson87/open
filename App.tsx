@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -21,6 +22,7 @@ import Network from './components/Network';
 import Login from './components/Login';
 import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
+import TalentMatcher from './components/TalentMatcher';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -296,6 +298,12 @@ function MainApp() {
           case 'schedule': return <Schedule />;
           case 'notifications': return <Notifications notifications={notifications} />;
           case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} />;
+          case 'talent-matcher': return <TalentMatcher 
+                                            onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }}
+                                            onUnlock={handleUnlockCandidate}
+                                            onSchedule={navigateToSchedule}
+                                            onMessage={navigateToMessage}
+                                        />;
           case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
           case 'candidate-details': return selectedCandidate ? (
              userRole === 'recruiter' && !selectedCandidate.isUnlocked ? 
