@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Role } from '../types';
-import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building } from 'lucide-react';
+import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building, Search } from 'lucide-react';
 
 interface NavigationProps {
   role: Role;
@@ -81,13 +82,22 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
             {/* Right Side Actions */}
             <div className="flex items-center space-x-2 sm:space-x-4">
               {role === 'recruiter' && (
-                <button 
-                  onClick={() => setCurrentView('create-job')}
-                  className="hidden sm:flex items-center bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-black transition-all shadow-sm"
-                >
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                  Post Job
-                </button>
+                <>
+                  <button 
+                    onClick={() => setCurrentView('talent-matcher')}
+                    className="hidden sm:flex items-center bg-white border-2 border-gray-900 text-gray-900 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-900 hover:text-white transition-all"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Match Talent
+                  </button>
+                  <button 
+                    onClick={() => setCurrentView('create-job')}
+                    className="hidden sm:flex items-center bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-black transition-all shadow-sm"
+                  >
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Post Job
+                  </button>
+                </>
               )}
 
               <button 
@@ -144,7 +154,14 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
   );
 };
 
-const NavButton = ({ active, onClick, label, icon }: { active: boolean, onClick: () => void, label: string, icon: React.ReactNode }) => (
+interface NavButtonProps {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: React.ReactNode;
+}
+
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, label, icon }) => (
   <button
     onClick={onClick}
     className={`${
