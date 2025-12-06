@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
 import { generateJobDescription } from '../services/geminiService';
@@ -17,6 +18,18 @@ interface Props {
     onCancel: () => void;
     teamMembers: TeamMember[];
 }
+
+const EDUCATION_LEVELS = [
+    'High School', 
+    'Associate Degree', 
+    "Bachelor's Degree", 
+    "Master's Degree", 
+    'PhD/Doctorate', 
+    'Professional Certification', 
+    'Bootcamp Graduate', 
+    'Self-Taught', 
+    'Other'
+];
 
 const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const [step, setStep] = useState(1);
@@ -138,6 +151,49 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                     />
                                 </div>
                              </div>
+                        </div>
+                        
+                        {/* Education Requirements */}
+                        <div className="border-t border-gray-100 pt-6 mt-6">
+                            <h3 className="text-sm font-bold text-gray-700 mb-4">Education Requirements</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Minimum Education Required</label>
+                                    <select
+                                        value={jobData.required_education_level || ''}
+                                        onChange={e => setJobData({...jobData, required_education_level: e.target.value})}
+                                        className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none"
+                                    >
+                                        <option value="">No Requirement</option>
+                                        {EDUCATION_LEVELS.map(l => (
+                                            <option key={l} value={l}>{l}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Preferred Education (Nice to Have)</label>
+                                    <select
+                                        value={jobData.preferred_education_level || ''}
+                                        onChange={e => setJobData({...jobData, preferred_education_level: e.target.value})}
+                                        className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none"
+                                    >
+                                        <option value="">No Preference</option>
+                                        {EDUCATION_LEVELS.map(l => (
+                                            <option key={l} value={l}>{l}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <label className="flex items-center text-sm text-gray-600 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={jobData.education_required || false}
+                                    onChange={e => setJobData({...jobData, education_required: e.target.checked})}
+                                    className="mr-2 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                                />
+                                Education is strictly required (cannot be substituted with experience)
+                            </label>
+                            <p className="text-xs text-gray-400 mt-2">Leaving blank allows candidates with any education level</p>
                         </div>
 
                         <div>
