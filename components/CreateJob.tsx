@@ -12,24 +12,13 @@ import {
   CHARACTER_TRAITS_CATEGORIES,
   SKILLS_LIST
 } from '../constants/matchingData';
+import { EDUCATION_LEVELS } from '../constants/educationData';
 
 interface Props {
     onPublish: (job: JobPosting) => void;
     onCancel: () => void;
     teamMembers: TeamMember[];
 }
-
-const EDUCATION_LEVELS = [
-    'High School', 
-    'Associate Degree', 
-    "Bachelor's Degree", 
-    "Master's Degree", 
-    'PhD/Doctorate', 
-    'Professional Certification', 
-    'Bootcamp Graduate', 
-    'Self-Taught', 
-    'Other'
-];
 
 const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const [step, setStep] = useState(1);
