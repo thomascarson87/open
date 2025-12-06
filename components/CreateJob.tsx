@@ -1,10 +1,8 @@
-
-
 import React, { useState } from 'react';
 import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
 import { generateJobDescription } from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
-import { ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck, Trash2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import { 
   CULTURAL_VALUES, 
@@ -33,10 +31,15 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
         seniority: SeniorityLevel.SENIOR,
         contractTypes: [JobType.FULL_TIME],
         salaryCurrency: 'USD',
-        approvals: { hiringManager: { status: 'pending', assignedTo: '' }, finance: { status: 'pending', assignedTo: '' } }
+        approvals: { hiringManager: { status: 'pending', assignedTo: '' }, finance: { status: 'pending', assignedTo: '' } },
+        responsibilities: [],
+        key_deliverables: [],
+        tech_stack: []
     });
 
     const [isLoading, setIsLoading] = useState(false);
+    const [techInput, setTechInput] = useState("");
+    const [showRoleDetails, setShowRoleDetails] = useState(true);
 
     const handleSuggest = async () => {
         if (!jobData.title) return;
@@ -50,6 +53,63 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
         setJobData(prev => ({
             ...prev,
             requiredSkills: prev.requiredSkills?.map(s => s.name === name ? { ...s, [field]: value } : s)
+        }));
+    };
+
+    const addResponsibility = () => {
+        setJobData(prev => ({
+            ...prev,
+            responsibilities: [...(prev.responsibilities || []), '']
+        }));
+    };
+
+    const updateResponsibility = (idx: number, val: string) => {
+        const updated = [...(jobData.responsibilities || [])];
+        updated[idx] = val;
+        setJobData(prev => ({ ...prev, responsibilities: updated }));
+    };
+
+    const removeResponsibility = (idx: number) => {
+        setJobData(prev => ({
+            ...prev,
+            responsibilities: prev.responsibilities?.filter((_, i) => i !== idx)
+        }));
+    };
+
+    const addDeliverable = () => {
+        setJobData(prev => ({
+            ...prev,
+            key_deliverables: [...(prev.key_deliverables || []), '']
+        }));
+    };
+
+    const updateDeliverable = (idx: number, val: string) => {
+        const updated = [...(jobData.key_deliverables || [])];
+        updated[idx] = val;
+        setJobData(prev => ({ ...prev, key_deliverables: updated }));
+    };
+
+    const removeDeliverable = (idx: number) => {
+        setJobData(prev => ({
+            ...prev,
+            key_deliverables: prev.key_deliverables?.filter((_, i) => i !== idx)
+        }));
+    };
+
+    const addTechStack = () => {
+        if (techInput.trim()) {
+            setJobData(prev => ({
+                ...prev,
+                tech_stack: [...(prev.tech_stack || []), techInput.trim()]
+            }));
+            setTechInput("");
+        }
+    };
+
+    const removeTechStack = (tech: string) => {
+        setJobData(prev => ({
+            ...prev,
+            tech_stack: prev.tech_stack?.filter(t => t !== tech)
         }));
     };
 
@@ -202,6 +262,135 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                 className="w-full h-64 p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm leading-relaxed outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
                                 placeholder="Describe the role, responsibilities, and what makes your team unique..."
                              />
+                        </div>
+
+                        {/* Structured Fields Section */}
+                        <div className="border rounded-2xl border-gray-200 overflow-hidden">
+                            <button 
+                                onClick={() => setShowRoleDetails(!showRoleDetails)}
+                                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                            >
+                                <span className="font-bold text-gray-900">Role Details (Recommended)</span>
+                                {showRoleDetails ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+                            </button>
+                            
+                            {showRoleDetails && (
+                                <div className="p-6 space-y-6 bg-white border-t border-gray-100">
+                                    {/* Impact Statement */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                            Impact Statement
+                                        </label>
+                                        <textarea 
+                                            value={jobData.impact_statement || ''}
+                                            onChange={e => setJobData({...jobData, impact_statement: e.target.value})}
+                                            maxLength={200}
+                                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                                            placeholder="In this role, you'll directly impact..."
+                                        />
+                                        <p className="text-xs text-gray-400 mt-1 text-right">{jobData.impact_statement?.length || 0}/200</p>
+                                    </div>
+
+                                    {/* Key Responsibilities */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                            Key Responsibilities
+                                        </label>
+                                        <div className="space-y-2">
+                                            {jobData.responsibilities?.map((resp, idx) => (
+                                                <div key={idx} className="flex gap-2">
+                                                    <input 
+                                                        value={resp}
+                                                        onChange={e => updateResponsibility(idx, e.target.value)}
+                                                        className="flex-1 p-3 border border-gray-200 rounded-xl text-sm"
+                                                        placeholder="e.g. Lead product roadmap"
+                                                    />
+                                                    <button 
+                                                        onClick={() => removeResponsibility(idx)}
+                                                        className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4"/>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button 
+                                                onClick={addResponsibility}
+                                                className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center px-1"
+                                            >
+                                                <Plus className="w-4 h-4 mr-1"/> Add Responsibility
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Key Deliverables */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                            Key Deliverables
+                                        </label>
+                                        <div className="space-y-2">
+                                            {jobData.key_deliverables?.map((del, idx) => (
+                                                <div key={idx} className="flex gap-2">
+                                                    <input 
+                                                        value={del}
+                                                        onChange={e => updateDeliverable(idx, e.target.value)}
+                                                        className="flex-1 p-3 border border-gray-200 rounded-xl text-sm"
+                                                        placeholder="e.g. Ship feature X in Q1"
+                                                    />
+                                                    <button 
+                                                        onClick={() => removeDeliverable(idx)}
+                                                        className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4"/>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button 
+                                                onClick={addDeliverable}
+                                                className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center px-1"
+                                            >
+                                                <Plus className="w-4 h-4 mr-1"/> Add Deliverable
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Tech Stack */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                            Tech Stack
+                                        </label>
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {jobData.tech_stack?.map((tech, idx) => (
+                                                <span key={idx} className="inline-flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700">
+                                                    {tech}
+                                                    <button onClick={() => removeTechStack(tech)} className="ml-2 text-gray-400 hover:text-gray-600">
+                                                        <X className="w-3 h-3"/>
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                value={techInput}
+                                                onChange={e => setTechInput(e.target.value)}
+                                                onKeyDown={e => {
+                                                    if(e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        addTechStack();
+                                                    }
+                                                }}
+                                                className="flex-1 p-3 border border-gray-200 rounded-xl text-sm"
+                                                placeholder="Type technology and press Enter (e.g. React, AWS)"
+                                            />
+                                            <button 
+                                                onClick={addTechStack}
+                                                className="bg-gray-900 text-white px-4 py-2 rounded-xl font-bold text-sm"
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
