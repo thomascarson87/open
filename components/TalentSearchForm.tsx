@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { TalentSearchCriteria, SeniorityLevel, WorkMode, JobType, JobSkill } from '../types';
 import GroupedMultiSelect from './GroupedMultiSelect';
@@ -9,6 +10,18 @@ interface Props {
   initialCriteria: TalentSearchCriteria;
   onSearch: (criteria: TalentSearchCriteria) => void;
 }
+
+const EDUCATION_LEVELS = [
+    'High School', 
+    'Associate Degree', 
+    "Bachelor's Degree", 
+    "Master's Degree", 
+    'PhD/Doctorate', 
+    'Professional Certification', 
+    'Bootcamp Graduate', 
+    'Self-Taught', 
+    'Other'
+];
 
 const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
   const [step, setStep] = useState(1);
@@ -128,6 +141,39 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                 </button>
                             ))}
                        </div>
+                   </div>
+
+                   <div className="pt-4 border-t border-gray-100">
+                       <div className="flex justify-between mb-2">
+                            <label className="block text-sm font-bold text-gray-700">Education Requirements</label>
+                            <DealBreakerToggle field="education"/>
+                       </div>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <select 
+                                    value={criteria.required_education_level || ''}
+                                    onChange={e => setCriteria({...criteria, required_education_level: e.target.value})}
+                                    className="w-full p-3 border border-gray-200 rounded-xl bg-white"
+                                >
+                                    <option value="">Any Education Level</option>
+                                    {EDUCATION_LEVELS.map(level => (
+                                        <option key={level} value={level}>{level}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex items-center">
+                                <label className="flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={criteria.education_required || false}
+                                        onChange={e => setCriteria({...criteria, education_required: e.target.checked})}
+                                        className="mr-2 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" 
+                                    />
+                                    <span className="text-sm text-gray-600">Strict requirement (no experience substitution)</span>
+                                </label>
+                            </div>
+                       </div>
+                       <p className="text-xs text-gray-400 mt-2">Leave blank to match all education levels</p>
                    </div>
                </div>
            )}
