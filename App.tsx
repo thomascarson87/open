@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -35,20 +33,24 @@ const mapJobFromDB = (data: any): JobPosting => ({
     perks: data.perks || [],
     desiredTraits: data.desired_traits || [],
     requiredTraits: data.required_traits || [],
+    
+    // 🆕 PHASE 1 FIELDS - ADD THESE
     companyIndustry: data.company_industry || [],
-    company_industry: data.company_industry || [],
-    company_logo: data.company_logo,
+    companyLogo: data.company_logo,
     required_education_level: data.required_education_level,
     preferred_education_level: data.preferred_education_level,
-    education_required: data.education_required,
+    education_required: data.education_required || false,
+    desired_myers_briggs: data.desired_myers_briggs || [],
+    desired_disc_profile: data.desired_disc_profile,
     responsibilities: data.responsibilities || [],
+    impact_statement: data.impact_statement,
     key_deliverables: data.key_deliverables || [],
     success_metrics: data.success_metrics || [],
-    impact_statement: data.impact_statement,
     team_structure: data.team_structure,
     growth_opportunities: data.growth_opportunities,
     tech_stack: data.tech_stack || [],
-    is_mock_data: data.is_mock_data || false
+    is_mock_data: data.is_mock_data || false,
+    mock_data_seed: data.mock_data_seed
 });
 
 const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
@@ -66,14 +68,17 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     references: data.references_list || [],
     experience: data.experience || [],
     desiredSeniority: data.desired_seniority || [],
+    
+    // 🆕 PHASE 1 FIELDS - ADD THESE
     education_level: data.education_level,
     education_field: data.education_field,
     education_institution: data.education_institution,
     myers_briggs: data.myers_briggs,
-    disc_profile: data.disc_profile,
+    disc_profile: data.disc_profile || { D: 0, I: 0, S: 0, C: 0 },
     enneagram_type: data.enneagram_type,
     assessment_completed_at: data.assessment_completed_at,
-    is_mock_data: data.is_mock_data || false
+    is_mock_data: data.is_mock_data || false,
+    mock_data_seed: data.mock_data_seed
 });
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
@@ -84,7 +89,11 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     perks: data.perks || [],
     desiredTraits: data.desired_traits || [],
     billing_plan: data.billing_plan || 'pay_per_hire',
-    credits: data.credits || 0
+    credits: data.credits || 0,
+    
+    // 🆕 PHASE 1 FIELDS - ADD THESE
+    is_mock_data: data.is_mock_data || false,
+    mock_data_seed: data.mock_data_seed
 });
 
 function MainApp() {
