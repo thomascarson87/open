@@ -12,6 +12,7 @@ import {
   CHARACTER_TRAITS_CATEGORIES,
   SKILLS_LIST
 } from '../constants/matchingData';
+import { EDUCATION_LEVELS, DISC_LABELS } from '../constants/educationData';
 
 interface Props {
   profile: CandidateProfile;
@@ -26,13 +27,6 @@ const THEME_COLORS: { id: ThemeColor, hex: string, name: string }[] = [
     { id: 'pink', hex: '#ec4899', name: 'Berry' },
     { id: 'slate', hex: '#475569', name: 'Classic' },
 ];
-
-const DISC_LABELS: Record<string, string> = {
-    D: 'Dominance',
-    I: 'Influence',
-    S: 'Steadiness',
-    C: 'Compliance'
-};
 
 const SectionCard = ({ 
     title, 
@@ -297,7 +291,7 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                             className="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-gray-100 outline-none cursor-pointer text-gray-900"
                         >
                             <option value="">Select Level...</option>
-                            {['High School', 'Associate Degree', "Bachelor's Degree", "Master's Degree", 'PhD/Doctorate', 'Professional Certification', 'Bootcamp Graduate', 'Self-Taught', 'Other'].map(l => (
+                            {EDUCATION_LEVELS.map(l => (
                                 <option key={l} value={l}>{l}</option>
                             ))}
                         </select>
