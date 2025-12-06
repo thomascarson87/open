@@ -35,7 +35,20 @@ const mapJobFromDB = (data: any): JobPosting => ({
     perks: data.perks || [],
     desiredTraits: data.desired_traits || [],
     requiredTraits: data.required_traits || [],
-    companyIndustry: data.company_industry || [] 
+    companyIndustry: data.company_industry || [],
+    company_industry: data.company_industry || [],
+    company_logo: data.company_logo,
+    required_education_level: data.required_education_level,
+    preferred_education_level: data.preferred_education_level,
+    education_required: data.education_required,
+    responsibilities: data.responsibilities || [],
+    key_deliverables: data.key_deliverables || [],
+    success_metrics: data.success_metrics || [],
+    impact_statement: data.impact_statement,
+    team_structure: data.team_structure,
+    growth_opportunities: data.growth_opportunities,
+    tech_stack: data.tech_stack || [],
+    is_mock_data: data.is_mock_data || false
 });
 
 const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
@@ -52,7 +65,15 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     portfolio: data.portfolio || [],
     references: data.references_list || [],
     experience: data.experience || [],
-    desiredSeniority: data.desired_seniority || [] 
+    desiredSeniority: data.desired_seniority || [],
+    education_level: data.education_level,
+    education_field: data.education_field,
+    education_institution: data.education_institution,
+    myers_briggs: data.myers_briggs,
+    disc_profile: data.disc_profile,
+    enneagram_type: data.enneagram_type,
+    assessment_completed_at: data.assessment_completed_at,
+    is_mock_data: data.is_mock_data || false
 });
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
