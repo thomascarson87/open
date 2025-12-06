@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { JobPosting, TeamMember } from '../types';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2, Zap, CheckCircle, Check, TrendingUp, Code, GraduationCap, Target } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { messageService } from '../services/messageService';
 import { supabase } from '../services/supabaseClient';
@@ -52,8 +51,14 @@ const JobDetails: React.FC<Props> = ({ job, onBack, onApply, teamMembers, onAppr
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
-                    <div className="flex items-center text-gray-600 space-x-4">
+                    <div className="flex flex-col gap-1 text-gray-600">
                         <span className="font-medium">{job.companyName}</span>
+                        {job.required_education_level && (
+                            <span className="flex items-center text-sm bg-gray-50 text-gray-700 px-2 py-1 rounded-lg w-fit mt-1">
+                                <GraduationCap className="w-3 h-3 mr-1.5"/>
+                                {job.required_education_level} Required
+                            </span>
+                        )}
                     </div>
                 </div>
               </div>
@@ -69,7 +74,90 @@ const JobDetails: React.FC<Props> = ({ job, onBack, onApply, teamMembers, onAppr
         
         <div className="p-8">
             <h3 className="font-bold text-lg mb-4">Description</h3>
-            <p className="whitespace-pre-wrap text-gray-700">{job.description}</p>
+            <p className="whitespace-pre-wrap text-gray-700 mb-8">{job.description}</p>
+            
+            {/* Impact Section */}
+            {job.impact_statement && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-600 p-6 rounded-r-lg mb-8 shadow-sm">
+                    <div className="flex items-start">
+                        <div className="bg-white p-2 rounded-full shadow-sm mr-4 mt-1">
+                            <Zap className="w-5 h-5 text-blue-600"/>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-blue-900 mb-2 text-lg">Your Impact</h3>
+                            <p className="text-blue-800 leading-relaxed">{job.impact_statement}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Responsibilities */}
+            {job.responsibilities && job.responsibilities.length > 0 && (
+                <div className="mb-10">
+                    <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                        <CheckCircle className="w-6 h-6 mr-2 text-green-600"/> What You'll Do
+                    </h3>
+                    <ul className="grid grid-cols-1 gap-3">
+                        {job.responsibilities.map((resp, i) => (
+                            <li key={i} className="flex items-start bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-0.5 bg-white rounded-full p-0.5 shadow-sm"/>
+                                <span className="text-gray-700 font-medium">{resp}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {/* Deliverables / Metrics */}
+            {(job.key_deliverables?.length || 0) > 0 && (
+                <div className="mb-10">
+                     <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                        <Target className="w-6 h-6 mr-2 text-purple-600"/> Key Deliverables
+                    </h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {job.key_deliverables?.map((del, i) => (
+                            <div key={i} className="flex items-center p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold mr-3 flex-shrink-0">
+                                    {i + 1}
+                                </div>
+                                <span className="text-gray-700 font-medium">{del}</span>
+                            </div>
+                        ))}
+                     </div>
+                </div>
+            )}
+
+            {/* Success Metrics (Alternative if available) */}
+            {(job.success_metrics?.length || 0) > 0 && (
+                <div className="mb-10">
+                     <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                        <TrendingUp className="w-6 h-6 mr-2 text-orange-600"/> How Success is Measured
+                    </h3>
+                     <div className="flex flex-wrap gap-3">
+                        {job.success_metrics?.map((metric, i) => (
+                            <span key={i} className="px-4 py-2 bg-orange-50 text-orange-800 rounded-full font-medium border border-orange-100">
+                                {metric}
+                            </span>
+                        ))}
+                     </div>
+                </div>
+            )}
+
+            {/* Tech Stack */}
+            {(job.tech_stack?.length || 0) > 0 && (
+                <div className="mb-8">
+                    <h3 className="text-xl font-bold text-gray-900 mb-5 flex items-center">
+                        <Code className="w-6 h-6 mr-2 text-indigo-600"/> Technologies You'll Use
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                        {job.tech_stack?.map((tech, i) => (
+                            <div key={i} className="px-4 py-2 bg-gray-900 text-white rounded-lg font-bold shadow-md hover:scale-105 transition-transform cursor-default">
+                                {tech}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
       </div>
     </div>
