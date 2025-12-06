@@ -4,24 +4,13 @@ import React, { useState } from 'react';
 import { TalentSearchCriteria, SeniorityLevel, WorkMode, JobType, JobSkill } from '../types';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import { CULTURAL_VALUES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST, INDUSTRIES } from '../constants/matchingData';
+import { EDUCATION_LEVELS } from '../constants/educationData';
 import { ArrowRight, ArrowLeft, Search, Lock, Unlock } from 'lucide-react';
 
 interface Props {
   initialCriteria: TalentSearchCriteria;
   onSearch: (criteria: TalentSearchCriteria) => void;
 }
-
-const EDUCATION_LEVELS = [
-    'High School', 
-    'Associate Degree', 
-    "Bachelor's Degree", 
-    "Master's Degree", 
-    'PhD/Doctorate', 
-    'Professional Certification', 
-    'Bootcamp Graduate', 
-    'Self-Taught', 
-    'Other'
-];
 
 const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
   const [step, setStep] = useState(1);
