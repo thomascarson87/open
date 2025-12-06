@@ -133,12 +133,12 @@ export interface CandidateProfile {
   
   // Education & Assessments
   education_level?: 'High School' | 'Associate Degree' | "Bachelor's Degree" | "Master's Degree" | 'PhD/Doctorate' | 'Professional Certification' | 'Bootcamp Graduate' | 'Self-Taught' | 'Other';
-  education_field?: string;
-  education_institution?: string;
-  myers_briggs?: string;
-  disc_profile?: { D: number; I: number; S: number; C: number };
-  enneagram_type?: string;
-  assessment_completed_at?: string;
+  education_field?: string; // e.g., "Computer Science"
+  education_institution?: string; // e.g., "Stanford University"
+  myers_briggs?: string; // e.g., "INTJ"
+  disc_profile?: { D: number; I: number; S: number; C: number }; // 0-100 scores
+  enneagram_type?: string; // e.g., "Type 5" or "Type 3w4"
+  assessment_completed_at?: string; // ISO timestamp
   is_mock_data?: boolean;
 }
 
