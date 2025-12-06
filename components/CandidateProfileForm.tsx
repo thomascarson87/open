@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { CandidateProfile, ThemeColor, ThemeFont, JobType, Experience, SeniorityLevel } from '../types';
 import CandidateDetails from './CandidateDetails';
-import { Sparkles, Plus, X, Check, Award, Heart, Lock, Unlock, Image as ImageIcon, Briefcase, GripVertical, MapPin, DollarSign, Clock, UserCheck, Trash2, Edit2 } from 'lucide-react';
+import { Sparkles, Plus, X, Check, Award, Heart, Lock, Unlock, Image as ImageIcon, Briefcase, GripVertical, MapPin, DollarSign, Clock, UserCheck, Trash2, Edit2, Brain, Info } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import { 
   CULTURAL_VALUES, 
@@ -26,6 +26,13 @@ const THEME_COLORS: { id: ThemeColor, hex: string, name: string }[] = [
     { id: 'pink', hex: '#ec4899', name: 'Berry' },
     { id: 'slate', hex: '#475569', name: 'Classic' },
 ];
+
+const DISC_LABELS: Record<string, string> = {
+    D: 'Dominance',
+    I: 'Influence',
+    S: 'Steadiness',
+    C: 'Compliance'
+};
 
 const SectionCard = ({ 
     title, 
@@ -538,6 +545,72 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                 grouped={true}
                 searchable={true}
               />
+            </SectionCard>
+            
+            {/* Personality Assessments Section */}
+            <SectionCard title="Personality Assessments (Optional)" icon={<Brain className="w-5 h-5"/>} themeColor={formData.themeColor}>
+                <p className="text-sm text-gray-500 mb-4 flex items-start">
+                    <Info className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5 text-blue-500" />
+                    These help companies understand your working style and team fit.
+                </p>
+
+                <div className="space-y-6">
+                    {/* Myers-Briggs */}
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Myers-Briggs Type (MBTI)</label>
+                        <input
+                            value={formData.myers_briggs || ''}
+                            onChange={e => setFormData({...formData, myers_briggs: e.target.value.toUpperCase()})}
+                            className="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-gray-100 outline-none"
+                            placeholder="e.g. INTJ, ENFP"
+                            maxLength={4}
+                        />
+                        <div className="flex justify-between mt-1">
+                            <p className="text-xs text-gray-400">4 letters (E/I, N/S, T/F, J/P)</p>
+                            <a href="https://www.16personalities.com/free-personality-test" target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline">Take free test</a>
+                        </div>
+                    </div>
+
+                    {/* Enneagram */}
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Enneagram Type</label>
+                        <input
+                            value={formData.enneagram_type || ''}
+                            onChange={e => setFormData({...formData, enneagram_type: e.target.value})}
+                            className="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-gray-100 outline-none"
+                            placeholder="e.g. Type 5, Type 3w4"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Optional wing notation (e.g. 3w4)</p>
+                    </div>
+
+                    {/* DISC */}
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-3 block">DISC Profile</label>
+                        <div className="space-y-3">
+                            {['D', 'I', 'S', 'C'].map(key => (
+                                <div key={key}>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-bold text-gray-600">{DISC_LABELS[key]} ({key})</span>
+                                        <span className="text-xs font-bold bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                                            {(formData.disc_profile as any)?.[key] || 0}/100
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={(formData.disc_profile as any)?.[key] || 0}
+                                        onChange={e => {
+                                            const newProfile = { ...(formData.disc_profile || {D:0, I:0, S:0, C:0}), [key]: parseInt(e.target.value) };
+                                            setFormData({...formData, disc_profile: newProfile as any});
+                                        }}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-900"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </SectionCard>
         </div>
       </div>
