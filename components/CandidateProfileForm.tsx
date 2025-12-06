@@ -74,7 +74,7 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (files && files.length > 0) {
-           const newUrls = Array.from(files).map(f => URL.createObjectURL(f));
+           const newUrls = Array.from(files).map((f: any) => URL.createObjectURL(f));
            setFormData(p => ({...p, avatarUrls: [...p.avatarUrls, ...newUrls]}));
       }
   };
@@ -275,6 +275,43 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                                 className="w-full py-3 bg-transparent border-none outline-none font-medium text-gray-700"
                             />
                          </div>
+                    </div>
+                </div>
+            </SectionCard>
+
+            {/* Education Section */}
+            <SectionCard title="Education" icon={<Award className="w-5 h-5"/>} themeColor={formData.themeColor}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Level</label>
+                        <select
+                            value={formData.education_level || ''}
+                            onChange={e => setFormData({...formData, education_level: e.target.value as any})}
+                            className="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-gray-100 outline-none cursor-pointer text-gray-900"
+                        >
+                            <option value="">Select Level...</option>
+                            {['High School', 'Associate Degree', "Bachelor's Degree", "Master's Degree", 'PhD/Doctorate', 'Professional Certification', 'Bootcamp Graduate', 'Self-Taught', 'Other'].map(l => (
+                                <option key={l} value={l}>{l}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                         <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Field of Study</label>
+                         <input
+                            value={formData.education_field || ''}
+                            onChange={e => setFormData({...formData, education_field: e.target.value})}
+                            className="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-gray-100 outline-none"
+                            placeholder="e.g. Computer Science"
+                         />
+                    </div>
+                    <div>
+                         <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Institution</label>
+                         <input
+                            value={formData.education_institution || ''}
+                            onChange={e => setFormData({...formData, education_institution: e.target.value})}
+                            className="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-gray-100 outline-none"
+                            placeholder="e.g. Stanford University"
+                         />
                     </div>
                 </div>
             </SectionCard>
