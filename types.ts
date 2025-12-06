@@ -130,6 +130,16 @@ export interface CandidateProfile {
   isUnlocked?: boolean;
   matchScore?: number;
   connections?: string[];
+  
+  // Education & Assessments
+  education_level?: 'High School' | 'Associate Degree' | "Bachelor's Degree" | "Master's Degree" | 'PhD/Doctorate' | 'Professional Certification' | 'Bootcamp Graduate' | 'Self-Taught' | 'Other';
+  education_field?: string;
+  education_institution?: string;
+  myers_briggs?: string;
+  disc_profile?: { D: number; I: number; S: number; C: number };
+  enneagram_type?: string;
+  assessment_completed_at?: string;
+  is_mock_data?: boolean;
 }
 
 export interface CompanyProfile {
@@ -195,6 +205,21 @@ export interface JobPosting {
   postedDate: string;
   status: 'draft' | 'pending_approval' | 'published' | 'closed';
   approvals?: JobApprovals;
+  
+  // Expanded fields
+  company_industry?: string[];
+  company_logo?: string;
+  required_education_level?: string;
+  preferred_education_level?: string;
+  education_required?: boolean;
+  responsibilities?: string[];
+  impact_statement?: string;
+  key_deliverables?: string[];
+  success_metrics?: string[];
+  team_structure?: string;
+  growth_opportunities?: string;
+  tech_stack?: string[];
+  is_mock_data?: boolean;
 }
 
 export interface MatchDetails {
@@ -318,4 +343,56 @@ export interface ProfileView {
   company_id: string;
   viewed_at: string;
   unlocked: boolean;
+}
+
+export interface TalentSearchCriteria {
+  // Step 1: Core Requirements
+  title?: string;
+  seniority?: SeniorityLevel[];
+  location?: string;
+  workMode?: WorkMode[];
+  
+  // Step 2: Technical Skills
+  requiredSkills: JobSkill[];  
+  
+  // Step 3: Culture Fit
+  values?: string[];
+  desiredTraits?: string[];
+  requiredTraits?: string[];
+  interestedIndustries?: string[];
+  
+  // Step 4: Practical Details
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryCurrency?: string;
+  contractTypes?: JobType[];
+  maxNoticePeriod?: number;  // Days
+  desiredPerks?: string[];
+  
+  // Education
+  required_education_level?: string;
+  preferred_education_level?: string;
+  education_required?: boolean;
+
+  // Meta
+  dealBreakers?: string[];  // Field names that MUST match (e.g., ['work_mode', 'salary'])
+}
+
+export interface SavedSearch {
+  id: string;
+  user_id: string;
+  company_id: string;
+  name: string;
+  criteria: TalentSearchCriteria;
+  alert_enabled: boolean;
+  created_at: string;
+  last_run: string | null;
+  results_count?: number;
+}
+
+export interface TalentSearchResult {
+  candidate: CandidateProfile;
+  matchBreakdown: MatchBreakdown;
+  matchScore: number;
+  dealBreakersFailed: string[];
 }
