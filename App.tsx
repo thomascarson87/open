@@ -225,9 +225,81 @@ function MainApp() {
 
   // Handlers
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
-      setCandidateProfile(profile);
-      setCurrentView('dashboard');
+      if (!user) return;
+      
+      try {
+          // Update in Supabase with ALL fields including Phase 1
+          const { error } = await supabase
+              .from('candidate_profiles')
+              .update({
+                  // Basic Info
+                  name: profile.name,
+                  headline: profile.headline,
+                  bio: profile.bio,
+                  location: profile.location,
+                  status: profile.status,
+                  
+                  // Arrays (use snake_case for database)
+                  avatar_urls: profile.avatarUrls || [],
+                  character_traits: profile.characterTraits || [],
+                  values_list: profile.values || [],
+                  contract_types: profile.contractTypes || [],
+                  preferred_work_mode: profile.preferredWorkMode || [],
+                  desired_perks: profile.desiredPerks || [],
+                  interested_industries: profile.interestedIndustries || [],
+                  non_negotiables: profile.nonNegotiables || [],
+                  desired_seniority: profile.desiredSeniority || [],
+                  
+                  // JSONB fields
+                  skills: profile.skills || [],
+                  experience: profile.experience || [],
+                  portfolio: profile.portfolio || [],
+                  references_list: profile.references || [],
+                  
+                  // Salary & Work
+                  salary_expectation: profile.salaryExpectation,
+                  salary_min: profile.salaryMin,
+                  salary_currency: profile.salaryCurrency,
+                  notice_period: profile.noticePeriod,
+                  legal_status: profile.legalStatus,
+                  current_bonuses: profile.currentBonuses,
+                  ambitions: profile.ambitions,
+                  
+                  // Theme
+                  theme_color: profile.themeColor,
+                  theme_font: profile.themeFont,
+                  
+                  // 🆕 PHASE 1 FIELDS - EDUCATION
+                  education_level: profile.education_level,
+                  education_field: profile.education_field,
+                  education_institution: profile.education_institution,
+                  
+                  // 🆕 PHASE 1 FIELDS - PERSONALITY ASSESSMENTS
+                  myers_briggs: profile.myers_briggs,
+                  disc_profile: profile.disc_profile || { D: 0, I: 0, S: 0, C: 0 },
+                  enneagram_type: profile.enneagram_type,
+                  assessment_completed_at: profile.assessment_completed_at
+              })
+              .eq('id', user.id);
+          
+          if (error) {
+              console.error('Error saving profile:', error);
+              alert('Failed to save profile. Please try again.');
+              return;
+          }
+          
+          // Update local state AFTER successful database save
+          setCandidateProfile(profile);
+          setCurrentView('dashboard');
+          
+          console.log('✅ Profile saved successfully to database!');
+          
+      } catch (err) {
+          console.error('Error updating candidate profile:', err);
+          alert('An error occurred while saving. Please try again.');
+      }
   };
+
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
       await supabase.from('company_profiles').update({
           company_name: profile.companyName,
