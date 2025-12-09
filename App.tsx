@@ -21,6 +21,7 @@ import Login from './components/Login';
 import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import TalentMatcher from './components/TalentMatcher';
+import RecruiterMyJobs from './components/RecruiterMyJobs';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -28,6 +29,7 @@ import { messageService } from './services/messageService';
 // Mappers with strict default values to prevent "undefined includes" crashes
 const mapJobFromDB = (data: any): JobPosting => ({ 
     ...data, 
+    postedDate: data.posted_date,
     requiredSkills: data.required_skills || [], 
     values: data.values_list || [],
     perks: data.perks || [],
@@ -400,6 +402,7 @@ function MainApp() {
           case 'schedule': return <Schedule />;
           case 'notifications': return <Notifications notifications={notifications} />;
           case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} />;
+          case 'my-jobs': return <RecruiterMyJobs />;
           case 'talent-matcher': return <TalentMatcher 
                                             onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }}
                                             onUnlock={handleUnlockCandidate}
