@@ -30,16 +30,33 @@ import { messageService } from './services/messageService';
 // Mappers with strict default values to prevent "undefined includes" crashes
 const mapJobFromDB = (data: any): JobPosting => ({ 
     ...data, 
-    postedDate: data.posted_date,
+    id: data.id,
+    company_id: data.company_id,
+    companyName: data.company_name,
+    companyLogo: data.company_logo,
+    title: data.title,
+    description: data.description,
+    location: data.location,
+    salaryRange: data.salary_range,
+    salaryMin: data.salary_min,
+    salaryMax: data.salary_max,
+    salaryCurrency: data.salary_currency || 'USD',
+    seniority: data.seniority,
+    contractTypes: data.contract_types || [],
+    startDate: data.start_date,
+    workMode: data.work_mode || 'Remote',
+    postedDate: data.posted_date || data.created_at,
+    status: data.status,
+    approvals: data.approvals,
+
     requiredSkills: data.required_skills || [], 
     values: data.values_list || [],
     perks: data.perks || [],
     desiredTraits: data.desired_traits || [],
     requiredTraits: data.required_traits || [],
     
-    // 🆕 PHASE 1 FIELDS - ADD THESE
+    // 🆕 PHASE 1 FIELDS
     companyIndustry: data.company_industry || [],
-    companyLogo: data.company_logo,
     required_education_level: data.required_education_level,
     preferred_education_level: data.preferred_education_level,
     education_required: data.education_required || false,
@@ -58,7 +75,18 @@ const mapJobFromDB = (data: any): JobPosting => ({
 
 const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
     ...data, 
+    id: data.id,
+    name: data.name,
+    headline: data.headline,
+    email: data.email,
+    location: data.location,
     avatarUrls: data.avatar_urls || [], 
+    videoIntroUrl: data.video_intro_url,
+    themeColor: data.theme_color,
+    themeFont: data.theme_font,
+    bio: data.bio,
+    status: data.status,
+    
     skills: data.skills || [],
     contractTypes: data.contract_types || [],
     preferredWorkMode: data.preferred_work_mode || [],
@@ -72,7 +100,16 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     experience: data.experience || [],
     desiredSeniority: data.desired_seniority || [],
     
-    // 🆕 PHASE 1 FIELDS - ADD THESE
+    salaryExpectation: data.salary_expectation,
+    salaryMin: data.salary_min,
+    salaryCurrency: data.salary_currency,
+    legalStatus: data.legal_status,
+    currentBonuses: data.current_bonuses,
+    noticePeriod: data.notice_period,
+    ambitions: data.ambitions,
+    isUnlocked: data.is_unlocked,
+
+    // 🆕 PHASE 1 FIELDS
     education_level: data.education_level,
     education_field: data.education_field,
     education_institution: data.education_institution,
@@ -86,6 +123,7 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
     ...data, 
+    companyName: data.company_name,
     logoUrl: data.logo_url,
     industry: data.industry || [], 
     values: data.values || [],
@@ -94,7 +132,7 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     billing_plan: data.billing_plan || 'pay_per_hire',
     credits: data.credits || 0,
     
-    // 🆕 PHASE 1 FIELDS - ADD THESE
+    // 🆕 PHASE 1 FIELDS
     is_mock_data: data.is_mock_data || false,
     mock_data_seed: data.mock_data_seed
 });
