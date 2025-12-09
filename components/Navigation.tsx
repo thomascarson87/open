@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Role } from '../types';
-import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building, Search } from 'lucide-react';
+import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building, Search, ClipboardList } from 'lucide-react';
 
 interface NavigationProps {
   role: Role;
@@ -23,6 +22,12 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
       show: true 
     },
     { 
+      id: 'my-jobs', 
+      label: 'My Jobs', 
+      icon: Briefcase, 
+      show: role === 'recruiter' 
+    },
+    { 
       id: 'network', 
       label: 'Network', 
       icon: Users, 
@@ -31,7 +36,7 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
     { 
       id: 'ats', 
       label: role === 'candidate' ? 'My Apps' : 'Tracker', 
-      icon: Briefcase, 
+      icon: ClipboardList, 
       show: true 
     },
     { 
