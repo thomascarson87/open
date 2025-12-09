@@ -198,11 +198,59 @@ function MainApp() {
   };
 
   const fetchData = async () => {
-      const { data: jobs } = await supabase.from('jobs').select('*');
-      if (jobs) setJobPostings(jobs.map(mapJobFromDB));
-      if (userRole === 'recruiter') {
-          const { data: cands } = await supabase.from('candidate_profiles').select('*');
-          if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
+      console.log('🔍 [App] fetchData: Starting data fetch sequence...');
+      
+      try {
+          // 1. Fetch Jobs
+          console.log('🔄 [App] Requesting jobs from Supabase...');
+          const { data: jobs, error: jobsError } = await supabase.from('jobs').select('*');
+          
+          if (jobsError) {
+              console.error('❌ [App] fetchData: Supabase returned error fetching jobs:', jobsError);
+              console.error('❌ [App] Error details:', jobsError.message, jobsError.details);
+          } else {
+              console.log(`📊 [App] fetchData: Raw jobs fetched from DB: ${jobs?.length || 0}`);
+              
+              if (jobs && jobs.length > 0) {
+                  console.log('📄 [App] fetchData: Sample raw job (first item):', jobs[0]);
+              } else {
+                  console.log('⚠️ [App] fetchData: Job array is empty. This usually indicates Row Level Security (RLS) is filtering results, or the table is empty.');
+                  console.log('ℹ️ [App] Current user ID:', user?.id);
+              }
+              
+              // Safe Mapping
+              const mappedJobs: JobPosting[] = [];
+              (jobs || []).forEach((job, index) => {
+                  try {
+                      const mapped = mapJobFromDB(job);
+                      mappedJobs.push(mapped);
+                  } catch (mapErr) {
+                      console.error(`❌ [App] fetchData: Error mapping job at index ${index} (ID: ${job?.id})`, mapErr);
+                      console.error('💥 [App] fetchData: Problematic job object:', job);
+                  }
+              });
+
+              console.log(`✅ [App] fetchData: Successfully mapped ${mappedJobs.length} jobs.`);
+              if (mappedJobs.length > 0) {
+                  console.log('✅ [App] First mapped job:', mappedJobs[0]);
+              }
+              setJobPostings(mappedJobs);
+          }
+
+          // 2. Fetch Candidates (Recruiter Only)
+          if (userRole === 'recruiter') {
+              console.log('🔍 [App] fetchData: User is recruiter, fetching candidates...');
+              const { data: cands, error: candError } = await supabase.from('candidate_profiles').select('*');
+              
+              if (candError) {
+                  console.error('❌ [App] fetchData: Error fetching candidates:', candError);
+              } else {
+                  console.log(`📊 [App] fetchData: Raw candidates fetched: ${cands?.length || 0}`);
+                  if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
+              }
+          }
+      } catch (globalErr) {
+          console.error('❌ [App] fetchData: Critical unhandled exception:', globalErr);
       }
   };
 
