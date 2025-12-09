@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -437,14 +438,18 @@ function MainApp() {
   const renderContent = () => {
       switch (currentView) {
           case 'profile':
-              return userRole === 'recruiter' && companyProfile ? 
-                <CompanyProfile 
+              if (userRole === 'recruiter') {
+                 if (!companyProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /><span className="ml-2">Loading company profile...</span></div>;
+                 return <CompanyProfile 
                     profile={companyProfile} 
                     onSave={handleUpdateCompany} 
                     teamMembers={teamMembers} 
                     onTeamUpdate={handleTeamMemberUpdate}
-                /> : 
-                <CandidateProfileForm profile={candidateProfile!} onSave={handleUpdateCandidate} />;
+                />;
+              } else {
+                 if (!candidateProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /><span className="ml-2">Loading your profile...</span></div>;
+                 return <CandidateProfileForm profile={candidateProfile} onSave={handleUpdateCandidate} />;
+              }
           case 'network': return <Network connections={connections} />;
           case 'messages': return <Messages />;
           case 'schedule': return <Schedule />;
@@ -470,13 +475,27 @@ function MainApp() {
              />
           ) : null;
           case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={(id) => setCurrentView('messages')} /> : <RecruiterATS />;
-          default: return userRole === 'candidate' ? 
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                {jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}
-            </div> : 
-            <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={navigateToMessage} onSchedule={navigateToSchedule} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}
-            </div>;
+          default: 
+            if (userRole === 'candidate') {
+                if (!candidateProfile) {
+                    return (
+                        <div className="min-h-screen flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+                            <span className="ml-2">Loading your profile...</span>
+                        </div>
+                    );
+                }
+                return (
+                    <div className="max-w-7xl mx-auto px-4 py-8">
+                        {jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}
+                    </div>
+                );
+            }
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={navigateToMessage} onSchedule={navigateToSchedule} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}
+                </div>
+            );
       }
   };
 
