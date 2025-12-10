@@ -87,7 +87,13 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     bio: data.bio,
     status: data.status,
     
-    skills: data.skills || [],
+    // Fix skills mapping to ensure 'years' property exists (handle dirty data with 'minimumYears')
+    skills: (data.skills || []).map((s: any) => ({
+      name: s.name,
+      years: s.years !== undefined ? s.years : (s.minimumYears || 0),
+      weight: s.weight // Keep optional weight if present
+    })),
+
     contractTypes: data.contract_types || [],
     preferredWorkMode: data.preferred_work_mode || [],
     desiredPerks: data.desired_perks || [],
