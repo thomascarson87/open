@@ -1,7 +1,5 @@
-
-
 import React, { useState, useRef } from 'react';
-import { CandidateProfile, ThemeColor, ThemeFont, JobType, Experience, SeniorityLevel } from '../types';
+import { CandidateProfile, ThemeColor, ThemeFont, JobType, Experience, SeniorityLevel, Skill } from '../types';
 import CandidateDetails from './CandidateDetails';
 import { Sparkles, Plus, X, Check, Award, Heart, Lock, Unlock, Image as ImageIcon, Briefcase, GripVertical, MapPin, DollarSign, Clock, UserCheck, Trash2, Edit2, Brain, Info } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
@@ -370,9 +368,17 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
                     selected={formData.skills.map(s => s.name)}
                     onChange={(selectedNames) => {
                         setFormData(prev => {
-                            // Keep existing with their years, add new with 1 year default
-                            const currentMap = new Map(prev.skills.map(s => [s.name, s]));
-                            const newSkills = selectedNames.map(name => currentMap.get(name) || { name, years: 1 });
+                            // Map existing skills and handle any dirty data where 'minimumYears' might exist instead of 'years'
+                            const currentMap = new Map(prev.skills.map(s => [s.name, s] as [string, Skill]));
+                            const newSkills = selectedNames.map(name => {
+                                const existing = currentMap.get(name);
+                                if (existing) {
+                                    // Ensure we use 'years', fallback to 'minimumYears' if data is dirty, or default to 1
+                                    const y = existing.years !== undefined ? existing.years : (existing as any).minimumYears;
+                                    return { ...existing, years: y || 1 };
+                                }
+                                return { name, years: 1 };
+                            });
                             return { ...prev, skills: newSkills };
                         });
                     }}
