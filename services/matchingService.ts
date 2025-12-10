@@ -1,5 +1,6 @@
 
 
+
 import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill, TalentSearchCriteria } from '../types';
 
 export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): MatchBreakdown => {
@@ -62,9 +63,12 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
         // Found skill
         let skillPoints = 100;
         
+        // Robustly get years, fallback to minimumYears if dirty data persists
+        const candidateYears = candidateSkill.years !== undefined ? candidateSkill.years : (candidateSkill as any).minimumYears || 0;
+
         // Penalize if years of experience are less than required
-        if (candidateSkill.years < jobSkill.minimumYears) {
-          skillPoints -= (jobSkill.minimumYears - candidateSkill.years) * 20;
+        if (candidateYears < jobSkill.minimumYears) {
+          skillPoints -= (jobSkill.minimumYears - candidateYears) * 20;
           if (isRequired) {
              recommendations.push(`Missing experience years for ${jobSkill.name}`);
           }
@@ -353,8 +357,11 @@ export const calculateCandidateMatch = (
 
           if (candidateSkill) {
               let skillPoints = 100;
-              if (candidateSkill.years < jobSkill.minimumYears) {
-                  skillPoints -= (jobSkill.minimumYears - candidateSkill.years) * 20;
+              // Defensive check for dirty data
+              const candidateYears = candidateSkill.years !== undefined ? candidateSkill.years : (candidateSkill as any).minimumYears || 0;
+
+              if (candidateYears < jobSkill.minimumYears) {
+                  skillPoints -= (jobSkill.minimumYears - candidateYears) * 20;
                   if (isRequired) recommendations.push(`Missing experience years for ${jobSkill.name}`);
               }
               skillPoints = Math.max(0, skillPoints);
