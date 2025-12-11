@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Role } from '../types';
-import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building, Search, ClipboardList } from 'lucide-react';
+import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building, Search, ClipboardList, Code } from 'lucide-react';
 
 interface NavigationProps {
   role: Role;
@@ -26,6 +27,13 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
       label: 'My Jobs', 
       icon: Briefcase, 
       show: role === 'recruiter' 
+    },
+    { 
+      id: 'widget-setup', 
+      label: 'Widget', 
+      icon: Code, 
+      show: role === 'recruiter',
+      badge: 'New'
     },
     { 
       id: 'network', 
@@ -79,6 +87,7 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
                     onClick={() => setCurrentView(item.id)}
                     label={item.label}
                     icon={<item.icon className="w-4 h-4 mr-2" />}
+                    badge={item.badge}
                   />
                 ))}
               </div>
@@ -144,10 +153,15 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
                    : 'text-gray-400 hover:text-gray-600'
                }`}
              >
-               <item.icon 
-                  className={`w-6 h-6 ${currentView === item.id ? 'fill-gray-900/10' : ''}`} 
-                  strokeWidth={currentView === item.id ? 2.5 : 1.5} 
-                />
+               <div className="relative">
+                 <item.icon 
+                    className={`w-6 h-6 ${currentView === item.id ? 'fill-gray-900/10' : ''}`} 
+                    strokeWidth={currentView === item.id ? 2.5 : 1.5} 
+                  />
+                  {item.badge && (
+                    <span className="absolute -top-1 -right-2 w-2 h-2 bg-purple-500 rounded-full"></span>
+                  )}
+               </div>
                <span className={`text-[10px] font-medium ${currentView === item.id ? 'font-bold' : ''}`}>
                  {item.label}
                </span>
@@ -164,19 +178,25 @@ interface NavButtonProps {
   onClick: () => void;
   label: string;
   icon: React.ReactNode;
+  badge?: string;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ active, onClick, label, icon }) => (
+const NavButton: React.FC<NavButtonProps> = ({ active, onClick, label, icon, badge }) => (
   <button
     onClick={onClick}
     className={`${
       active
         ? 'text-gray-900 bg-gray-100'
         : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-    } group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200`}
+    } group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 relative`}
   >
     <span className={`opacity-70 group-hover:opacity-100 ${active ? 'opacity-100' : ''}`}>{icon}</span>
     {label}
+    {badge && (
+      <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+        {badge}
+      </span>
+    )}
   </button>
 );
 
