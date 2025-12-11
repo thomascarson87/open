@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -23,6 +22,7 @@ import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
+import WidgetSetup from './components/WidgetSetup'; // ✅ Verified Import
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -254,15 +254,6 @@ function MainApp() {
               console.error('❌ [App] fetchData: Supabase returned error fetching jobs:', jobsError);
               console.error('❌ [App] Error details:', jobsError.message, jobsError.details);
           } else {
-              console.log(`📊 [App] fetchData: Raw jobs fetched from DB: ${jobs?.length || 0}`);
-              
-              if (jobs && jobs.length > 0) {
-                  console.log('📄 [App] fetchData: Sample raw job (first item):', jobs[0]);
-              } else {
-                  console.log('⚠️ [App] fetchData: Job array is empty. This usually indicates Row Level Security (RLS) is filtering results, or the table is empty.');
-                  console.log('ℹ️ [App] Current user ID:', user?.id);
-              }
-              
               // Safe Mapping
               const mappedJobs: JobPosting[] = [];
               (jobs || []).forEach((job, index) => {
@@ -271,26 +262,18 @@ function MainApp() {
                       mappedJobs.push(mapped);
                   } catch (mapErr) {
                       console.error(`❌ [App] fetchData: Error mapping job at index ${index} (ID: ${job?.id})`, mapErr);
-                      console.error('💥 [App] fetchData: Problematic job object:', job);
                   }
               });
-
-              console.log(`✅ [App] fetchData: Successfully mapped ${mappedJobs.length} jobs.`);
-              if (mappedJobs.length > 0) {
-                  console.log('✅ [App] First mapped job:', mappedJobs[0]);
-              }
               setJobPostings(mappedJobs);
           }
 
           // 2. Fetch Candidates (Recruiter Only)
           if (userRole === 'recruiter') {
-              console.log('🔍 [App] fetchData: User is recruiter, fetching candidates...');
               const { data: cands, error: candError } = await supabase.from('candidate_profiles').select('*');
               
               if (candError) {
                   console.error('❌ [App] fetchData: Error fetching candidates:', candError);
               } else {
-                  console.log(`📊 [App] fetchData: Raw candidates fetched: ${cands?.length || 0}`);
                   if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
               }
           }
@@ -321,7 +304,6 @@ function MainApp() {
   // Handlers
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
       if (!user) return;
-      
       try {
           // Update in Supabase with ALL fields including Phase 1
           const { error } = await supabase
@@ -382,16 +364,10 @@ function MainApp() {
               alert('Failed to save profile. Please try again.');
               return;
           }
-          
-          // Update local state AFTER successful database save
           setCandidateProfile(profile);
           setCurrentView('dashboard');
-          
-          console.log('✅ Profile saved successfully to database!');
-          
       } catch (err) {
           console.error('Error updating candidate profile:', err);
-          alert('An error occurred while saving. Please try again.');
       }
   };
 
@@ -407,7 +383,6 @@ function MainApp() {
       }).eq('id', user?.id);
       
       setCompanyProfile(profile);
-      // No view change, just save
   };
   
   const handleTeamMemberUpdate = async () => {
@@ -449,7 +424,6 @@ function MainApp() {
       }
   };
 
-  // Improved Navigation Handlers
   const navigateToMessage = async (candidateId: string) => {
       try {
         const convId = await messageService.getOrCreateConversation(user!.id, candidateId);
@@ -506,6 +480,7 @@ function MainApp() {
                                             onSchedule={navigateToSchedule}
                                             onMessage={navigateToMessage}
                                         />;
+          case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />; // ✅ Validated Case
           case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
           case 'candidate-details': return selectedCandidate ? (
              userRole === 'recruiter' && !selectedCandidate.isUnlocked ? 
@@ -553,7 +528,6 @@ function MainApp() {
 
 function AuthWrapper() {
     const { session, loading } = useAuth();
-    // Check local storage for pre-selected role (persists across reloads on login screen)
     const [selectedRole, setSelectedRole] = useState<Role>(() => {
         const stored = localStorage.getItem('open_selected_role');
         return (stored === 'candidate' || stored === 'recruiter') ? stored : null;
@@ -563,7 +537,6 @@ function AuthWrapper() {
 
     if (session) return <MainApp />;
 
-    // If a role is selected (but not logged in), show Login
     if (selectedRole) {
         return (
             <Login 
@@ -576,7 +549,6 @@ function AuthWrapper() {
         );
     }
 
-    // Default to Landing Page
     return (
         <LandingPage 
             onSelectRole={(r) => { 
