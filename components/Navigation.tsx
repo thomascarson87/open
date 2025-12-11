@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Role } from '../types';
 import { Briefcase, LogOut, User, Layout, Bell, MessageSquare, Calendar, PlusCircle, Users, Building, Search, ClipboardList, Code } from 'lucide-react';
@@ -29,7 +28,7 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
       show: role === 'recruiter' 
     },
     { 
-      id: 'widget-setup', 
+      id: 'widget-setup',  // ✅ Fixed: ID matches App.tsx case exactly
       label: 'Widget', 
       icon: Code, 
       show: role === 'recruiter',
