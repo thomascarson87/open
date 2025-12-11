@@ -77,7 +77,7 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
         views: viewCount || 0,
         applications: appCount || 0,
         conversions: conversionCount || 0,
-        viewsGrowth: 0 // TODO: Calculate growth vs last week
+        viewsGrowth: 0 
     });
     
     setLoading(false);
