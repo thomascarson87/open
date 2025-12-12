@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, X, Check } from 'lucide-react';
 
@@ -27,9 +28,10 @@ const GroupedMultiSelect: React.FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Robustly determine flat options to avoid crashes if props don't match
   const flatOptions = grouped 
     ? Object.values(options as Record<string, string[]>).flat()
-    : options as string[];
+    : (Array.isArray(options) ? options : []); // Fallback to empty array if not an array
 
   const filteredOptions = searchable
     ? flatOptions.filter(opt => opt.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -114,7 +116,7 @@ const GroupedMultiSelect: React.FC<Props> = ({
             )}
 
             <div className="p-2">
-              {grouped ? (
+              {grouped && typeof options === 'object' && !Array.isArray(options) ? (
                 // Render categories
                 Object.entries(options as Record<string, string[]>).map(([category, items]) => {
                   const visibleItems = items.filter(item => 
