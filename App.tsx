@@ -128,37 +128,51 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     mock_data_seed: data.mock_data_seed
 });
 
-const mapCompanyFromDB = (data: any): CompanyProfileType => ({ 
-    ...data, 
-    companyName: data.company_name,
-    logoUrl: data.logo_url,
-    industry: data.industry || [], 
-    values: data.values || [],
-    perks: data.perks || [],
-    desiredTraits: data.desired_traits || [],
-    billing_plan: data.billing_plan || 'pay_per_hire',
-    credits: data.credits || 0,
-    
-    // Expanded fields
-    tagline: data.tagline,
-    missionStatement: data.mission_statement,
-    cultureDescription: data.culture_description,
-    workEnvironment: data.work_environment,
-    diversityStatement: data.diversity_statement,
-    benefitsDescription: data.benefits_description,
-    remotePolicy: data.remote_policy,
-    teamSize: data.team_size,
-    foundedYear: data.founded_year,
-    headquartersLocation: data.headquarters_location,
-    companySizeRange: data.company_size_range,
-    fundingStage: data.funding_stage,
-    growthStage: data.growth_stage,
-    techStack: data.tech_stack || [],
-    socialMedia: data.social_media || {},
-    companyPhotos: data.company_photos || [],
+const mapCompanyFromDB = (data: any): CompanyProfileType => ({
+  id: data.id,
+  
+  // Basic Information
+  companyName: data.company_name || '',
+  logoUrl: data.logo_url,
+  website: data.website || '',
+  tagline: data.tagline || '',
+  
+  // About & Mission
+  about: data.about || '',
+  missionStatement: data.mission_statement,
+  
+  // Culture & Values (CRITICAL: arrays must default to [])
+  industry: data.industry || [],
+  values: data.values || [],
+  cultureDescription: data.culture_description,
+  workEnvironment: data.work_environment,
+  desiredTraits: data.desired_traits || [],
+  diversityStatement: data.diversity_statement,
+  
+  // Perks & Benefits (CRITICAL: arrays must default to [])
+  perks: data.perks || [],
+  benefitsDescription: data.benefits_description,
+  remotePolicy: data.remote_policy || '',
+  
+  // Company Details
+  teamSize: data.team_size || 0,
+  foundedYear: data.founded_year || new Date().getFullYear(),
+  headquartersLocation: data.headquarters_location || '',
+  companySizeRange: data.company_size_range,
+  fundingStage: data.funding_stage,
+  growthStage: data.growth_stage,
+  
+  // Tech & Social (CRITICAL: arrays must default to [])
+  techStack: data.tech_stack || [],
+  socialMedia: data.social_media || {},
+  companyPhotos: data.company_photos || [],
+  
+  // Existing fields
+  billing_plan: data.billing_plan || 'pay_per_hire',
+  credits: data.credits || 0,
 
-    is_mock_data: data.is_mock_data || false,
-    mock_data_seed: data.mock_data_seed
+  is_mock_data: data.is_mock_data || false,
+  mock_data_seed: data.mock_data_seed
 });
 
 function MainApp() {
@@ -309,7 +323,17 @@ function MainApp() {
           if (role === 'candidate') {
               await supabase.from('candidate_profiles').upsert({ id: user.id, name: user.email?.split('@')[0], email: user.email });
           } else {
-              await supabase.from('company_profiles').upsert({ id: user.id, company_name: 'My Company' });
+              // Ensure critical array fields are initialized as empty arrays
+              await supabase.from('company_profiles').upsert({ 
+                  id: user.id, 
+                  company_name: 'My Company',
+                  industry: [],
+                  values: [],
+                  perks: [],
+                  desired_traits: [],
+                  tech_stack: [],
+                  company_photos: []
+              });
           }
           setUserRole(role);
       } catch (e) {
