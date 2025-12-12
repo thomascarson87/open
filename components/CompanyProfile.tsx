@@ -34,7 +34,19 @@ interface Props {
 const CompanyProfile: React.FC<Props> = ({ profile, onSave, teamMembers, onTeamUpdate }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'team' | 'billing'>('profile');
-  const [formData, setFormData] = useState<CompanyProfileType>(profile);
+  
+  // Initialize state with defensive checks ensuring arrays are arrays
+  const [formData, setFormData] = useState<CompanyProfileType>({
+    ...profile,
+    industry: profile.industry || [],
+    values: profile.values || [],
+    perks: profile.perks || [],
+    desiredTraits: profile.desiredTraits || [],
+    techStack: profile.techStack || [],
+    companyPhotos: profile.companyPhotos || [],
+    socialMedia: profile.socialMedia || {}
+  });
+  
   const [uploading, setUploading] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<MemberRole>('interviewer');
