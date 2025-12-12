@@ -1,5 +1,4 @@
 
-
 export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
@@ -143,41 +142,51 @@ export interface CandidateProfile {
 }
 
 export interface CompanyProfile {
-  id?: string;
-  companyName: string;
-  industry: string[];
-  size: string;
-  website: string;
-  location: string;
-  about: string;
-  logoUrl?: string;
-  values?: string[];
-  perks?: string[];
-  desiredTraits?: string[];
-  billing_plan?: string;
-  credits?: number;
+  id: string;
   
-  // Expanded fields
-  tagline?: string;
+  // Basic Information
+  companyName: string;
+  logoUrl?: string;
+  website: string;
+  tagline: string;
+  
+  // About & Mission
+  about: string;
   missionStatement?: string;
+  
+  // Culture & Values (arrays - must default to [])
+  industry: string[];
+  values: string[];
   cultureDescription?: string;
   workEnvironment?: string;
+  desiredTraits: string[];
   diversityStatement?: string;
+  
+  // Perks & Benefits (arrays - must default to [])
+  perks: string[];
   benefitsDescription?: string;
-  remotePolicy?: string;
-  teamSize?: number;
-  foundedYear?: number;
-  headquartersLocation?: string;
+  remotePolicy: string;
+  
+  // Company Details
+  teamSize: number;
+  foundedYear: number;
+  headquartersLocation: string;
   companySizeRange?: string;
   fundingStage?: string;
   growthStage?: string;
-  techStack?: string[];
+  
+  // Tech & Social (arrays - must default to [])
+  techStack: string[];
   socialMedia?: {
     linkedin?: string;
     twitter?: string;
     github?: string;
   };
-  companyPhotos?: string[];
+  companyPhotos: string[];
+  
+  // Existing fields
+  billing_plan?: string;
+  credits?: number;
   
   is_mock_data?: boolean;
   mock_data_seed?: any;
