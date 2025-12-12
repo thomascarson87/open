@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -22,7 +23,7 @@ import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
-import WidgetSetup from './components/WidgetSetup'; // ✅ Verified Import
+import WidgetSetup from './components/WidgetSetup'; 
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -138,7 +139,24 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
     billing_plan: data.billing_plan || 'pay_per_hire',
     credits: data.credits || 0,
     
-    // 🆕 PHASE 1 FIELDS
+    // Expanded fields
+    tagline: data.tagline,
+    missionStatement: data.mission_statement,
+    cultureDescription: data.culture_description,
+    workEnvironment: data.work_environment,
+    diversityStatement: data.diversity_statement,
+    benefitsDescription: data.benefits_description,
+    remotePolicy: data.remote_policy,
+    teamSize: data.team_size,
+    foundedYear: data.founded_year,
+    headquartersLocation: data.headquarters_location,
+    companySizeRange: data.company_size_range,
+    fundingStage: data.funding_stage,
+    growthStage: data.growth_stage,
+    techStack: data.tech_stack || [],
+    socialMedia: data.social_media || {},
+    companyPhotos: data.company_photos || [],
+
     is_mock_data: data.is_mock_data || false,
     mock_data_seed: data.mock_data_seed
 });
@@ -372,16 +390,8 @@ function MainApp() {
   };
 
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
-      await supabase.from('company_profiles').update({
-          company_name: profile.companyName,
-          website: profile.website,
-          about: profile.about,
-          values: profile.values,
-          perks: profile.perks,
-          desired_traits: profile.desiredTraits,
-          industry: profile.industry
-      }).eq('id', user?.id);
-      
+      // Note: CompanyProfile component handles the DB update directly now for expanded fields.
+      // We just update local state here to keep it in sync.
       setCompanyProfile(profile);
   };
   
@@ -480,7 +490,7 @@ function MainApp() {
                                             onSchedule={navigateToSchedule}
                                             onMessage={navigateToMessage}
                                         />;
-          case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />; // ✅ Validated Case
+          case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />; 
           case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
           case 'candidate-details': return selectedCandidate ? (
              userRole === 'recruiter' && !selectedCandidate.isUnlocked ? 
