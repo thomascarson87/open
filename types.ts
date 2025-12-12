@@ -156,6 +156,31 @@ export interface CompanyProfile {
   desiredTraits?: string[];
   billing_plan?: string;
   credits?: number;
+  
+  // Expanded fields
+  tagline?: string;
+  missionStatement?: string;
+  cultureDescription?: string;
+  workEnvironment?: string;
+  diversityStatement?: string;
+  benefitsDescription?: string;
+  remotePolicy?: string;
+  teamSize?: number;
+  foundedYear?: number;
+  headquartersLocation?: string;
+  companySizeRange?: string;
+  fundingStage?: string;
+  growthStage?: string;
+  techStack?: string[];
+  socialMedia?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+  };
+  companyPhotos?: string[];
+  
+  is_mock_data?: boolean;
+  mock_data_seed?: any;
 }
 
 export interface Connection {
@@ -219,7 +244,10 @@ export interface JobPosting {
   team_structure?: string;
   growth_opportunities?: string;
   tech_stack?: string[];
+  desired_myers_briggs?: string[];
+  desired_disc_profile?: any;
   is_mock_data?: boolean;
+  mock_data_seed?: any;
 }
 
 export interface MatchDetails {
