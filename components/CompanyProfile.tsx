@@ -411,6 +411,7 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave, teamMembers, onTeamU
                               selected={formData.perks || []}
                               onChange={vals => setFormData({...formData, perks: vals})}
                               placeholder="Select all that apply..."
+                              grouped={true} // Fixed: Added grouped prop
                             />
                             <p className="text-sm text-gray-500 mt-1">Select from standard benefits to ensure matching works</p>
                           </div>
