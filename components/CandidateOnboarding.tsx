@@ -32,6 +32,41 @@ const STEPS = [
   { id: 'education', title: 'Education', required: false },
 ];
 
+const NonNegotiableToggle = ({ 
+  isNonNegotiable, 
+  onToggle 
+}: { 
+  isNonNegotiable: boolean; 
+  onToggle: () => void;
+}) => {
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={onToggle}
+        type="button"
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          isNonNegotiable 
+            ? 'bg-red-500 focus:ring-red-500' 
+            : 'bg-blue-500 focus:ring-blue-500'
+        }`}
+        role="switch"
+        aria-checked={isNonNegotiable}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+            isNonNegotiable ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+      <span className={`text-sm font-medium ${
+        isNonNegotiable ? 'text-red-700' : 'text-blue-700'
+      }`}>
+        {isNonNegotiable ? '🔒 Non-negotiable' : '✨ Flexible'}
+      </span>
+    </div>
+  );
+};
+
 const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -62,7 +97,7 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
     onUpdate(data);
   };
 
-  const isNonNegotiable = (field: string) => profile.nonNegotiables?.includes(field);
+  const isNonNegotiable = (field: string) => profile.nonNegotiables?.includes(field) || false;
 
   const toggleNonNegotiable = (field: string) => {
     const current = profile.nonNegotiables || [];
@@ -157,17 +192,12 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                   ))}
                 </div>
                 {profile.preferredWorkMode && profile.preferredWorkMode.length > 0 && (
-                  <label className="flex items-center justify-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isNonNegotiable('work_mode')}
-                      onChange={() => toggleNonNegotiable('work_mode')}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  <div className="flex items-center justify-center">
+                    <NonNegotiableToggle 
+                      isNonNegotiable={isNonNegotiable('work_mode')} 
+                      onToggle={() => toggleNonNegotiable('work_mode')} 
                     />
-                    <span className={`text-sm font-medium ${isNonNegotiable('work_mode') ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>
-                      {isNonNegotiable('work_mode') ? '🔒 Non-negotiable (must-have)' : '✨ I\'m flexible on this'}
-                    </span>
-                  </label>
+                  </div>
                 )}
               </div>
 
@@ -197,17 +227,12 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                   ))}
                 </div>
                 {profile.contractTypes && profile.contractTypes.length > 0 && (
-                  <label className="flex items-center justify-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isNonNegotiable('contract_type')}
-                      onChange={() => toggleNonNegotiable('contract_type')}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  <div className="flex items-center justify-center">
+                    <NonNegotiableToggle 
+                      isNonNegotiable={isNonNegotiable('contract_type')} 
+                      onToggle={() => toggleNonNegotiable('contract_type')} 
                     />
-                    <span className={`text-sm font-medium ${isNonNegotiable('contract_type') ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>
-                      {isNonNegotiable('contract_type') ? '🔒 Non-negotiable (must-have)' : '✨ I\'m flexible on this'}
-                    </span>
-                  </label>
+                  </div>
                 )}
               </div>
 
@@ -257,17 +282,12 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                   />
                 </div>
                 {profile.salaryMin && profile.salaryMin > 0 && (
-                  <label className="flex items-center justify-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isNonNegotiable('salary_min')}
-                      onChange={() => toggleNonNegotiable('salary_min')}
-                      className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  <div className="flex items-center justify-center">
+                    <NonNegotiableToggle 
+                      isNonNegotiable={isNonNegotiable('salary_min')} 
+                      onToggle={() => toggleNonNegotiable('salary_min')} 
                     />
-                    <span className={`text-sm font-medium ${isNonNegotiable('salary_min') ? 'text-green-800 font-bold' : 'text-green-600'}`}>
-                      {isNonNegotiable('salary_min') ? '🔒 This is my hard minimum' : '✨ I\'m open to negotiation'}
-                    </span>
-                  </label>
+                  </div>
                 )}
               </div>
 
@@ -297,17 +317,12 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                   <option value="3 Months">3 Months+</option>
                 </select>
                 {profile.noticePeriod && (
-                  <label className="flex items-center justify-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isNonNegotiable('notice_period')}
-                      onChange={() => toggleNonNegotiable('notice_period')}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  <div className="flex items-center justify-center">
+                    <NonNegotiableToggle 
+                      isNonNegotiable={isNonNegotiable('notice_period')} 
+                      onToggle={() => toggleNonNegotiable('notice_period')} 
                     />
-                    <span className={`text-sm font-medium ${isNonNegotiable('notice_period') ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>
-                      {isNonNegotiable('notice_period') ? '🔒 Cannot start sooner' : '✨ Flexible if needed'}
-                    </span>
-                  </label>
+                  </div>
                 )}
               </div>
             </div>
@@ -398,17 +413,12 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                 />
                 
                 {profile.desiredPerks && profile.desiredPerks.length > 0 && (
-                  <label className="flex items-center justify-center gap-2 cursor-pointer mt-4">
-                    <input
-                      type="checkbox"
-                      checked={isNonNegotiable('perks')}
-                      onChange={() => toggleNonNegotiable('perks')}
-                      className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  <div className="flex items-center justify-center mt-4">
+                    <NonNegotiableToggle 
+                      isNonNegotiable={isNonNegotiable('perks')} 
+                      onToggle={() => toggleNonNegotiable('perks')} 
                     />
-                    <span className={`text-sm font-medium ${isNonNegotiable('perks') ? 'text-purple-900 font-bold' : 'text-purple-700'}`}>
-                      {isNonNegotiable('perks') ? '🔒 These perks are must-haves' : '✨ Nice to have but flexible'}
-                    </span>
-                  </label>
+                  </div>
                 )}
               </div>
             </div>
