@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CandidateProfile, JobType, WorkMode, SeniorityLevel } from '../types';
 import { 
   ArrowRight, ArrowLeft, Check, Sparkles, Heart, Zap, 
-  Briefcase, Globe, DollarSign, Award, Smile 
+  Briefcase, Globe, DollarSign, Award, Smile, Lock, Unlock 
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import { 
@@ -29,7 +29,7 @@ const STEPS = [
   { id: 'personality', title: 'Personality', required: false },
   { id: 'culture', title: 'Culture', required: false },
   { id: 'skills', title: 'Skills', required: false },
-  { id: 'education', title: 'Education', required: false }, // Added Education Step
+  { id: 'education', title: 'Education', required: false },
 ];
 
 const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete }) => {
@@ -60,6 +60,18 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
 
   const updateProfile = (data: Partial<CandidateProfile>) => {
     onUpdate(data);
+  };
+
+  const isNonNegotiable = (field: string) => profile.nonNegotiables?.includes(field);
+
+  const toggleNonNegotiable = (field: string) => {
+    const current = profile.nonNegotiables || [];
+    const exists = current.includes(field);
+    updateProfile({
+      nonNegotiables: exists 
+        ? current.filter(f => f !== field)
+        : [...current, field]
+    });
   };
 
   const progress = ((currentStep + 1) / STEPS.length) * 100;
@@ -119,9 +131,9 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
             </div>
 
             <div className="space-y-8 max-w-2xl mx-auto">
-              <div>
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <label className="block text-sm font-bold text-gray-700 mb-3 text-center">Work Mode</label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-3 mb-4">
                   {Object.values(WorkMode).map(mode => (
                     <button
                       key={mode}
@@ -137,18 +149,31 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                       className={`p-4 rounded-xl border-2 transition-all ${
                         profile.preferredWorkMode?.includes(mode)
                           ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                       }`}
                     >
                       <div className="font-bold">{mode}</div>
                     </button>
                   ))}
                 </div>
+                {profile.preferredWorkMode && profile.preferredWorkMode.length > 0 && (
+                  <label className="flex items-center justify-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isNonNegotiable('work_mode')}
+                      onChange={() => toggleNonNegotiable('work_mode')}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className={`text-sm font-medium ${isNonNegotiable('work_mode') ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>
+                      {isNonNegotiable('work_mode') ? '🔒 Non-negotiable (must-have)' : '✨ I\'m flexible on this'}
+                    </span>
+                  </label>
+                )}
               </div>
 
-              <div>
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <label className="block text-sm font-bold text-gray-700 mb-3 text-center">Contract Type</label>
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
                   {Object.values(JobType).map(type => (
                     <button
                       key={type}
@@ -164,13 +189,26 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                       className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${
                         profile.contractTypes?.includes(type)
                           ? 'bg-gray-900 text-white border-gray-900'
-                          : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
                       }`}
                     >
                       {type}
                     </button>
                   ))}
                 </div>
+                {profile.contractTypes && profile.contractTypes.length > 0 && (
+                  <label className="flex items-center justify-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isNonNegotiable('contract_type')}
+                      onChange={() => toggleNonNegotiable('contract_type')}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className={`text-sm font-medium ${isNonNegotiable('contract_type') ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>
+                      {isNonNegotiable('contract_type') ? '🔒 Non-negotiable (must-have)' : '✨ I\'m flexible on this'}
+                    </span>
+                  </label>
+                )}
               </div>
 
               <div>
@@ -200,7 +238,7 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
             <div className="max-w-lg mx-auto space-y-8">
               <div className="bg-green-50 p-8 rounded-3xl border border-green-100 text-center">
                 <label className="block text-sm font-bold text-green-800 mb-4 uppercase tracking-wide">Minimum Annual Base Salary</label>
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 mb-4">
                   <select 
                     value={profile.salaryCurrency || 'USD'}
                     onChange={e => updateProfile({ salaryCurrency: e.target.value })}
@@ -218,14 +256,38 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                     placeholder="100000"
                   />
                 </div>
+                {profile.salaryMin && profile.salaryMin > 0 && (
+                  <label className="flex items-center justify-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isNonNegotiable('salary_min')}
+                      onChange={() => toggleNonNegotiable('salary_min')}
+                      className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span className={`text-sm font-medium ${isNonNegotiable('salary_min') ? 'text-green-800 font-bold' : 'text-green-600'}`}>
+                      {isNonNegotiable('salary_min') ? '🔒 This is my hard minimum' : '✨ I\'m open to negotiation'}
+                    </span>
+                  </label>
+                )}
               </div>
 
               <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Current Bonus Structure (Optional)</label>
+                <input
+                  value={profile.currentBonuses || ''}
+                  onChange={e => updateProfile({ currentBonuses: e.target.value })}
+                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-base font-medium outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 10% annual bonus + equity"
+                />
+                <p className="text-xs text-gray-500 mt-1">Helps us understand your total compensation expectations</p>
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <label className="block text-sm font-bold text-gray-700 mb-3 text-center">Availability / Notice Period</label>
                 <select 
                   value={profile.noticePeriod || ''}
                   onChange={e => updateProfile({ noticePeriod: e.target.value })}
-                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  className="w-full p-4 bg-white border border-gray-200 rounded-xl text-lg font-medium outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer mb-4"
                 >
                   <option value="">Select notice period...</option>
                   <option value="Immediate">Immediately available</option>
@@ -234,6 +296,19 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                   <option value="2 Months">2 Months</option>
                   <option value="3 Months">3 Months+</option>
                 </select>
+                {profile.noticePeriod && (
+                  <label className="flex items-center justify-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isNonNegotiable('notice_period')}
+                      onChange={() => toggleNonNegotiable('notice_period')}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className={`text-sm font-medium ${isNonNegotiable('notice_period') ? 'text-blue-700 font-bold' : 'text-gray-500'}`}>
+                      {isNonNegotiable('notice_period') ? '🔒 Cannot start sooner' : '✨ Flexible if needed'}
+                    </span>
+                  </label>
+                )}
               </div>
             </div>
           </div>
@@ -310,15 +385,32 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
                 maxSelections={5}
               />
 
-              <GroupedMultiSelect
-                label="Desired Perks"
-                options={PERKS_CATEGORIES}
-                selected={profile.desiredPerks || []}
-                onChange={perks => updateProfile({ desiredPerks: perks })}
-                placeholder="Select perks..."
-                grouped={true}
-                maxSelections={5}
-              />
+              <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
+                <GroupedMultiSelect
+                  label="Desired Perks & Benefits"
+                  options={PERKS_CATEGORIES}
+                  selected={profile.desiredPerks || []}
+                  onChange={perks => updateProfile({ desiredPerks: perks })}
+                  placeholder="Select your must-have perks..."
+                  grouped={true}
+                  maxSelections={8}
+                  helpText="Healthcare, equity, flexible hours, remote work, etc."
+                />
+                
+                {profile.desiredPerks && profile.desiredPerks.length > 0 && (
+                  <label className="flex items-center justify-center gap-2 cursor-pointer mt-4">
+                    <input
+                      type="checkbox"
+                      checked={isNonNegotiable('perks')}
+                      onChange={() => toggleNonNegotiable('perks')}
+                      className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className={`text-sm font-medium ${isNonNegotiable('perks') ? 'text-purple-900 font-bold' : 'text-purple-700'}`}>
+                      {isNonNegotiable('perks') ? '🔒 These perks are must-haves' : '✨ Nice to have but flexible'}
+                    </span>
+                  </label>
+                )}
+              </div>
             </div>
           </div>
         );
