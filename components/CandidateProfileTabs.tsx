@@ -301,75 +301,191 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
 
           {activeTab === 'preferences' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-2 duration-300 max-w-3xl">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Work Mode</label>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.values(WorkMode).map(mode => (
-                        <button
-                          key={mode}
-                          onClick={() => {
-                            const current = profile.preferredWorkMode || [];
-                            const exists = current.includes(mode);
-                            onUpdate({
-                              preferredWorkMode: exists ? current.filter(m => m !== mode) : [...current, mode]
-                            });
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
-                            profile.preferredWorkMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200'
-                          }`}
-                        >
-                          {mode}
-                        </button>
-                      ))}
-                    </div>
+               <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                  <label className="block text-sm font-bold text-gray-700 mb-3">Work Mode</label>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {Object.values(WorkMode).map(mode => (
+                      <button
+                        key={mode}
+                        onClick={() => {
+                          const current = profile.preferredWorkMode || [];
+                          const exists = current.includes(mode);
+                          onUpdate({
+                            preferredWorkMode: exists ? current.filter(m => m !== mode) : [...current, mode]
+                          });
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold border ${
+                          profile.preferredWorkMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-300'
+                        }`}
+                      >
+                        {mode}
+                      </button>
+                    ))}
                   </div>
+                  {profile.preferredWorkMode && profile.preferredWorkMode.length > 0 && (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={profile.nonNegotiables?.includes('work_mode')}
+                        onChange={() => {
+                          const current = profile.nonNegotiables || [];
+                          const exists = current.includes('work_mode');
+                          onUpdate({
+                            nonNegotiables: exists 
+                              ? current.filter(f => f !== 'work_mode')
+                              : [...current, 'work_mode']
+                          });
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                      />
+                      <span className={`font-medium ${profile.nonNegotiables?.includes('work_mode') ? 'text-blue-700' : 'text-gray-700'}`}>
+                        {profile.nonNegotiables?.includes('work_mode') ? '🔒 Non-negotiable' : '✨ Flexible'}
+                      </span>
+                    </label>
+                  )}
+               </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Contract Types</label>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.values(JobType).map(type => (
-                        <button
-                          key={type}
-                          onClick={() => {
-                            const current = profile.contractTypes || [];
-                            const exists = current.includes(type);
-                            onUpdate({
-                              contractTypes: exists ? current.filter(t => t !== type) : [...current, type]
-                            });
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
-                            profile.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200'
-                          }`}
-                        >
-                          {type}
-                        </button>
-                      ))}
-                    </div>
+               <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                  <label className="block text-sm font-bold text-gray-700 mb-3">Contract Types</label>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {Object.values(JobType).map(type => (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          const current = profile.contractTypes || [];
+                          const exists = current.includes(type);
+                          onUpdate({
+                            contractTypes: exists ? current.filter(t => t !== type) : [...current, type]
+                          });
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold border ${
+                          profile.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-300'
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
                   </div>
+                  {profile.contractTypes && profile.contractTypes.length > 0 && (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={profile.nonNegotiables?.includes('contract_type')}
+                        onChange={() => {
+                          const current = profile.nonNegotiables || [];
+                          const exists = current.includes('contract_type');
+                          onUpdate({
+                            nonNegotiables: exists 
+                              ? current.filter(f => f !== 'contract_type')
+                              : [...current, 'contract_type']
+                          });
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                      />
+                      <span className={`font-medium ${profile.nonNegotiables?.includes('contract_type') ? 'text-blue-700' : 'text-gray-700'}`}>
+                        {profile.nonNegotiables?.includes('contract_type') ? '🔒 Non-negotiable' : '✨ Flexible'}
+                      </span>
+                    </label>
+                  )}
                </div>
 
                <div className="p-6 bg-green-50 rounded-2xl border border-green-100">
                   <h3 className="font-bold text-green-900 mb-4 flex items-center">
                     <DollarSign className="w-5 h-5 mr-2" /> Compensation
                   </h3>
-                  <div className="flex items-center gap-4">
-                     <select 
-                        value={profile.salaryCurrency || 'USD'}
-                        onChange={e => onUpdate({ salaryCurrency: e.target.value })}
-                        className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800"
-                     >
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
-                        <option value="EUR">EUR</option>
-                     </select>
-                     <input 
-                        type="number" 
-                        value={profile.salaryMin || ''}
-                        onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })}
-                        className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800 flex-1"
-                        placeholder="Min Annual Salary"
-                     />
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-green-800 mb-2">Minimum Salary</label>
+                      <div className="flex items-center gap-4 mb-2">
+                         <select 
+                            value={profile.salaryCurrency || 'USD'}
+                            onChange={e => onUpdate({ salaryCurrency: e.target.value })}
+                            className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800"
+                         >
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                            <option value="EUR">EUR</option>
+                         </select>
+                         <input 
+                            type="number" 
+                            value={profile.salaryMin || ''}
+                            onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })}
+                            className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800 flex-1"
+                            placeholder="Min Annual Salary"
+                         />
+                      </div>
+                      
+                      {profile.salaryMin && profile.salaryMin > 0 && (
+                        <label className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input
+                            type="checkbox"
+                            checked={profile.nonNegotiables?.includes('salary_min')}
+                            onChange={() => {
+                              const current = profile.nonNegotiables || [];
+                              const exists = current.includes('salary_min');
+                              onUpdate({
+                                nonNegotiables: exists 
+                                  ? current.filter(f => f !== 'salary_min')
+                                  : [...current, 'salary_min']
+                              });
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-green-600"
+                          />
+                          <span className={`font-medium ${profile.nonNegotiables?.includes('salary_min') ? 'text-green-900' : 'text-green-700'}`}>
+                            {profile.nonNegotiables?.includes('salary_min') ? '🔒 Hard minimum' : '✨ Open to negotiation'}
+                          </span>
+                        </label>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-green-800 mb-2">Current Bonus Structure</label>
+                      <input
+                        value={profile.currentBonuses || ''}
+                        onChange={e => onUpdate({ currentBonuses: e.target.value })}
+                        className="w-full bg-white border border-green-200 rounded-lg p-2 text-green-900"
+                        placeholder="e.g., 10% annual + equity"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-green-800 mb-2">Notice Period</label>
+                      <select
+                        value={profile.noticePeriod || ''}
+                        onChange={e => onUpdate({ noticePeriod: e.target.value })}
+                        className="w-full bg-white border border-green-200 rounded-lg p-2 font-medium text-green-900 mb-2"
+                      >
+                        <option value="">Select...</option>
+                        <option value="Immediate">Immediately available</option>
+                        <option value="2 Weeks">2 Weeks</option>
+                        <option value="1 Month">1 Month</option>
+                        <option value="2 Months">2 Months</option>
+                        <option value="3 Months">3 Months+</option>
+                      </select>
+                      
+                      {profile.noticePeriod && (
+                        <label className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input
+                            type="checkbox"
+                            checked={profile.nonNegotiables?.includes('notice_period')}
+                            onChange={() => {
+                              const current = profile.nonNegotiables || [];
+                              const exists = current.includes('notice_period');
+                              onUpdate({
+                                nonNegotiables: exists 
+                                  ? current.filter(f => f !== 'notice_period')
+                                  : [...current, 'notice_period']
+                              });
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-green-600"
+                          />
+                          <span className={`font-medium ${profile.nonNegotiables?.includes('notice_period') ? 'text-green-900' : 'text-green-700'}`}>
+                            {profile.nonNegotiables?.includes('notice_period') ? '🔒 Cannot start sooner' : '✨ Flexible'}
+                          </span>
+                        </label>
+                      )}
+                    </div>
                   </div>
                </div>
             </div>
@@ -466,6 +582,40 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                   onChange={inds => onUpdate({ interestedIndustries: inds })}
                   maxSelections={5}
                />
+
+               <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
+                  <GroupedMultiSelect
+                    label="Desired Perks & Benefits"
+                    options={PERKS_CATEGORIES}
+                    selected={profile.desiredPerks || []}
+                    onChange={perks => onUpdate({ desiredPerks: perks })}
+                    placeholder="Select perks..."
+                    grouped={true}
+                    maxSelections={8}
+                  />
+                  
+                  {profile.desiredPerks && profile.desiredPerks.length > 0 && (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm mt-4">
+                      <input
+                        type="checkbox"
+                        checked={profile.nonNegotiables?.includes('perks')}
+                        onChange={() => {
+                          const current = profile.nonNegotiables || [];
+                          const exists = current.includes('perks');
+                          onUpdate({
+                            nonNegotiables: exists 
+                              ? current.filter(f => f !== 'perks')
+                              : [...current, 'perks']
+                          });
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-purple-600"
+                      />
+                      <span className={`font-medium ${profile.nonNegotiables?.includes('perks') ? 'text-purple-900' : 'text-purple-700'}`}>
+                        {profile.nonNegotiables?.includes('perks') ? '🔒 These are must-haves' : '✨ Nice to have'}
+                      </span>
+                    </label>
+                  )}
+               </div>
             </div>
           )}
         </div>
