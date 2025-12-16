@@ -25,6 +25,7 @@ import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
 import WidgetSetup from './components/WidgetSetup'; 
 import VerificationForm from './components/VerificationForm';
+import CandidateProfileTabs from './components/CandidateProfileTabs';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -412,7 +413,11 @@ function MainApp() {
                  return <CompanyProfile profile={companyProfile} onSave={handleUpdateCompany} teamMembers={teamMembers} onTeamUpdate={handleTeamMemberUpdate}/>;
               } else {
                  if (!candidateProfile) return <div>Loading...</div>;
-                 return <CandidateProfileForm profile={candidateProfile} onSave={handleUpdateCandidate} />;
+                 return <CandidateProfileTabs 
+                    profile={candidateProfile} 
+                    onUpdate={(updates) => setCandidateProfile({...candidateProfile, ...updates})} 
+                    onSave={async () => await handleUpdateCandidate(candidateProfile)} 
+                 />;
               }
           case 'network': return <Network connections={connections} />;
           case 'messages': return <Messages />;
