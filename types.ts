@@ -4,8 +4,8 @@ export type Role = 'candidate' | 'recruiter' | null;
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
 
 export interface TeamMember {
-  id: string; // This is the row id in team_members table
-  user_id?: string; // The auth user id (nullable if pending invite)
+  id: string;
+  user_id?: string;
   company_id: string;
   email: string;
   name: string;
@@ -92,6 +92,63 @@ export interface Reference {
     characterTrait?: string;
 }
 
+// Professional Verification Types
+export interface ProfessionalVerification {
+  id: string;
+  candidate_id: string;
+  
+  // Referee Info
+  referee_email: string;
+  referee_name?: string;
+  referee_company?: string;
+  relationship_type: 'manager' | 'peer' | 'direct_report' | 'client';
+  years_worked_together: '<1 year' | '1-2 years' | '2-5 years' | '5+ years';
+  
+  // Skills
+  verified_skills: Array<{
+    skill: string;
+    confirmed: boolean;
+    proficiency: number; // 1-10
+  }>;
+  
+  // Performance Ratings
+  communication_written: number;
+  communication_verbal: number;
+  problem_solving_independence: number;
+  problem_solving_creativity: number;
+  reliability_deadlines: number;
+  reliability_quality: number;
+  collaboration_quality: number;
+  
+  // Optional Leadership
+  leadership_mentorship?: number;
+  leadership_decisions?: number;
+  
+  // Traits
+  verified_traits: Array<{
+    trait: string;
+    agreement: number; // 1-5 scale
+  }>;
+  
+  // Meta
+  verification_token?: string;
+  status: 'pending' | 'completed' | 'expired';
+  is_visible_publicly: boolean;
+  completed_at?: string;
+  created_at: string;
+  expires_at: string;
+}
+
+export interface VerificationStats {
+  total_verifications: number;
+  avg_communication: number;
+  avg_problem_solving: number;
+  avg_reliability: number;
+  avg_collaboration: number;
+  verified_skills: string[];
+  verified_traits: string[];
+}
+
 export interface CandidateProfile {
   id: string;
   name: string;
@@ -132,50 +189,42 @@ export interface CandidateProfile {
   
   // Education & Assessments
   education_level?: 'High School' | 'Associate Degree' | "Bachelor's Degree" | "Master's Degree" | 'PhD/Doctorate' | 'Professional Certification' | 'Bootcamp Graduate' | 'Self-Taught' | 'Other';
-  education_field?: string; // e.g., "Computer Science"
-  education_institution?: string; // e.g., "Stanford University"
-  myers_briggs?: string; // e.g., "INTJ"
-  disc_profile?: { D: number; I: number; S: number; C: number }; // 0-100 scores
-  enneagram_type?: string; // e.g., "Type 5" or "Type 3w4"
-  assessment_completed_at?: string; // ISO timestamp
+  education_field?: string; 
+  education_institution?: string;
+  myers_briggs?: string; 
+  disc_profile?: { D: number; I: number; S: number; C: number }; 
+  enneagram_type?: string; 
+  assessment_completed_at?: string; 
   is_mock_data?: boolean;
+
+  // Verifications
+  verification_stats?: VerificationStats;
+  verifications?: ProfessionalVerification[];
 }
 
 export interface CompanyProfile {
   id: string;
-  
-  // Basic Information
   companyName: string;
   logoUrl?: string;
   website: string;
   tagline: string;
-  
-  // About & Mission
   about: string;
   missionStatement?: string;
-  
-  // Culture & Values (arrays - must default to [])
   industry: string[];
   values: string[];
   cultureDescription?: string;
   workEnvironment?: string;
   desiredTraits: string[];
   diversityStatement?: string;
-  
-  // Perks & Benefits (arrays - must default to [])
   perks: string[];
   benefitsDescription?: string;
   remotePolicy: string;
-  
-  // Company Details
   teamSize: number;
   foundedYear: number;
   headquartersLocation: string;
   companySizeRange?: string;
   fundingStage?: string;
   growthStage?: string;
-  
-  // Tech & Social (arrays - must default to [])
   techStack: string[];
   socialMedia?: {
     linkedin?: string;
@@ -183,11 +232,8 @@ export interface CompanyProfile {
     github?: string;
   };
   companyPhotos: string[];
-  
-  // Existing fields
   billing_plan?: string;
   credits?: number;
-  
   is_mock_data?: boolean;
   mock_data_seed?: any;
 }
@@ -239,8 +285,6 @@ export interface JobPosting {
   postedDate: string;
   status: 'draft' | 'pending_approval' | 'published' | 'closed';
   approvals?: JobApprovals;
-  
-  // Expanded fields
   company_industry?: string[];
   company_logo?: string;
   required_education_level?: string;
@@ -255,6 +299,12 @@ export interface JobPosting {
   tech_stack?: string[];
   desired_myers_briggs?: string[];
   desired_disc_profile?: any;
+  desired_performance_scores?: { 
+    communication?: number; 
+    problemSolving?: number; 
+    reliability?: number; 
+    collaboration?: number 
+  };
   is_mock_data?: boolean;
   mock_data_seed?: any;
 }
@@ -277,6 +327,7 @@ export interface MatchBreakdown {
     perks: MatchDetails;
     industry: MatchDetails;
     traits: MatchDetails;
+    performance?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
@@ -328,7 +379,7 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  senderName?: string; // Hydrated on fetch
+  senderName?: string;
   text: string;
   timestamp: string;
   isRead: boolean;
@@ -341,7 +392,7 @@ export interface Conversation {
   participants: { id: string, name: string, avatar?: string }[];
   lastMessage: Message;
   unreadCount: number;
-  applicationId?: string; // Linked application
+  applicationId?: string;
   jobTitle?: string;
   companyName?: string;
   candidateName?: string;
@@ -383,36 +434,25 @@ export interface ProfileView {
 }
 
 export interface TalentSearchCriteria {
-  // Step 1: Core Requirements
   title?: string;
   seniority?: SeniorityLevel[];
   location?: string;
   workMode?: WorkMode[];
-  
-  // Step 2: Technical Skills
   requiredSkills: JobSkill[];  
-  
-  // Step 3: Culture Fit
   values?: string[];
   desiredTraits?: string[];
   requiredTraits?: string[];
   interestedIndustries?: string[];
-  
-  // Step 4: Practical Details
   salaryMin?: number;
   salaryMax?: number;
   salaryCurrency?: string;
   contractTypes?: JobType[];
-  maxNoticePeriod?: number;  // Days
+  maxNoticePeriod?: number;
   desiredPerks?: string[];
-  
-  // Education
   required_education_level?: string;
   preferred_education_level?: string;
   education_required?: boolean;
-
-  // Meta
-  dealBreakers?: string[];  // Field names that MUST match (e.g., ['work_mode', 'salary'])
+  dealBreakers?: string[];
 }
 
 export interface SavedSearch {
