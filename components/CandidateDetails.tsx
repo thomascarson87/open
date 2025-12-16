@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CandidateProfile, ThemeColor, ThemeFont } from '../types';
 import { 
   Lock, MapPin, DollarSign, Briefcase, Clock, ArrowLeft, Mail, 
-  CheckCircle, Edit, Award, Smile, Heart, Globe, Zap, Shield, Tag, Calendar
+  CheckCircle, Edit, Award, Smile, Heart, Globe, Zap, Shield, Tag, Calendar, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { notificationService } from '../services/notificationService';
@@ -167,6 +167,64 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
               
               {/* Left Column: Work History */}
               <div className="lg:col-span-2 space-y-8">
+                  {/* Verification Badge */}
+                  {candidate.verification_stats && candidate.verification_stats.total_verifications > 0 && (
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 border border-green-200">
+                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center">
+                            <ShieldCheck className="w-8 h-8 text-white" />
+                            </div>
+                            <div>
+                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                Verified Professional
+                                <span className="text-sm bg-green-600 text-white px-2 py-1 rounded font-bold">
+                                {candidate.verification_stats.total_verifications} References
+                                </span>
+                            </h3>
+                            <p className="text-sm text-gray-600">Performance verified by colleagues</p>
+                            </div>
+                        </div>
+                        </div>
+                        
+                        {/* Performance Scores */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
+                            <div className="text-3xl mb-1">💬</div>
+                            <div className="text-2xl font-bold text-gray-900">
+                            {candidate.verification_stats.avg_communication.toFixed(1)}
+                            <span className="text-sm text-gray-500">/10</span>
+                            </div>
+                            <div className="text-xs text-gray-600 font-semibold">Communication</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
+                            <div className="text-3xl mb-1">🧩</div>
+                            <div className="text-2xl font-bold text-gray-900">
+                            {candidate.verification_stats.avg_problem_solving.toFixed(1)}
+                            <span className="text-sm text-gray-500">/10</span>
+                            </div>
+                            <div className="text-xs text-gray-600 font-semibold">Problem Solving</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
+                            <div className="text-3xl mb-1">⚡</div>
+                            <div className="text-2xl font-bold text-gray-900">
+                            {candidate.verification_stats.avg_reliability.toFixed(1)}
+                            <span className="text-sm text-gray-500">/10</span>
+                            </div>
+                            <div className="text-xs text-gray-600 font-semibold">Reliability</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
+                            <div className="text-3xl mb-1">🤝</div>
+                            <div className="text-2xl font-bold text-gray-900">
+                            {candidate.verification_stats.avg_collaboration.toFixed(1)}
+                            <span className="text-sm text-gray-500">/10</span>
+                            </div>
+                            <div className="text-xs text-gray-600 font-semibold">Collaboration</div>
+                        </div>
+                        </div>
+                    </div>
+                  )}
+
                   {/* 2. Work Experience */}
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                       <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center">
@@ -205,11 +263,25 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Zap className="w-5 h-5 mr-2 text-yellow-500"/> Skills</h3>
                         <div className="flex flex-wrap gap-2">
-                            {candidate.skills.map((skill, i) => (
-                                <span key={i} className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium border border-gray-100 flex items-center">
-                                    {skill.name} <span className="text-gray-400 ml-1 text-xs">· {skill.years}y</span>
-                                </span>
-                            ))}
+                            {candidate.skills.map((skill, idx) => {
+                                const isVerified = candidate.verification_stats?.verified_skills?.includes(skill.name);
+                                return (
+                                    <span
+                                    key={idx}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                                        isVerified
+                                        ? 'bg-green-100 text-green-800 border border-green-300'
+                                        : 'bg-gray-50 text-gray-700 border border-gray-100'
+                                    }`}
+                                    >
+                                    {skill.name}
+                                    {isVerified && (
+                                        <CheckCircle className="w-3 h-3 inline ml-1 text-green-600" />
+                                    )}
+                                    <span className="text-xs ml-1 text-gray-500">· {skill.years}y</span>
+                                    </span>
+                                );
+                            })}
                         </div>
                   </div>
 
