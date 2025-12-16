@@ -1,5 +1,138 @@
 
+import { SkillLevelMetadata, ImpactScopeMetadata } from "../types";
+
 // constants/matchingData.ts
+
+export const SKILL_LEVEL_METADATA: Record<number, SkillLevelMetadata> = {
+  1: {
+    level: 1,
+    label: 'Learning',
+    icon: '🌱',
+    descriptor: 'I can do this with guidance',
+    behaviors: [
+      'Follows tutorials and documentation',
+      'Needs code reviews and direction',
+      'Completes well-defined tasks',
+      'Asks clarifying questions frequently'
+    ],
+    example: 'Can build simple components following existing patterns'
+  },
+  2: {
+    level: 2,
+    label: 'Practicing',
+    icon: '🔨',
+    descriptor: 'I can do this independently',
+    behaviors: [
+      'Completes assignments without hand-holding',
+      'Debugs common issues autonomously',
+      'Contributes to team discussions',
+      'Recognizes when to ask for help'
+    ],
+    example: 'Can build feature modules independently'
+  },
+  3: {
+    level: 3,
+    label: 'Applying',
+    icon: '🎯',
+    descriptor: 'I can do this across different contexts',
+    behaviors: [
+      'Adapts solutions to different scenarios',
+      'Makes architectural decisions',
+      'Mentors others informally',
+      'Optimizes for performance and maintainability'
+    ],
+    example: 'Can design component architectures and choose state management strategies'
+  },
+  4: {
+    level: 4,
+    label: 'Mastering',
+    icon: '🏆',
+    descriptor: 'I can teach this and handle novel challenges',
+    behaviors: [
+      'Teaches others formally',
+      'Handles ambiguous problems creatively',
+      'Establishes best practices',
+      'Influences technical direction'
+    ],
+    example: 'Can evaluate and introduce new patterns, establish team conventions'
+  },
+  5: {
+    level: 5,
+    label: 'Innovating',
+    icon: '🚀',
+    descriptor: "I'm pushing the boundaries",
+    behaviors: [
+      'Contributes to open source or industry standards',
+      'Speaks at conferences, writes thought leadership',
+      'Solves unprecedented problems',
+      'Externally recognized expert'
+    ],
+    example: 'Maintains widely-used libraries, shapes industry patterns'
+  }
+};
+
+export const IMPACT_SCOPE_METADATA: Record<number, ImpactScopeMetadata> = {
+  1: {
+    scope: 1,
+    label: 'Individual Contributor',
+    descriptor: 'My work primarily affects my own output',
+    characteristics: [
+      'Executes defined tasks and projects',
+      'Responsible for personal deliverables',
+      'Collaborates within immediate team',
+      'Impact measured by personal productivity'
+    ],
+    typicalRoles: ['Junior Engineer', 'Designer', 'Analyst', 'Associate PM']
+  },
+  2: {
+    scope: 2,
+    label: 'Team Impact',
+    descriptor: 'My work affects team outcomes and success',
+    characteristics: [
+      'Influences team direction and decisions',
+      'Mentors or coordinates with peers',
+      'Owns features or components critical to team goals',
+      'Impact measured by team velocity and quality'
+    ],
+    typicalRoles: ['Mid-Level Engineer', 'Senior Designer', 'Team Lead', 'Product Manager']
+  },
+  3: {
+    scope: 3,
+    label: 'Cross-Team Impact',
+    descriptor: 'My work affects multiple teams or products',
+    characteristics: [
+      'Drives initiatives spanning teams',
+      'Establishes standards used across org',
+      'Coordinates complex cross-functional projects',
+      'Impact measured by multi-team efficiency'
+    ],
+    typicalRoles: ['Staff Engineer', 'Principal Designer', 'Engineering Manager', 'Senior PM']
+  },
+  4: {
+    scope: 4,
+    label: 'Organizational Impact',
+    descriptor: 'My work affects company direction and strategy',
+    characteristics: [
+      'Shapes product/technical strategy',
+      'Influences hiring, culture, or practices',
+      'Makes decisions with company-wide implications',
+      'Impact measured by organizational success'
+    ],
+    typicalRoles: ['Principal Engineer', 'Director', 'VP', 'Head of Product']
+  },
+  5: {
+    scope: 5,
+    label: 'Industry Impact',
+    descriptor: 'My work affects the ecosystem beyond this company',
+    characteristics: [
+      'Contributes to open source, standards bodies',
+      'Speaks at major conferences, publishes research',
+      'Influences how broader industry operates',
+      'Impact measured by external recognition'
+    ],
+    typicalRoles: ['Distinguished Engineer', 'CTO', 'Founder', 'Industry Thought Leader']
+  }
+};
 
 export const CULTURAL_VALUES = [
   // Work Style & Pace
@@ -248,4 +381,3 @@ export type CulturalValue = typeof CULTURAL_VALUES[number];
 export type Industry = typeof INDUSTRIES[number];
 export type Perk = typeof ALL_PERKS[number];
 export type CharacterTrait = typeof ALL_CHARACTER_TRAITS[number];
-
