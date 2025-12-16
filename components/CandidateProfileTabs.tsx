@@ -18,6 +18,47 @@ import {
 } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
 
+// ===================================================================
+// NON-NEGOTIABLE TOGGLE SECTION - CRITICAL MATCHING FEATURE
+// DO NOT REMOVE: These toggles are essential for the matching algorithm
+// Removing them breaks the 8-dimensional matching system
+// ===================================================================
+const NonNegotiableToggle = ({ 
+  fieldName, 
+  isChecked, 
+  onToggle 
+}: { 
+  fieldName: string; 
+  isChecked: boolean; 
+  onToggle: () => void;
+}) => {
+  return (
+    <div className="flex items-center gap-3 mt-3">
+      <button
+        onClick={onToggle}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          isChecked 
+            ? 'bg-red-500 focus:ring-red-500' 
+            : 'bg-blue-500 focus:ring-blue-500'
+        }`}
+        role="switch"
+        aria-checked={isChecked}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+            isChecked ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+      <span className={`text-sm font-medium ${
+        isChecked ? 'text-red-700' : 'text-blue-700'
+      }`}>
+        {isChecked ? '🔒 Non-negotiable' : '✨ Flexible'}
+      </span>
+    </div>
+  );
+};
+
 interface Props {
   profile: CandidateProfile;
   onUpdate: (data: Partial<CandidateProfile>) => void;
@@ -76,6 +117,22 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
 
   const handleAddSkill = () => {
       onUpdate({ skills: [...currentSkills, { name: '', level: 1, years: 0 }] });
+  };
+
+  // NON-NEGOTIABLE HELPERS - DO NOT REMOVE
+  const isNonNegotiable = (fieldName: string): boolean => {
+    return profile.nonNegotiables?.includes(fieldName) || false;
+  };
+
+  const toggleNonNegotiable = (fieldName: string) => {
+    const current = profile.nonNegotiables || [];
+    const exists = current.includes(fieldName);
+    
+    onUpdate({
+      nonNegotiables: exists 
+        ? current.filter(f => f !== fieldName)
+        : [...current, fieldName]
+    });
   };
 
   const TabButton = ({ id, label, icon: Icon }: any) => (
@@ -402,7 +459,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
           {activeTab === 'preferences' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-2 duration-300 max-w-3xl">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                     <label className="block text-sm font-bold text-gray-700 mb-2">Work Mode</label>
                     <div className="flex flex-wrap gap-2">
                       {Object.values(WorkMode).map(mode => (
@@ -416,16 +473,24 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                             });
                           }}
                           className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
-                            profile.preferredWorkMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200'
+                            profile.preferredWorkMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-300'
                           }`}
                         >
                           {mode}
                         </button>
                       ))}
                     </div>
+                    {/* CRITICAL: Non-negotiable toggle */}
+                    {profile.preferredWorkMode && profile.preferredWorkMode.length > 0 && (
+                      <NonNegotiableToggle
+                        fieldName="work_mode"
+                        isChecked={isNonNegotiable('work_mode')}
+                        onToggle={() => toggleNonNegotiable('work_mode')}
+                      />
+                    )}
                   </div>
 
-                  <div>
+                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                     <label className="block text-sm font-bold text-gray-700 mb-2">Contract Types</label>
                     <div className="flex flex-wrap gap-2">
                       {Object.values(JobType).map(type => (
@@ -439,13 +504,21 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                             });
                           }}
                           className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
-                            profile.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200'
+                            profile.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-300'
                           }`}
                         >
                           {type}
                         </button>
                       ))}
                     </div>
+                    {/* CRITICAL: Non-negotiable toggle */}
+                    {profile.contractTypes && profile.contractTypes.length > 0 && (
+                        <NonNegotiableToggle
+                        fieldName="contract_type"
+                        isChecked={isNonNegotiable('contract_type')}
+                        onToggle={() => toggleNonNegotiable('contract_type')}
+                        />
+                    )}
                   </div>
                </div>
 
@@ -453,23 +526,75 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                   <h3 className="font-bold text-green-900 mb-4 flex items-center">
                     <DollarSign className="w-5 h-5 mr-2" /> Compensation
                   </h3>
-                  <div className="flex items-center gap-4">
-                     <select 
-                        value={profile.salaryCurrency || 'USD'}
-                        onChange={e => onUpdate({ salaryCurrency: e.target.value })}
-                        className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800"
-                     >
-                        <option value="USD">USD</option>
-                        <option value="GBP">GBP</option>
-                        <option value="EUR">EUR</option>
-                     </select>
-                     <input 
-                        type="number" 
-                        value={profile.salaryMin || ''}
-                        onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })}
-                        className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800 flex-1"
-                        placeholder="Min Annual Salary"
-                     />
+                  
+                  <div className="space-y-4">
+                    {/* Minimum Salary */}
+                    <div>
+                        <label className="block text-sm font-bold text-green-800 mb-2">Minimum Salary</label>
+                        <div className="flex items-center gap-4">
+                            <select 
+                                value={profile.salaryCurrency || 'USD'}
+                                onChange={e => onUpdate({ salaryCurrency: e.target.value })}
+                                className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800"
+                            >
+                                <option value="USD">USD</option>
+                                <option value="GBP">GBP</option>
+                                <option value="EUR">EUR</option>
+                            </select>
+                            <input 
+                                type="number" 
+                                value={profile.salaryMin || ''}
+                                onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })}
+                                className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800 flex-1"
+                                placeholder="Min Annual Salary"
+                            />
+                        </div>
+                        {/* CRITICAL: Non-negotiable toggle for salary */}
+                        {profile.salaryMin && profile.salaryMin > 0 && (
+                            <NonNegotiableToggle
+                            fieldName="salary_min"
+                            isChecked={isNonNegotiable('salary_min')}
+                            onToggle={() => toggleNonNegotiable('salary_min')}
+                            />
+                        )}
+                    </div>
+
+                    {/* Current Bonuses */}
+                    <div>
+                        <label className="block text-sm font-bold text-green-800 mb-2">Current Bonus Structure</label>
+                        <input
+                        value={profile.currentBonuses || ''}
+                        onChange={e => onUpdate({ currentBonuses: e.target.value })}
+                        className="w-full bg-white border border-green-200 rounded-lg p-2 text-green-900"
+                        placeholder="e.g., 10% annual + equity"
+                        />
+                    </div>
+
+                    {/* Notice Period */}
+                    <div>
+                        <label className="block text-sm font-bold text-green-800 mb-2">Notice Period</label>
+                        <select
+                            value={profile.noticePeriod || ''}
+                            onChange={e => onUpdate({ noticePeriod: e.target.value })}
+                            className="w-full bg-white border border-green-200 rounded-lg p-2 font-medium text-green-900"
+                        >
+                            <option value="">Select...</option>
+                            <option value="Immediate">Immediately available</option>
+                            <option value="2 Weeks">2 Weeks</option>
+                            <option value="1 Month">1 Month</option>
+                            <option value="2 Months">2 Months</option>
+                            <option value="3 Months">3 Months+</option>
+                        </select>
+                        
+                        {/* CRITICAL: Non-negotiable toggle for notice period */}
+                        {profile.noticePeriod && (
+                            <NonNegotiableToggle
+                            fieldName="notice_period"
+                            isChecked={isNonNegotiable('notice_period')}
+                            onToggle={() => toggleNonNegotiable('notice_period')}
+                            />
+                        )}
+                    </div>
                   </div>
                </div>
             </div>
@@ -530,6 +655,29 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                   onChange={inds => onUpdate({ interestedIndustries: inds })}
                   maxSelections={5}
                />
+
+               {/* Desired Perks - DO NOT REMOVE */}
+               <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
+                  <GroupedMultiSelect
+                    label="Desired Perks & Benefits"
+                    options={PERKS_CATEGORIES}
+                    selected={profile.desiredPerks || []}
+                    onChange={perks => onUpdate({ desiredPerks: perks })}
+                    placeholder="Select perks..."
+                    grouped={true}
+                    maxSelections={8}
+                    helpText="Healthcare, equity, flexible hours, etc."
+                  />
+                  
+                  {/* CRITICAL: Non-negotiable toggle for perks */}
+                  {profile.desiredPerks && profile.desiredPerks.length > 0 && (
+                    <NonNegotiableToggle
+                      fieldName="perks"
+                      isChecked={isNonNegotiable('perks')}
+                      onToggle={() => toggleNonNegotiable('perks')}
+                    />
+                  )}
+               </div>
             </div>
           )}
 
