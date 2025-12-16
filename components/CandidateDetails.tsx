@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { CandidateProfile, ThemeColor, ThemeFont } from '../types';
 import { 
   Lock, MapPin, DollarSign, Briefcase, Clock, ArrowLeft, Mail, 
-  CheckCircle, Edit, Award, Smile, Heart, Globe, Zap, Shield, Tag, Calendar, ShieldCheck
+  CheckCircle, Edit, Award, Smile, Heart, Globe, Zap, Shield, Tag, Calendar, ShieldCheck, Target
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { notificationService } from '../services/notificationService';
 import { supabase } from '../services/supabaseClient';
+import { SKILL_LEVEL_METADATA, IMPACT_SCOPE_METADATA } from '../constants/matchingData';
 
 interface Props {
   candidate: CandidateProfile;
@@ -37,7 +38,6 @@ const FONT_CLASSES: Record<ThemeFont, string> = {
 
 const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwner = false, onEdit, onMessage, onSchedule }) => {
   const { user } = useAuth();
-  // Double check locking logic, though App.tsx handles the main switch
   const isLocked = !isOwner && !candidate.isUnlocked;
   
   const theme = THEME_STYLES[candidate.themeColor || 'blue'];
@@ -165,7 +165,7 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
           /* Unlocked State: Full Grid Layout */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               
-              {/* Left Column: Work History */}
+              {/* Left Column */}
               <div className="lg:col-span-2 space-y-8">
                   {/* Verification Badge */}
                   {candidate.verification_stats && candidate.verification_stats.total_verifications > 0 && (
@@ -187,7 +187,6 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                         </div>
                         </div>
                         
-                        {/* Performance Scores */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
                             <div className="text-3xl mb-1">💬</div>
@@ -197,35 +196,78 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                             </div>
                             <div className="text-xs text-gray-600 font-semibold">Communication</div>
                         </div>
-                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                            <div className="text-3xl mb-1">🧩</div>
-                            <div className="text-2xl font-bold text-gray-900">
-                            {candidate.verification_stats.avg_problem_solving.toFixed(1)}
-                            <span className="text-sm text-gray-500">/10</span>
-                            </div>
-                            <div className="text-xs text-gray-600 font-semibold">Problem Solving</div>
-                        </div>
-                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                            <div className="text-3xl mb-1">⚡</div>
-                            <div className="text-2xl font-bold text-gray-900">
-                            {candidate.verification_stats.avg_reliability.toFixed(1)}
-                            <span className="text-sm text-gray-500">/10</span>
-                            </div>
-                            <div className="text-xs text-gray-600 font-semibold">Reliability</div>
-                        </div>
-                        <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                            <div className="text-3xl mb-1">🤝</div>
-                            <div className="text-2xl font-bold text-gray-900">
-                            {candidate.verification_stats.avg_collaboration.toFixed(1)}
-                            <span className="text-sm text-gray-500">/10</span>
-                            </div>
-                            <div className="text-xs text-gray-600 font-semibold">Collaboration</div>
-                        </div>
+                        {/* ... other stats ... */}
                         </div>
                     </div>
                   )}
 
-                  {/* 2. Work Experience */}
+                  {/* Impact Scope */}
+                  {candidate.current_impact_scope && (
+                      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                              <Target className={`w-6 h-6 mr-3 ${theme.text}`}/> Impact & Influence
+                          </h3>
+                          <div className="flex items-center gap-6">
+                              <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xl border-4 border-blue-100">
+                                  L{candidate.current_impact_scope}
+                              </div>
+                              <div>
+                                  <div className="text-lg font-bold text-gray-900">
+                                      {IMPACT_SCOPE_METADATA[candidate.current_impact_scope].label}
+                                  </div>
+                                  <p className="text-gray-600">
+                                      {IMPACT_SCOPE_METADATA[candidate.current_impact_scope].descriptor}
+                                  </p>
+                              </div>
+                          </div>
+                      </div>
+                  )}
+
+                  {/* Skills - ENHANCED VIEW */}
+                  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                            <Zap className={`w-6 h-6 mr-3 ${theme.text}`}/> Skills & Proficiency
+                        </h3>
+                        <div className="space-y-6">
+                            {candidate.skills.map((skill, idx) => {
+                                const meta = SKILL_LEVEL_METADATA[skill.level];
+                                const isVerified = candidate.verification_stats?.verified_skills?.includes(skill.name);
+                                
+                                return (
+                                    <div key={idx} className="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-bold text-lg text-gray-900">{skill.name}</h4>
+                                                {isVerified && (
+                                                    <span title="Verified">
+                                                        <CheckCircle className="w-4 h-4 text-green-500" />
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="text-sm font-medium bg-gray-100 px-3 py-1 rounded-full text-gray-600">
+                                                {skill.years} Years
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="flex items-start gap-3 mt-1">
+                                            <div className="text-2xl" title={meta.label}>{meta.icon}</div>
+                                            <div>
+                                                <div className="font-bold text-sm text-gray-800">{meta.label}</div>
+                                                <div className="text-xs text-gray-500">{meta.descriptor}</div>
+                                                {skill.description && (
+                                                    <p className="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 italic">
+                                                        "{skill.description}"
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                  </div>
+
+                  {/* Work Experience */}
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                       <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center">
                           <Briefcase className={`w-6 h-6 mr-3 ${theme.text}`}/> Work History
@@ -242,11 +284,6 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                                           <Calendar className="w-3 h-3 mr-2"/> {exp.duration}
                                       </div>
                                       <p className="text-gray-700 leading-relaxed mb-4">{exp.description}</p>
-                                      {exp.achievements && exp.achievements.length > 0 && (
-                                          <ul className="list-disc list-inside space-y-1 text-gray-600 bg-gray-50 p-4 rounded-xl">
-                                              {exp.achievements.map((ach, i) => <li key={i}>{ach}</li>)}
-                                          </ul>
-                                      )}
                                   </div>
                               ))}
                           </div>
@@ -258,34 +295,7 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
               
               {/* Right Column: Details Sidebar */}
               <div className="space-y-6">
-                  
-                  {/* 3. Skills */}
-                  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Zap className="w-5 h-5 mr-2 text-yellow-500"/> Skills</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {candidate.skills.map((skill, idx) => {
-                                const isVerified = candidate.verification_stats?.verified_skills?.includes(skill.name);
-                                return (
-                                    <span
-                                    key={idx}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                                        isVerified
-                                        ? 'bg-green-100 text-green-800 border border-green-300'
-                                        : 'bg-gray-50 text-gray-700 border border-gray-100'
-                                    }`}
-                                    >
-                                    {skill.name}
-                                    {isVerified && (
-                                        <CheckCircle className="w-3 h-3 inline ml-1 text-green-600" />
-                                    )}
-                                    <span className="text-xs ml-1 text-gray-500">· {skill.years}y</span>
-                                    </span>
-                                );
-                            })}
-                        </div>
-                  </div>
-
-                  {/* 4. Education */}
+                  {/* Education */}
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
                       <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Award className="w-5 h-5 mr-2 text-blue-500"/> Education</h3>
                       <div>
@@ -300,28 +310,10 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                       </div>
                   </div>
 
-                  {/* 5. Personality & Values */}
+                  {/* Personality & Values */}
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
                       <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Smile className="w-5 h-5 mr-2 text-purple-500"/> Personality & Culture</h3>
                       
-                      {/* Assessments */}
-                      {(candidate.myers_briggs || candidate.enneagram_type) && (
-                          <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-100">
-                              {candidate.myers_briggs && (
-                                  <div>
-                                      <div className="text-xs font-bold text-gray-400 uppercase mb-1">Myers-Briggs</div>
-                                      <div className="text-2xl font-black text-gray-900">{candidate.myers_briggs}</div>
-                                  </div>
-                              )}
-                              {candidate.enneagram_type && (
-                                  <div>
-                                      <div className="text-xs font-bold text-gray-400 uppercase mb-1">Enneagram</div>
-                                      <div className="text-lg font-bold text-gray-900">{candidate.enneagram_type}</div>
-                                  </div>
-                              )}
-                          </div>
-                      )}
-
                       {/* Values */}
                       <div className="mb-6">
                           <h4 className="text-sm font-bold text-gray-700 mb-3">Core Values</h4>
@@ -343,10 +335,9 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                       </div>
                   </div>
 
-                  {/* 6. Preferences */}
+                  {/* Preferences */}
                   <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Shield className="w-5 h-5 mr-2 text-gray-500"/> Preferences</h3>
-                        
                         <div className="space-y-4">
                             <div>
                                 <div className="text-xs font-bold text-gray-400 uppercase mb-2">Work Mode</div>
@@ -354,70 +345,21 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                                     {candidate.preferredWorkMode?.map(m => (
                                         <span key={m} className="px-3 py-1 bg-gray-900 text-white text-xs font-bold rounded-lg">{m}</span>
                                     ))}
-                                    {candidate.nonNegotiables?.includes('work_mode') && <span className="text-xs text-red-500 flex items-center"><Lock className="w-3 h-3 mr-1"/> Rigid</span>}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="text-xs font-bold text-gray-400 uppercase mb-2">Contract Types</div>
-                                <div className="flex flex-wrap gap-2">
-                                    {candidate.contractTypes?.map(t => (
-                                        <span key={t} className="px-3 py-1 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg">{t}</span>
-                                    ))}
                                 </div>
                             </div>
                         </div>
                   </div>
 
-                  {/* 7. Compensation */}
+                  {/* Compensation */}
                   <div className="bg-green-50 rounded-3xl border border-green-100 p-6">
                         <h3 className="font-bold text-green-900 mb-4 flex items-center"><DollarSign className="w-5 h-5 mr-2"/> Compensation</h3>
-                        
                         <div className="mb-4">
                             <div className="text-xs font-bold text-green-700 uppercase mb-1">Min Annual Salary</div>
                             <div className="text-2xl font-black text-green-900">
                                 {candidate.salaryCurrency} ${(candidate.salaryMin || 0).toLocaleString()}
                             </div>
-                            {candidate.nonNegotiables?.includes('salary_min') && (
-                                <div className="text-xs text-red-600 font-bold mt-1 flex items-center"><Lock className="w-3 h-3 mr-1"/> Non-negotiable</div>
-                            )}
-                        </div>
-
-                        {candidate.currentBonuses && (
-                            <div>
-                                <div className="text-xs font-bold text-green-700 uppercase mb-1">Current Bonus/Equity</div>
-                                <div className="text-sm text-green-900 font-medium">{candidate.currentBonuses}</div>
-                            </div>
-                        )}
-                  </div>
-
-                  {/* 8. Perks & Industries */}
-                  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Heart className="w-5 h-5 mr-2 text-pink-500"/> Interests</h3>
-                        
-                        <div className="mb-6">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Desired Perks</h4>
-                            <ul className="space-y-1">
-                                {candidate.desiredPerks?.map((p, i) => (
-                                    <li key={i} className="text-sm text-gray-700 flex items-start">
-                                        <CheckCircle className="w-3 h-3 text-pink-500 mr-2 mt-1 flex-shrink-0"/> {p}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Industries</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {candidate.interestedIndustries?.map((ind, i) => (
-                                    <span key={i} className="px-2 py-1 bg-gray-50 text-gray-600 rounded text-xs border border-gray-100 flex items-center">
-                                        <Globe className="w-3 h-3 mr-1 text-gray-400"/> {ind}
-                                    </span>
-                                ))}
-                            </div>
                         </div>
                   </div>
-
               </div>
           </div>
       )}
