@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { CandidateProfile, SeniorityLevel, WorkMode, JobType } from '../types';
+import { CandidateProfile, SeniorityLevel, WorkMode, JobType, Skill } from '../types';
 import { 
   User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign, 
   MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout, Smile, ShieldCheck
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import VerificationDashboard from './VerificationDashboard';
+import SkillLevelSelector from './SkillLevelSelector';
+import ImpactScopeSelector from './ImpactScopeSelector';
 import { 
   CULTURAL_VALUES, 
   INDUSTRIES, 
@@ -43,6 +45,38 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
   };
 
   const completion = calculateCompletion();
+
+  // Helper to ensure skills have levels (migration logic for frontend)
+  const ensureSkillLevels = (skills: Skill[]) => {
+      return skills.map(s => {
+          if (s.level) return s;
+          // Estimate level from years if missing
+          const years = s.years || 0;
+          let estimatedLevel: 1|2|3|4|5 = 1;
+          if (years >= 1) estimatedLevel = 2;
+          if (years >= 3) estimatedLevel = 3;
+          if (years >= 5) estimatedLevel = 4;
+          if (years >= 8) estimatedLevel = 5;
+          return { ...s, level: estimatedLevel };
+      });
+  };
+
+  const currentSkills = ensureSkillLevels(profile.skills || []);
+
+  const handleUpdateSkill = (updatedSkill: Skill, index: number) => {
+      const newSkills = [...currentSkills];
+      newSkills[index] = updatedSkill;
+      onUpdate({ skills: newSkills });
+  };
+
+  const handleRemoveSkill = (index: number) => {
+      const newSkills = currentSkills.filter((_, i) => i !== index);
+      onUpdate({ skills: newSkills });
+  };
+
+  const handleAddSkill = () => {
+      onUpdate({ skills: [...currentSkills, { name: '', level: 1, years: 0 }] });
+  };
 
   const TabButton = ({ id, label, icon: Icon }: any) => (
     <button
@@ -170,86 +204,35 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
           {activeTab === 'career' && (
             <div className="space-y-10 animate-in slide-in-from-bottom-2 duration-300">
               
-              {/* Skills Section - REPLACED */}
+              {/* Impact Scope Section */}
+              <ImpactScopeSelector 
+                  currentScope={profile.current_impact_scope}
+                  desiredScopes={profile.desired_impact_scope}
+                  onChangeCurrent={(scope) => onUpdate({ current_impact_scope: scope as any })}
+                  onChangeDesired={(scopes) => onUpdate({ desired_impact_scope: scopes as any })}
+              />
+
+              {/* Skills Section - ENHANCED */}
               <div>
                   <h3 className="text-xl font-bold text-gray-900 flex items-center mb-4">
-                      <Award className="w-5 h-5 mr-2 text-gray-400" /> Skills
+                      <Award className="w-5 h-5 mr-2 text-gray-400" /> Skills & Proficiency
                   </h3>
-                  <div className="space-y-3">
-                      {(profile.skills || []).map((skill, idx) => (
-                      <div key={idx} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl group hover:bg-gray-100 transition-all">
-                          <span className="font-bold text-gray-900">{skill.name}</span>
-                          <div className="flex items-center gap-3">
-                          <button
-                              onClick={() => {
-                              const newSkills = [...(profile.skills || [])];
-                              newSkills[idx] = { ...skill, years: Math.max(0, skill.years - 0.5) };
-                              onUpdate({ skills: newSkills });
-                              }}
-                              className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
-                          >
-                              -
-                          </button>
-                          <span className="font-bold text-gray-600 w-12 text-center">
-                              {skill.years}y
-                          </span>
-                          <button
-                              onClick={() => {
-                              const newSkills = [...(profile.skills || [])];
-                              newSkills[idx] = { ...skill, years: skill.years + 0.5 };
-                              onUpdate({ skills: newSkills });
-                              }}
-                              className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
-                          >
-                              +
-                          </button>
-                          <button
-                              onClick={() => {
-                              const newSkills = (profile.skills || []).filter((_, i) => i !== idx);
-                              onUpdate({ skills: newSkills });
-                              }}
-                              className="ml-2 text-red-400 hover:text-red-600 transition-colors"
-                          >
-                              <Trash2 className="w-4 h-4" />
-                          </button>
-                          </div>
-                      </div>
+                  <div className="space-y-4">
+                      {currentSkills.map((skill, idx) => (
+                          <SkillLevelSelector
+                              key={idx}
+                              skill={skill}
+                              onChange={(updated) => handleUpdateSkill(updated, idx)}
+                              onRemove={() => handleRemoveSkill(idx)}
+                          />
                       ))}
                       
-                      {/* Add Skill Section */}
-                      <div className="flex gap-2 pt-2">
-                      <input
-                          type="text"
-                          placeholder="Skill name (e.g., React)"
-                          className="flex-1 p-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-100"
-                          onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                              const skillName = (e.target as HTMLInputElement).value.trim();
-                              if (skillName) {
-                              onUpdate({ 
-                                  skills: [...(profile.skills || []), { name: skillName, years: 1 }] 
-                              });
-                              (e.target as HTMLInputElement).value = '';
-                              }
-                          }
-                          }}
-                      />
                       <button
-                          onClick={(e) => {
-                          const input = (e.currentTarget.previousSibling as HTMLInputElement);
-                          const skillName = input.value.trim();
-                          if (skillName) {
-                              onUpdate({ 
-                              skills: [...(profile.skills || []), { name: skillName, years: 1 }] 
-                              });
-                              input.value = '';
-                          }
-                          }}
-                          className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all flex items-center"
+                          onClick={handleAddSkill}
+                          className="w-full py-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 font-bold hover:border-gray-400 hover:text-gray-700 transition-all flex items-center justify-center"
                       >
-                          <Plus className="w-4 h-4 mr-2" /> Add Skill
+                          <Plus className="w-5 h-5 mr-2" /> Add Skill
                       </button>
-                      </div>
                   </div>
               </div>
 
