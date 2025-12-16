@@ -48,8 +48,69 @@ function calculateVerificationBoost(candidate: CandidateProfile): VerificationBo
   };
 }
 
+/**
+ * Estimate level from years for backward compatibility
+ */
+function estimateLevelFromYears(years: number): 1 | 2 | 3 | 4 | 5 {
+  if (years < 1) return 1;
+  if (years < 2) return 2;
+  if (years < 5) return 3;
+  if (years < 8) return 4;
+  return 5;
+}
+
+/**
+ * Helper: Get skills in new format, with fallback for old format
+ */
+function normalizeSkillsForMatching(skills: any[]): Skill[] {
+  if (!skills || skills.length === 0) return [];
+  
+  return skills.map(skill => {
+    // Already in new format
+    if (skill.level !== undefined) {
+      return skill as Skill;
+    }
+    
+    // Old format - estimate level from years
+    const estimatedLevel = estimateLevelFromYears(skill.years || 0);
+    return {
+      name: skill.name,
+      level: estimatedLevel,
+      years: skill.years,
+      description: undefined
+    } as Skill;
+  });
+}
+
+/**
+ * Calculate skill match between candidate and job
+ * Primary: Level alignment (proficiency)
+ * Secondary: Years (context only, not weighted heavily)
+ */
+function calculateSkillMatch(
+  candidateSkill: Skill,
+  jobRequirement: JobSkill
+): number {
+  const levelDiff = candidateSkill.level - jobRequirement.required_level;
+  
+  // Perfect level match
+  if (levelDiff === 0) return 100;
+  
+  // Over-qualified (slight penalty to avoid boredom/overqualification risk)
+  if (levelDiff === 1) return 95;
+  if (levelDiff === 2) return 90;
+  if (levelDiff >= 3) return 85;
+  
+  // Under-qualified (steeper penalty)
+  if (levelDiff === -1) return 70; // One level below
+  if (levelDiff === -2) return 40; // Two levels below
+  if (levelDiff <= -3) return 10; // Major skill gap
+  
+  return 0;
+}
+
 export function calculateSkillsMatch(
-  candidateSkills: Skill[],
+  candidateSkills: any[], // Accept raw array
   jobSkills: JobSkill[],
   verificationBoost: VerificationBoost
 ): MatchDetails {
@@ -57,42 +118,46 @@ export function calculateSkillsMatch(
       return { score: 100, reason: 'No specific skills required' };
   }
 
+  // Normalize candidate skills to ensure 'level' property exists
+  const safeCandidateSkills = normalizeSkillsForMatching(candidateSkills);
+
   const verifiedSkillsSet = new Set(verificationBoost.verifiedSkills || []);
-  let skillsMatchedWeight = 0;
+  let totalScore = 0;
+  let requiredSkillsMet = 0;
+  let preferredSkillsMet = 0;
   
   jobSkills.forEach(jobSkill => {
-      const candidateSkill = candidateSkills.find(
+      const candidateSkill = safeCandidateSkills.find(
         s => s.name.toLowerCase() === jobSkill.name.toLowerCase()
       );
       
       const isRequired = jobSkill.weight === 'required';
 
       if (candidateSkill) {
-        let skillPoints = 100;
-        
-        const candidateYears = candidateSkill.years !== undefined ? candidateSkill.years : (candidateSkill as any).minimumYears || 0;
-
-        if (candidateYears < jobSkill.minimumYears) {
-          skillPoints -= (jobSkill.minimumYears - candidateYears) * 20;
-        }
+        let matchScore = calculateSkillMatch(candidateSkill, jobSkill);
         
         // Verification Boost for individual skills
         if (verifiedSkillsSet.has(candidateSkill.name)) {
-            skillPoints = Math.min(100, skillPoints * 1.2); 
+            matchScore = Math.min(100, matchScore * 1.2); 
         }
         
-        skillPoints = Math.max(0, skillPoints);
-        
+        // Weighting: Required skills count double in score impact
         if (isRequired) {
-            skillsMatchedWeight += skillPoints * 2; 
+            totalScore += matchScore * 2; 
         } else {
-            skillsMatchedWeight += skillPoints;
+            totalScore += matchScore;
         }
+
+        if (isRequired && matchScore >= 70) requiredSkillsMet++;
+        if (!isRequired && matchScore >= 70) preferredSkillsMet++;
+
+      } else {
+        // Missing skill penalty handled by adding 0 to score
       }
   });
     
   const totalPossibleWeight = jobSkills.reduce((acc, s) => acc + (s.weight === 'required' ? 200 : 100), 0);
-  const rawScore = totalPossibleWeight > 0 ? (skillsMatchedWeight / totalPossibleWeight) * 100 : 100;
+  const rawScore = totalPossibleWeight > 0 ? (totalScore / totalPossibleWeight) * 100 : 100;
   
   const finalScore = Math.min(100, rawScore * verificationBoost.skillsMultiplier);
 
@@ -133,6 +198,37 @@ export function calculatePerformanceMatch(
     score: finalScore,
     reason: dimensionsChecked > 0 ? 'Based on verified performance' : 'No requirements set'
   };
+}
+
+/**
+ * Calculate impact scope alignment
+ */
+function calculateImpactScopeMatch(
+  candidateDesiredScopes: number[] | undefined | null,
+  jobRequiredScope: number | undefined | null
+): MatchDetails {
+  if (!jobRequiredScope) return { score: 100, reason: 'No impact scope specified' };
+  if (!candidateDesiredScopes || candidateDesiredScopes.length === 0) {
+    return { score: 100, reason: 'Flexible impact scope' }; 
+  }
+  
+  if (candidateDesiredScopes.includes(jobRequiredScope)) {
+    return { score: 100, reason: 'Impact scope aligned' }; 
+  }
+  
+  // Calculate closest scope
+  const minDistance = Math.min(
+    ...candidateDesiredScopes.map(scope => Math.abs(scope - jobRequiredScope))
+  );
+  
+  let score = 0;
+  // Penalize based on distance
+  if (minDistance === 1) score = 80;
+  else if (minDistance === 2) score = 60;
+  else if (minDistance === 3) score = 40;
+  else score = 20; // 4+ levels away
+
+  return { score, reason: 'Impact scope mismatch' };
 }
 
 export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): MatchBreakdown => {
@@ -244,17 +340,21 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
       job.desired_performance_scores
   );
 
+  // New Impact Match
+  const impactMatch = calculateImpactScopeMatch(safeCandidate.desired_impact_scope, job.required_impact_scope);
+
   const weights = {
     skills: 0.25,
     salary: 0.15,
     contract: 0.05,
     locWork: 0.10,
-    seniority: 0.10,
+    seniority: 0.05,
     culture: 0.10,
     perks: 0.05,
     industry: 0.05,
     traits: 0.05,
-    performance: 0.10
+    performance: 0.10,
+    impact: 0.05 // New Weight
   };
 
   let overallScore = Math.round(
@@ -267,7 +367,8 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
       (perkScore * weights.perks) +
       (industryScore * weights.industry) +
       (traitsScore * weights.traits) + 
-      (performanceMatch.score * weights.performance)
+      (performanceMatch.score * weights.performance) +
+      (impactMatch.score * weights.impact)
   );
 
   if (dealBreakers.length > 0) {
@@ -287,7 +388,8 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
           perks: { score: Math.round(perkScore), reason: 'Perks score' },
           industry: { score: Math.round(industryScore), reason: 'Industry score' },
           traits: { score: Math.round(traitsScore), reason: 'Traits score' },
-          performance: performanceMatch
+          performance: performanceMatch,
+          impact: impactMatch
       },
       dealBreakers,
       recommendations
@@ -307,6 +409,8 @@ export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidat
         perks: criteria.desiredPerks || [],
         companyIndustry: criteria.interestedIndustries || [],
         requiredTraits: criteria.requiredTraits || [],
+        // Fallback for impact scope if not in search criteria
+        required_impact_scope: 3 
     };
     return calculateMatch(jobLikeObject, candidate);
 };
