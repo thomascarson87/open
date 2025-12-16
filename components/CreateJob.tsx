@@ -1,14 +1,17 @@
+
 import React, { useState } from 'react';
 import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
 import { generateJobDescription } from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
 import { ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck, Trash2, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
+import ImpactScopeSelector from './ImpactScopeSelector';
 import { 
   CULTURAL_VALUES, 
   PERKS_CATEGORIES, 
   CHARACTER_TRAITS_CATEGORIES,
-  SKILLS_LIST
+  SKILLS_LIST,
+  SKILL_LEVEL_METADATA
 } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
 
@@ -34,7 +37,8 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
         approvals: { hiringManager: { status: 'pending', assignedTo: '' }, finance: { status: 'pending', assignedTo: '' } },
         responsibilities: [],
         key_deliverables: [],
-        tech_stack: []
+        tech_stack: [],
+        required_impact_scope: 3
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -202,6 +206,16 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                              </div>
                         </div>
                         
+                        {/* Impact Scope */}
+                        <div className="border-t border-gray-100 pt-6">
+                            <ImpactScopeSelector
+                                currentScope={jobData.required_impact_scope}
+                                onChangeCurrent={(scope) => setJobData({...jobData, required_impact_scope: scope as any})}
+                                desiredScopes={[]} // Not used for jobs
+                                onChangeDesired={() => {}} // Not used
+                            />
+                        </div>
+
                         {/* Education Requirements */}
                         <div className="border-t border-gray-100 pt-6 mt-6">
                             <h3 className="text-sm font-bold text-gray-700 mb-4">Education Requirements</h3>
@@ -397,7 +411,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
 
                 {step === 2 && (
                     <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
-                         {/* Skills */}
+                         {/* Skills - UPDATED FOR LEVELS */}
                          <div>
                              <h3 className="text-lg font-bold mb-4 flex items-center"><Award className="w-5 h-5 mr-2" /> Technical Skills & Requirements</h3>
                              <GroupedMultiSelect 
@@ -411,7 +425,7 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                     // Add new
                                     names.forEach(n => {
                                         if(!filtered.find(s => s.name === n)) {
-                                            filtered.push({ name: n, minimumYears: 2, weight: 'preferred' });
+                                            filtered.push({ name: n, minimumYears: 2, required_level: 3, weight: 'preferred' });
                                         }
                                     });
                                     setJobData({...jobData, requiredSkills: filtered});
@@ -422,31 +436,51 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                              
                              <div className="space-y-3 mt-4">
                                  {jobData.requiredSkills?.map((skill, idx) => (
-                                     <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                         <span className="font-bold text-gray-700 w-1/3">{skill.name}</span>
-                                         <div className="flex items-center space-x-4">
-                                             <div className="flex items-center space-x-2">
-                                                 <span className="text-xs text-gray-500 uppercase">Min Years:</span>
+                                     <div key={idx} className="flex flex-col md:flex-row items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-4">
+                                         <span className="font-bold text-gray-700 w-full md:w-1/4">{skill.name}</span>
+                                         <div className="flex flex-1 items-center space-x-4 w-full">
+                                             
+                                             <div className="flex-1">
+                                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Required Level</label>
+                                                 <select
+                                                    value={skill.required_level || 3}
+                                                    onChange={e => updateSkill(skill.name, 'required_level', parseInt(e.target.value))}
+                                                    className="w-full p-2 border border-gray-200 rounded text-sm font-medium bg-white"
+                                                 >
+                                                     {[1,2,3,4,5].map(lvl => (
+                                                         <option key={lvl} value={lvl}>
+                                                             {lvl} - {SKILL_LEVEL_METADATA[lvl as number].label}
+                                                         </option>
+                                                     ))}
+                                                 </select>
+                                             </div>
+
+                                             <div className="w-24">
+                                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Min Years</label>
                                                  <input 
                                                     type="number" 
                                                     value={skill.minimumYears}
                                                     onChange={e => updateSkill(skill.name, 'minimumYears', parseInt(e.target.value))}
-                                                    className="w-16 p-1 border rounded text-center font-bold"
+                                                    className="w-full p-2 border rounded text-center font-medium"
                                                  />
                                              </div>
-                                             <div className="flex gap-1">
-                                                 <button 
-                                                    onClick={() => updateSkill(skill.name, 'weight', 'preferred')}
-                                                    className={`px-3 py-1 rounded text-xs font-bold ${skill.weight === 'preferred' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}
-                                                 >
-                                                     Nice to have
-                                                 </button>
-                                                 <button 
-                                                    onClick={() => updateSkill(skill.name, 'weight', 'required')}
-                                                    className={`px-3 py-1 rounded text-xs font-bold ${skill.weight === 'required' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-400'}`}
-                                                 >
-                                                     Required
-                                                 </button>
+                                             
+                                             <div className="flex flex-col gap-1 w-32">
+                                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Priority</label>
+                                                 <div className="flex rounded-md shadow-sm" role="group">
+                                                    <button 
+                                                        onClick={() => updateSkill(skill.name, 'weight', 'preferred')}
+                                                        className={`flex-1 px-2 py-2 text-xs font-bold rounded-l-md border ${skill.weight === 'preferred' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-white text-gray-500 border-gray-200'}`}
+                                                    >
+                                                        Nice
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => updateSkill(skill.name, 'weight', 'required')}
+                                                        className={`flex-1 px-2 py-2 text-xs font-bold rounded-r-md border ${skill.weight === 'required' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-white text-gray-500 border-gray-200'}`}
+                                                    >
+                                                        Must
+                                                    </button>
+                                                 </div>
                                              </div>
                                          </div>
                                      </div>
