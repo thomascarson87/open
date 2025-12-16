@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { CandidateProfile, SeniorityLevel, WorkMode, JobType } from '../types';
 import { 
   User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign, 
-  MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout, Smile
+  MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout, Smile, ShieldCheck
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
+import VerificationDashboard from './VerificationDashboard';
 import { 
   CULTURAL_VALUES, 
   INDUSTRIES, 
@@ -21,72 +22,18 @@ interface Props {
   onSave: () => void;
 }
 
-const NonNegotiableToggle = ({ 
-  isNonNegotiable, 
-  onToggle 
-}: { 
-  isNonNegotiable: boolean; 
-  onToggle: () => void;
-}) => {
-  return (
-    <div className="flex items-center gap-3">
-      <button
-        onClick={onToggle}
-        type="button"
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-          isNonNegotiable 
-            ? 'bg-red-500 focus:ring-red-500' 
-            : 'bg-blue-500 focus:ring-blue-500'
-        }`}
-        role="switch"
-        aria-checked={isNonNegotiable}
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-            isNonNegotiable ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
-      <span className={`text-sm font-medium ${
-        isNonNegotiable ? 'text-red-700' : 'text-blue-700'
-      }`}>
-        {isNonNegotiable ? '🔒 Non-negotiable' : '✨ Flexible'}
-      </span>
-    </div>
-  );
-};
-
 const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'career' | 'preferences' | 'values'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'career' | 'preferences' | 'values' | 'verifications'>('overview');
 
-  const isNonNegotiable = (field: string) => profile.nonNegotiables?.includes(field) || false;
-
-  const toggleNonNegotiable = (field: string) => {
-    const current = profile.nonNegotiables || [];
-    const exists = current.includes(field);
-    onUpdate({
-      nonNegotiables: exists 
-        ? current.filter(f => f !== field)
-        : [...current, field]
-    });
-  };
-
-  // Match Quality Calculation
   const calculateCompletion = () => {
     let score = 0;
-    
-    // Required fields (40 points)
     if (profile.name && profile.headline) score += 20;
     if (profile.skills?.length > 0) score += 10;
     if (profile.salaryMin) score += 10;
-    
-    // High-value optional fields (40 points)
     if (profile.values?.length > 0) score += 10;
     if (profile.characterTraits?.length > 0) score += 10;
     if (profile.experience?.length > 0) score += 10;
     if (profile.education_level) score += 10;
-    
-    // Nice-to-have fields (20 points)
     if (profile.desiredPerks?.length > 0) score += 5;
     if (profile.interestedIndustries?.length > 0) score += 5;
     if (profile.bio) score += 5;
@@ -157,6 +104,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
           <TabButton id="career" label="Career & Skills" icon={Briefcase} />
           <TabButton id="preferences" label="Preferences" icon={DollarSign} />
           <TabButton id="values" label="Values & Culture" icon={Heart} />
+          <TabButton id="verifications" label="Verifications" icon={ShieldCheck} />
         </div>
 
         <div className="p-8">
@@ -221,88 +169,212 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
 
           {activeTab === 'career' && (
             <div className="space-y-10 animate-in slide-in-from-bottom-2 duration-300">
-              {/* Skills */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                  <Award className="w-5 h-5 mr-2 text-gray-400" /> Technical Skills
-                </h3>
-                <GroupedMultiSelect
-                  label=""
-                  options={SKILLS_LIST}
-                  selected={profile.skills.map(s => s.name)}
-                  onChange={(names) => {
-                     const currentMap = new Map(profile.skills.map(s => [s.name, s]));
-                     const newSkills = names.map(name => {
-                         const existing = currentMap.get(name);
-                         return existing ? existing : { name, years: 1 };
-                     });
-                     onUpdate({ skills: newSkills });
-                  }}
-                  placeholder="Add technologies..."
-                  grouped={true}
-                  searchable={true}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                   {profile.skills.map((skill, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            <span className="font-bold text-sm text-gray-700">{skill.name}</span>
-                            <div className="flex items-center space-x-1">
-                                <span className="text-xs font-bold bg-white px-2 py-1 rounded shadow-sm">{skill.years}y</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Experience */}
-              <div className="pt-8 border-t border-gray-100">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center mb-4">
-                  <Briefcase className="w-5 h-5 mr-2 text-gray-400" /> Work Experience
-                </h3>
-                
-                {profile.experience && profile.experience.length > 0 ? (
-                  <div className="space-y-4">
-                    {profile.experience.map((exp, idx) => (
-                      <div key={exp.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-bold text-gray-900">{exp.role}</h4>
-                            <p className="text-sm text-gray-600">{exp.company}</p>
-                          </div>
+              
+              {/* Skills Section - REPLACED */}
+              <div>
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center mb-4">
+                      <Award className="w-5 h-5 mr-2 text-gray-400" /> Skills
+                  </h3>
+                  <div className="space-y-3">
+                      {(profile.skills || []).map((skill, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl group hover:bg-gray-100 transition-all">
+                          <span className="font-bold text-gray-900">{skill.name}</span>
+                          <div className="flex items-center gap-3">
                           <button
-                            onClick={() => {
-                              const updated = profile.experience.filter((_, i) => i !== idx);
-                              onUpdate({ experience: updated });
-                            }}
-                            className="text-gray-400 hover:text-red-600"
+                              onClick={() => {
+                              const newSkills = [...(profile.skills || [])];
+                              newSkills[idx] = { ...skill, years: Math.max(0, skill.years - 0.5) };
+                              onUpdate({ skills: newSkills });
+                              }}
+                              className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
                           >
-                            <Trash2 className="w-4 h-4" />
+                              -
                           </button>
-                        </div>
-                        <p className="text-sm text-gray-500">{exp.duration}</p>
+                          <span className="font-bold text-gray-600 w-12 text-center">
+                              {skill.years}y
+                          </span>
+                          <button
+                              onClick={() => {
+                              const newSkills = [...(profile.skills || [])];
+                              newSkills[idx] = { ...skill, years: skill.years + 0.5 };
+                              onUpdate({ skills: newSkills });
+                              }}
+                              className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
+                          >
+                              +
+                          </button>
+                          <button
+                              onClick={() => {
+                              const newSkills = (profile.skills || []).filter((_, i) => i !== idx);
+                              onUpdate({ skills: newSkills });
+                              }}
+                              className="ml-2 text-red-400 hover:text-red-600 transition-colors"
+                          >
+                              <Trash2 className="w-4 h-4" />
+                          </button>
+                          </div>
                       </div>
-                    ))}
+                      ))}
+                      
+                      {/* Add Skill Section */}
+                      <div className="flex gap-2 pt-2">
+                      <input
+                          type="text"
+                          placeholder="Skill name (e.g., React)"
+                          className="flex-1 p-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-100"
+                          onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                              const skillName = (e.target as HTMLInputElement).value.trim();
+                              if (skillName) {
+                              onUpdate({ 
+                                  skills: [...(profile.skills || []), { name: skillName, years: 1 }] 
+                              });
+                              (e.target as HTMLInputElement).value = '';
+                              }
+                          }
+                          }}
+                      />
+                      <button
+                          onClick={(e) => {
+                          const input = (e.currentTarget.previousSibling as HTMLInputElement);
+                          const skillName = input.value.trim();
+                          if (skillName) {
+                              onUpdate({ 
+                              skills: [...(profile.skills || []), { name: skillName, years: 1 }] 
+                              });
+                              input.value = '';
+                          }
+                          }}
+                          className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all flex items-center"
+                      >
+                          <Plus className="w-4 h-4 mr-2" /> Add Skill
+                      </button>
+                      </div>
                   </div>
-                ) : (
-                  <div className="p-8 bg-gray-50 rounded-2xl border border-dashed border-gray-300 text-center">
-                    <p className="text-gray-500 mb-4">Add your work history to showcase your journey.</p>
-                  </div>
-                )}
-                
-                <button
-                  onClick={() => alert('Experience editor modal would open here')}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Add Experience
-                </button>
               </div>
 
-              {/* Education */}
+              {/* Experience Section - REPLACED */}
+              <div className="pt-8 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                      <Briefcase className="w-5 h-5 mr-2 text-gray-400" /> Work Experience
+                      </h3>
+                      <button
+                      onClick={() => {
+                          const newExp = {
+                          id: crypto.randomUUID(),
+                          role: 'New Role',
+                          company: 'Company Name',
+                          duration: '1 year',
+                          startDate: new Date().toISOString().split('T')[0],
+                          endDate: null,
+                          isCurrentRole: true,
+                          type: 'Full-time',
+                          description: '',
+                          achievements: [],
+                          skillsAcquired: []
+                          };
+                          onUpdate({ experience: [...(profile.experience || []), newExp] });
+                      }}
+                      className="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg font-bold hover:bg-black transition-all flex items-center"
+                      >
+                      <Plus className="w-4 h-4 mr-1" /> Add Experience
+                      </button>
+                  </div>
+
+                  <div className="space-y-4">
+                      {(profile.experience || []).map((exp, idx) => (
+                      <div key={exp.id} className="bg-gray-50 p-6 rounded-xl relative group">
+                          <button
+                          onClick={() => {
+                              const newExp = (profile.experience || []).filter((_, i) => i !== idx);
+                              onUpdate({ experience: newExp });
+                          }}
+                          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-all"
+                          >
+                          <Trash2 className="w-4 h-4" />
+                          </button>
+                          
+                          <div className="grid grid-cols-2 gap-4 mb-3">
+                          <input
+                              value={exp.role}
+                              onChange={(e) => {
+                              const newExp = [...(profile.experience || [])];
+                              newExp[idx] = { ...exp, role: e.target.value };
+                              onUpdate({ experience: newExp });
+                              }}
+                              className="font-bold text-lg bg-white p-2 rounded border border-gray-200"
+                              placeholder="Role"
+                          />
+                          <input
+                              value={exp.company}
+                              onChange={(e) => {
+                              const newExp = [...(profile.experience || [])];
+                              newExp[idx] = { ...exp, company: e.target.value };
+                              onUpdate({ experience: newExp });
+                              }}
+                              className="text-gray-600 bg-white p-2 rounded border border-gray-200"
+                              placeholder="Company"
+                          />
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-4 mb-3">
+                          <input
+                              type="date"
+                              value={exp.startDate}
+                              onChange={(e) => {
+                              const newExp = [...(profile.experience || [])];
+                              newExp[idx] = { ...exp, startDate: e.target.value };
+                              onUpdate({ experience: newExp });
+                              }}
+                              className="text-sm bg-white p-2 rounded border border-gray-200"
+                          />
+                          <input
+                              type="date"
+                              value={exp.endDate || ''}
+                              onChange={(e) => {
+                              const newExp = [...(profile.experience || [])];
+                              newExp[idx] = { ...exp, endDate: e.target.value, isCurrentRole: !e.target.value };
+                              onUpdate({ experience: newExp });
+                              }}
+                              disabled={exp.isCurrentRole}
+                              className="text-sm bg-white p-2 rounded border border-gray-200 disabled:bg-gray-100"
+                          />
+                          <label className="flex items-center text-sm">
+                              <input
+                              type="checkbox"
+                              checked={exp.isCurrentRole}
+                              onChange={(e) => {
+                                  const newExp = [...(profile.experience || [])];
+                                  newExp[idx] = { ...exp, isCurrentRole: e.target.checked, endDate: e.target.checked ? null : exp.endDate };
+                                  onUpdate({ experience: newExp });
+                              }}
+                              className="mr-2"
+                              />
+                              Current Role
+                          </label>
+                          </div>
+                          
+                          <textarea
+                          value={exp.description || ''}
+                          onChange={(e) => {
+                              const newExp = [...(profile.experience || [])];
+                              newExp[idx] = { ...exp, description: e.target.value };
+                              onUpdate({ experience: newExp });
+                          }}
+                          className="w-full text-sm bg-white p-3 rounded border border-gray-200 resize-none"
+                          rows={3}
+                          placeholder="Describe your role and responsibilities..."
+                          />
+                      </div>
+                      ))}
+                  </div>
+              </div>
+
               <div className="pt-8 border-t border-gray-100">
                 <h3 className="text-xl font-bold text-gray-900 flex items-center mb-4">
                   <Award className="w-5 h-5 mr-2 text-gray-400" /> Education
                 </h3>
-                
                 <div className="space-y-4 max-w-2xl">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Education Level</label>
@@ -317,7 +389,6 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                       ))}
                     </select>
                   </div>
-
                   {profile.education_level && profile.education_level !== 'Self-Taught' && (
                     <>
                       <div>
@@ -329,7 +400,6 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                           placeholder="e.g., Computer Science"
                         />
                       </div>
-
                       <div>
                         <label className="block text-sm font-bold text-gray-700 mb-2">Institution</label>
                         <input
@@ -348,131 +418,75 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
 
           {activeTab === 'preferences' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-2 duration-300 max-w-3xl">
-               <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Work Mode</label>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {Object.values(WorkMode).map(mode => (
-                      <button
-                        key={mode}
-                        onClick={() => {
-                          const current = profile.preferredWorkMode || [];
-                          const exists = current.includes(mode);
-                          onUpdate({
-                            preferredWorkMode: exists ? current.filter(m => m !== mode) : [...current, mode]
-                          });
-                        }}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold border ${
-                          profile.preferredWorkMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-300'
-                        }`}
-                      >
-                        {mode}
-                      </button>
-                    ))}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Work Mode</label>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.values(WorkMode).map(mode => (
+                        <button
+                          key={mode}
+                          onClick={() => {
+                            const current = profile.preferredWorkMode || [];
+                            const exists = current.includes(mode);
+                            onUpdate({
+                              preferredWorkMode: exists ? current.filter(m => m !== mode) : [...current, mode]
+                            });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
+                            profile.preferredWorkMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200'
+                          }`}
+                        >
+                          {mode}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  {profile.preferredWorkMode && profile.preferredWorkMode.length > 0 && (
-                    <NonNegotiableToggle 
-                      isNonNegotiable={isNonNegotiable('work_mode')} 
-                      onToggle={() => toggleNonNegotiable('work_mode')} 
-                    />
-                  )}
-               </div>
 
-               <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Contract Types</label>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {Object.values(JobType).map(type => (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          const current = profile.contractTypes || [];
-                          const exists = current.includes(type);
-                          onUpdate({
-                            contractTypes: exists ? current.filter(t => t !== type) : [...current, type]
-                          });
-                        }}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold border ${
-                          profile.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-300'
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Contract Types</label>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.values(JobType).map(type => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            const current = profile.contractTypes || [];
+                            const exists = current.includes(type);
+                            onUpdate({
+                              contractTypes: exists ? current.filter(t => t !== type) : [...current, type]
+                            });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
+                            profile.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  {profile.contractTypes && profile.contractTypes.length > 0 && (
-                    <NonNegotiableToggle 
-                      isNonNegotiable={isNonNegotiable('contract_type')} 
-                      onToggle={() => toggleNonNegotiable('contract_type')} 
-                    />
-                  )}
                </div>
 
                <div className="p-6 bg-green-50 rounded-2xl border border-green-100">
                   <h3 className="font-bold text-green-900 mb-4 flex items-center">
                     <DollarSign className="w-5 h-5 mr-2" /> Compensation
                   </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-bold text-green-800 mb-2">Minimum Salary</label>
-                      <div className="flex items-center gap-4 mb-2">
-                         <select 
-                            value={profile.salaryCurrency || 'USD'}
-                            onChange={e => onUpdate({ salaryCurrency: e.target.value })}
-                            className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800"
-                         >
-                            <option value="USD">USD</option>
-                            <option value="GBP">GBP</option>
-                            <option value="EUR">EUR</option>
-                         </select>
-                         <input 
-                            type="number" 
-                            value={profile.salaryMin || ''}
-                            onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })}
-                            className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800 flex-1"
-                            placeholder="Min Annual Salary"
-                         />
-                      </div>
-                      
-                      {profile.salaryMin && profile.salaryMin > 0 && (
-                        <NonNegotiableToggle 
-                          isNonNegotiable={isNonNegotiable('salary_min')} 
-                          onToggle={() => toggleNonNegotiable('salary_min')} 
-                        />
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-green-800 mb-2">Current Bonus Structure</label>
-                      <input
-                        value={profile.currentBonuses || ''}
-                        onChange={e => onUpdate({ currentBonuses: e.target.value })}
-                        className="w-full bg-white border border-green-200 rounded-lg p-2 text-green-900"
-                        placeholder="e.g., 10% annual + equity"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-green-800 mb-2">Notice Period</label>
-                      <select
-                        value={profile.noticePeriod || ''}
-                        onChange={e => onUpdate({ noticePeriod: e.target.value })}
-                        className="w-full bg-white border border-green-200 rounded-lg p-2 font-medium text-green-900 mb-2"
-                      >
-                        <option value="">Select...</option>
-                        <option value="Immediate">Immediately available</option>
-                        <option value="2 Weeks">2 Weeks</option>
-                        <option value="1 Month">1 Month</option>
-                        <option value="2 Months">2 Months</option>
-                        <option value="3 Months">3 Months+</option>
-                      </select>
-                      
-                      {profile.noticePeriod && (
-                        <NonNegotiableToggle 
-                          isNonNegotiable={isNonNegotiable('notice_period')} 
-                          onToggle={() => toggleNonNegotiable('notice_period')} 
-                        />
-                      )}
-                    </div>
+                  <div className="flex items-center gap-4">
+                     <select 
+                        value={profile.salaryCurrency || 'USD'}
+                        onChange={e => onUpdate({ salaryCurrency: e.target.value })}
+                        className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800"
+                     >
+                        <option value="USD">USD</option>
+                        <option value="GBP">GBP</option>
+                        <option value="EUR">EUR</option>
+                     </select>
+                     <input 
+                        type="number" 
+                        value={profile.salaryMin || ''}
+                        onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })}
+                        className="bg-white border border-green-200 rounded-lg p-2 font-bold text-green-800 flex-1"
+                        placeholder="Min Annual Salary"
+                     />
                   </div>
                </div>
             </div>
@@ -488,7 +502,6 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                   placeholder="What matters to you?"
                   maxSelections={5}
                />
-               
                <GroupedMultiSelect
                   label="Personality Traits"
                   options={CHARACTER_TRAITS_CATEGORIES}
@@ -497,24 +510,13 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                   grouped={true}
                   maxSelections={10}
                />
-
-               {/* Personality Assessments */}
                <div className="pt-8 border-t border-gray-100">
                   <h3 className="text-xl font-bold text-gray-900 flex items-center mb-4">
                     <Smile className="w-5 h-5 mr-2 text-gray-400" /> Personality Assessments
                   </h3>
-                  
-                  <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 mb-6">
-                    <p className="text-sm text-blue-900 mb-4">
-                      Optional: Add your personality assessment results to help us find teams where you'll thrive.
-                    </p>
-                  </div>
-
                   <div className="space-y-6 max-w-2xl">
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
-                        Myers-Briggs Type (MBTI)
-                      </label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Myers-Briggs Type (MBTI)</label>
                       <input
                         value={profile.myers_briggs || ''}
                         onChange={e => onUpdate({ myers_briggs: e.target.value.toUpperCase() })}
@@ -522,46 +524,22 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                         placeholder="e.g., INTJ, ENFP"
                         maxLength={4}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Don't know your type? <a href="https://www.16personalities.com" target="_blank" className="text-blue-600 hover:underline">Take a free test</a>
-                      </p>
                     </div>
-
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
-                        Enneagram Type
-                      </label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Enneagram Type</label>
                       <select
                         value={profile.enneagram_type || ''}
                         onChange={e => onUpdate({ enneagram_type: e.target.value })}
                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-100"
                       >
                         <option value="">Not specified</option>
-                        <option value="Type 1">Type 1 - The Reformer</option>
-                        <option value="Type 2">Type 2 - The Helper</option>
-                        <option value="Type 3">Type 3 - The Achiever</option>
-                        <option value="Type 4">Type 4 - The Individualist</option>
-                        <option value="Type 5">Type 5 - The Investigator</option>
-                        <option value="Type 6">Type 6 - The Loyalist</option>
-                        <option value="Type 7">Type 7 - The Enthusiast</option>
-                        <option value="Type 8">Type 8 - The Challenger</option>
-                        <option value="Type 9">Type 9 - The Peacemaker</option>
+                        {['Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5', 'Type 6', 'Type 7', 'Type 8', 'Type 9'].map(t => (
+                            <option key={t} value={t}>{t}</option>
+                        ))}
                       </select>
                     </div>
-
-                    {(profile.myers_briggs || profile.enneagram_type) && (
-                      <button
-                        onClick={() => onUpdate({ 
-                          assessment_completed_at: new Date().toISOString() 
-                        })}
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        Mark assessments as completed
-                      </button>
-                    )}
                   </div>
                 </div>
-
                <GroupedMultiSelect
                   label="Industry Interests"
                   options={INDUSTRIES}
@@ -569,28 +547,11 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
                   onChange={inds => onUpdate({ interestedIndustries: inds })}
                   maxSelections={5}
                />
-
-               <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
-                  <GroupedMultiSelect
-                    label="Desired Perks & Benefits"
-                    options={PERKS_CATEGORIES}
-                    selected={profile.desiredPerks || []}
-                    onChange={perks => onUpdate({ desiredPerks: perks })}
-                    placeholder="Select perks..."
-                    grouped={true}
-                    maxSelections={8}
-                  />
-                  
-                  {profile.desiredPerks && profile.desiredPerks.length > 0 && (
-                    <div className="flex items-center justify-center mt-4">
-                      <NonNegotiableToggle 
-                        isNonNegotiable={isNonNegotiable('perks')} 
-                        onToggle={() => toggleNonNegotiable('perks')} 
-                      />
-                    </div>
-                  )}
-               </div>
             </div>
+          )}
+
+          {activeTab === 'verifications' && (
+            <VerificationDashboard candidateId={profile.id} stats={profile.verification_stats} />
           )}
         </div>
         
