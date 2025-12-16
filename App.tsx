@@ -24,6 +24,7 @@ import GoogleAuthCallback from './components/GoogleAuthCallback';
 import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
 import WidgetSetup from './components/WidgetSetup'; 
+import VerificationForm from './components/VerificationForm';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -88,11 +89,10 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     bio: data.bio,
     status: data.status,
     
-    // Fix skills mapping to ensure 'years' property exists (handle dirty data with 'minimumYears')
     skills: (data.skills || []).map((s: any) => ({
       name: s.name,
       years: s.years !== undefined ? s.years : (s.minimumYears || 0),
-      weight: s.weight // Keep optional weight if present
+      weight: s.weight 
     })),
 
     contractTypes: data.contract_types || [],
@@ -116,7 +116,6 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     ambitions: data.ambitions,
     isUnlocked: data.is_unlocked,
 
-    // 🆕 PHASE 1 FIELDS
     education_level: data.education_level,
     education_field: data.education_field,
     education_institution: data.education_institution,
@@ -125,52 +124,38 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     enneagram_type: data.enneagram_type,
     assessment_completed_at: data.assessment_completed_at,
     is_mock_data: data.is_mock_data || false,
-    mock_data_seed: data.mock_data_seed
+    
+    verification_stats: data.verification_stats // Include stats
 });
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
   id: data.id,
-  
-  // Basic Information
   companyName: data.company_name || '',
   logoUrl: data.logo_url,
   website: data.website || '',
   tagline: data.tagline || '',
-  
-  // About & Mission
   about: data.about || '',
   missionStatement: data.mission_statement,
-  
-  // Culture & Values (CRITICAL: arrays must default to [])
   industry: data.industry || [],
   values: data.values || [],
   cultureDescription: data.culture_description,
   workEnvironment: data.work_environment,
   desiredTraits: data.desired_traits || [],
   diversityStatement: data.diversity_statement,
-  
-  // Perks & Benefits (CRITICAL: arrays must default to [])
   perks: data.perks || [],
   benefitsDescription: data.benefits_description,
   remotePolicy: data.remote_policy || '',
-  
-  // Company Details
   teamSize: data.team_size || 0,
   foundedYear: data.founded_year || new Date().getFullYear(),
   headquartersLocation: data.headquarters_location || '',
   companySizeRange: data.company_size_range,
   fundingStage: data.funding_stage,
   growthStage: data.growth_stage,
-  
-  // Tech & Social (CRITICAL: arrays must default to [])
   techStack: data.tech_stack || [],
   socialMedia: data.social_media || {},
   companyPhotos: data.company_photos || [],
-  
-  // Existing fields
   billing_plan: data.billing_plan || 'pay_per_hire',
   credits: data.credits || 0,
-
   is_mock_data: data.is_mock_data || false,
   mock_data_seed: data.mock_data_seed
 });
@@ -182,7 +167,6 @@ function MainApp() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Data State
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [candidatesList, setCandidatesList] = useState<CandidateProfile[]>([]);
@@ -191,7 +175,6 @@ function MainApp() {
   const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfileType | null>(null);
 
-  // Selections
   const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
 
@@ -208,7 +191,6 @@ function MainApp() {
       }
   }, [userRole]);
 
-  // Handle URL based routing for direct links
   useEffect(() => {
       const view = searchParams.get('view');
       if (view) {
@@ -262,8 +244,6 @@ function MainApp() {
             } else {
                     const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
                     if (comp) setCompanyProfile(mapCompanyFromDB(comp));
-                    
-                    // Load team members
                     const { data: team } = await supabase.from('team_members').select('*').eq('company_id', user?.id);
                     if (team) setTeamMembers(team);
             }
@@ -275,43 +255,23 @@ function MainApp() {
   };
 
   const fetchData = async () => {
-      console.log('🔍 [App] fetchData: Starting data fetch sequence...');
-      
       try {
-          // 1. Fetch Jobs
-          console.log('🔄 [App] Requesting jobs from Supabase...');
-          const { data: jobs, error: jobsError } = await supabase.from('jobs').select('*');
-          
-          if (jobsError) {
-              console.error('❌ [App] fetchData: Supabase returned error fetching jobs:', jobsError);
-              console.error('❌ [App] Error details:', jobsError.message, jobsError.details);
-          } else {
-              // Safe Mapping
+          const { data: jobs } = await supabase.from('jobs').select('*');
+          if (jobs) {
               const mappedJobs: JobPosting[] = [];
-              (jobs || []).forEach((job, index) => {
+              jobs.forEach((job) => {
                   try {
-                      const mapped = mapJobFromDB(job);
-                      mappedJobs.push(mapped);
-                  } catch (mapErr) {
-                      console.error(`❌ [App] fetchData: Error mapping job at index ${index} (ID: ${job?.id})`, mapErr);
-                  }
+                      mappedJobs.push(mapJobFromDB(job));
+                  } catch (mapErr) { console.error(mapErr); }
               });
               setJobPostings(mappedJobs);
           }
 
-          // 2. Fetch Candidates (Recruiter Only)
           if (userRole === 'recruiter') {
-              const { data: cands, error: candError } = await supabase.from('candidate_profiles').select('*');
-              
-              if (candError) {
-                  console.error('❌ [App] fetchData: Error fetching candidates:', candError);
-              } else {
-                  if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
-              }
+              const { data: cands } = await supabase.from('candidate_profiles').select('*');
+              if (cands) setCandidatesList(cands.map(mapCandidateFromDB));
           }
-      } catch (globalErr) {
-          console.error('❌ [App] fetchData: Critical unhandled exception:', globalErr);
-      }
+      } catch (globalErr) { console.error(globalErr); }
   };
 
   const handleCreateProfile = async (role: Role) => {
@@ -319,46 +279,28 @@ function MainApp() {
       try {
           setIsLoadingProfile(true);
           await supabase.from('profiles').upsert({ id: user.id, email: user.email, role: role });
-          // Also init detailed profile
           if (role === 'candidate') {
               await supabase.from('candidate_profiles').upsert({ id: user.id, name: user.email?.split('@')[0], email: user.email });
           } else {
-              // Ensure critical array fields are initialized as empty arrays
               await supabase.from('company_profiles').upsert({ 
                   id: user.id, 
                   company_name: 'My Company',
-                  industry: [],
-                  values: [],
-                  perks: [],
-                  desired_traits: [],
-                  tech_stack: [],
-                  company_photos: []
+                  industry: [], values: [], perks: [], desired_traits: [], tech_stack: [], company_photos: []
               });
           }
           setUserRole(role);
-      } catch (e) {
-          console.error(e);
-      } finally {
-          setIsLoadingProfile(false);
-      }
+      } catch (e) { console.error(e); } finally { setIsLoadingProfile(false); }
   };
 
-  // Handlers
   const handleUpdateCandidate = async (profile: CandidateProfile) => {
       if (!user) return;
       try {
-          // Update in Supabase with ALL fields including Phase 1
-          const { error } = await supabase
-              .from('candidate_profiles')
-              .update({
-                  // Basic Info
+          const { error } = await supabase.from('candidate_profiles').update({
                   name: profile.name,
                   headline: profile.headline,
                   bio: profile.bio,
                   location: profile.location,
                   status: profile.status,
-                  
-                  // Arrays (use snake_case for database)
                   avatar_urls: profile.avatarUrls || [],
                   character_traits: profile.characterTraits || [],
                   values_list: profile.values || [],
@@ -368,14 +310,10 @@ function MainApp() {
                   interested_industries: profile.interestedIndustries || [],
                   non_negotiables: profile.nonNegotiables || [],
                   desired_seniority: profile.desiredSeniority || [],
-                  
-                  // JSONB fields
                   skills: profile.skills || [],
                   experience: profile.experience || [],
                   portfolio: profile.portfolio || [],
                   references_list: profile.references || [],
-                  
-                  // Salary & Work
                   salary_expectation: profile.salaryExpectation,
                   salary_min: profile.salaryMin,
                   salary_currency: profile.salaryCurrency,
@@ -383,39 +321,26 @@ function MainApp() {
                   legal_status: profile.legalStatus,
                   current_bonuses: profile.currentBonuses,
                   ambitions: profile.ambitions,
-                  
-                  // Theme
                   theme_color: profile.themeColor,
                   theme_font: profile.themeFont,
-                  
-                  // 🆕 PHASE 1 FIELDS - EDUCATION
                   education_level: profile.education_level,
                   education_field: profile.education_field,
                   education_institution: profile.education_institution,
-                  
-                  // 🆕 PHASE 1 FIELDS - PERSONALITY ASSESSMENTS
                   myers_briggs: profile.myers_briggs,
-                  disc_profile: profile.disc_profile || { D: 0, I: 0, S: 0, C: 0 },
+                  disc_profile: profile.disc_profile,
                   enneagram_type: profile.enneagram_type,
                   assessment_completed_at: profile.assessment_completed_at
-              })
-              .eq('id', user.id);
+              }).eq('id', user.id);
           
           if (error) {
-              console.error('Error saving profile:', error);
-              alert('Failed to save profile. Please try again.');
-              return;
+              alert('Failed to save profile.'); return;
           }
           setCandidateProfile(profile);
           setCurrentView('dashboard');
-      } catch (err) {
-          console.error('Error updating candidate profile:', err);
-      }
+      } catch (err) { console.error(err); }
   };
 
   const handleUpdateCompany = async (profile: CompanyProfileType) => {
-      // Note: CompanyProfile component handles the DB update directly now for expanded fields.
-      // We just update local state here to keep it in sync.
       setCompanyProfile(profile);
   };
   
@@ -448,14 +373,9 @@ function MainApp() {
   const handleApply = async (jobId: string) => { 
       if (!userRole || userRole !== 'candidate') return;
       try {
-          await supabase.from('applications').insert({
-              job_id: jobId,
-              candidate_id: user?.id
-          });
+          await supabase.from('applications').insert({ job_id: jobId, candidate_id: user?.id });
           alert("Applied successfully!");
-      } catch (e) {
-          console.error(e);
-      }
+      } catch (e) { console.error(e); }
   };
 
   const navigateToMessage = async (candidateId: string) => {
@@ -463,9 +383,7 @@ function MainApp() {
         const convId = await messageService.getOrCreateConversation(user!.id, candidateId);
         setSearchParams({ conversationId: convId });
         setCurrentView('messages');
-      } catch (e) {
-          console.error("Failed to start conversation", e);
-      }
+      } catch (e) { console.error(e); }
   };
 
   const navigateToSchedule = (candidateId: string) => {
@@ -478,7 +396,6 @@ function MainApp() {
   if (!userRole) return (
       <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-gray-50">
           <h2 className="text-2xl font-bold mb-4">Complete Your Setup</h2>
-          <p className="text-gray-500 mb-8">It looks like your profile role isn't set.</p>
           <div className="flex gap-4">
               <button onClick={() => handleCreateProfile('candidate')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">I'm Talent</button>
               <button onClick={() => handleCreateProfile('recruiter')} className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">I'm Hiring</button>
@@ -491,15 +408,10 @@ function MainApp() {
       switch (currentView) {
           case 'profile':
               if (userRole === 'recruiter') {
-                 if (!companyProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /><span className="ml-2">Loading company profile...</span></div>;
-                 return <CompanyProfile 
-                    profile={companyProfile} 
-                    onSave={handleUpdateCompany} 
-                    teamMembers={teamMembers} 
-                    onTeamUpdate={handleTeamMemberUpdate}
-                />;
+                 if (!companyProfile) return <div>Loading...</div>;
+                 return <CompanyProfile profile={companyProfile} onSave={handleUpdateCompany} teamMembers={teamMembers} onTeamUpdate={handleTeamMemberUpdate}/>;
               } else {
-                 if (!candidateProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /><span className="ml-2">Loading your profile...</span></div>;
+                 if (!candidateProfile) return <div>Loading...</div>;
                  return <CandidateProfileForm profile={candidateProfile} onSave={handleUpdateCandidate} />;
               }
           case 'network': return <Network connections={connections} />;
@@ -508,47 +420,21 @@ function MainApp() {
           case 'notifications': return <Notifications notifications={notifications} />;
           case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} />;
           case 'my-jobs': return <RecruiterMyJobs />;
-          case 'talent-matcher': return <TalentMatcher 
-                                            onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }}
-                                            onUnlock={handleUnlockCandidate}
-                                            onSchedule={navigateToSchedule}
-                                            onMessage={navigateToMessage}
-                                        />;
+          case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={handleUnlockCandidate} onSchedule={navigateToSchedule} onMessage={navigateToMessage} />;
           case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />; 
           case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
           case 'candidate-details': return selectedCandidate ? (
              userRole === 'recruiter' && !selectedCandidate.isUnlocked ? 
              <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={handleUnlockCandidate} onBack={() => setCurrentView('dashboard')} /> :
-             <CandidateDetails 
-                candidate={selectedCandidate} 
-                onBack={() => setCurrentView('dashboard')} 
-                onUnlock={handleUnlockCandidate} 
-                onMessage={navigateToMessage} 
-                onSchedule={navigateToSchedule} 
-             />
+             <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={handleUnlockCandidate} onMessage={navigateToMessage} onSchedule={navigateToSchedule} />
           ) : null;
           case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={(id) => setCurrentView('messages')} /> : <RecruiterATS />;
           default: 
             if (userRole === 'candidate') {
-                if (!candidateProfile) {
-                    return (
-                        <div className="min-h-screen flex items-center justify-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
-                            <span className="ml-2">Loading your profile...</span>
-                        </div>
-                    );
-                }
-                return (
-                    <div className="max-w-7xl mx-auto px-4 py-8">
-                        {jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}
-                    </div>
-                );
+                if (!candidateProfile) return <div>Loading...</div>;
+                return <div className="max-w-7xl mx-auto px-4 py-8">{jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}</div>;
             }
-            return (
-                <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={navigateToMessage} onSchedule={navigateToSchedule} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}
-                </div>
-            );
+            return <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">{candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={handleUnlockCandidate} onMessage={navigateToMessage} onSchedule={navigateToSchedule} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}</div>;
       }
   };
 
@@ -572,25 +458,10 @@ function AuthWrapper() {
     if (session) return <MainApp />;
 
     if (selectedRole) {
-        return (
-            <Login 
-                selectedRole={selectedRole} 
-                onBack={() => {
-                    localStorage.removeItem('open_selected_role');
-                    setSelectedRole(null);
-                }} 
-            />
-        );
+        return <Login selectedRole={selectedRole} onBack={() => { localStorage.removeItem('open_selected_role'); setSelectedRole(null); }} />;
     }
 
-    return (
-        <LandingPage 
-            onSelectRole={(r) => { 
-                localStorage.setItem('open_selected_role', r); 
-                setSelectedRole(r); 
-            }} 
-        />
-    );
+    return <LandingPage onSelectRole={(r) => { localStorage.setItem('open_selected_role', r); setSelectedRole(r); }} />;
 }
 
 export default function App() {
@@ -599,6 +470,7 @@ export default function App() {
         <AuthProvider>
             <Routes>
                 <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+                <Route path="/verify/:token" element={<VerificationForm />} />
                 <Route path="/*" element={<AuthWrapper />} />
             </Routes>
         </AuthProvider>
