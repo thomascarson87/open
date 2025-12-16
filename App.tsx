@@ -26,12 +26,16 @@ import RecruiterMyJobs from './components/RecruiterMyJobs';
 import WidgetSetup from './components/WidgetSetup'; 
 import VerificationForm from './components/VerificationForm';
 import CandidateProfileTabs from './components/CandidateProfileTabs';
-import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember } from './types';
+import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
 import { Loader2 } from 'lucide-react';
 import { messageService } from './services/messageService';
 
 // Mappers with strict default values to prevent "undefined includes" crashes
-const mapJobFromDB = (data: any): JobPosting => ({ 
+const mapJobFromDB = (data: any): JobPosting => {
+    // Determine skills source: prefer new structured field if available, fallback to old JSON
+    const skillsSource = data.required_skills_with_levels || data.required_skills || [];
+    
+    return { 
     ...data, 
     id: data.id,
     company_id: data.company_id,
@@ -52,7 +56,14 @@ const mapJobFromDB = (data: any): JobPosting => ({
     status: data.status,
     approvals: data.approvals,
 
-    requiredSkills: data.required_skills || [], 
+    requiredSkills: skillsSource.map((s: any) => ({
+      name: s.name,
+      // Map old minimumYears if required_level is missing
+      required_level: s.required_level || (s.minimumYears >= 5 ? 4 : s.minimumYears >= 3 ? 3 : 2),
+      minimumYears: s.minimumYears,
+      weight: s.weight || 'preferred'
+    })),
+    
     values: data.values_list || [],
     perks: data.perks || [],
     desiredTraits: data.desired_traits || [],
@@ -73,10 +84,17 @@ const mapJobFromDB = (data: any): JobPosting => ({
     growth_opportunities: data.growth_opportunities,
     tech_stack: data.tech_stack || [],
     is_mock_data: data.is_mock_data || false,
-    mock_data_seed: data.mock_data_seed
-});
+    mock_data_seed: data.mock_data_seed,
+    
+    // 🆕 Enhanced Fields
+    required_impact_scope: data.required_impact_scope
+}};
 
-const mapCandidateFromDB = (data: any): CandidateProfile => ({ 
+const mapCandidateFromDB = (data: any): CandidateProfile => {
+    // Determine skills source: prefer new structured field, fallback to old
+    const skillsSource = data.skills_with_levels || data.skills || [];
+
+    return { 
     ...data, 
     id: data.id,
     name: data.name,
@@ -90,10 +108,11 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     bio: data.bio,
     status: data.status,
     
-    skills: (data.skills || []).map((s: any) => ({
+    skills: skillsSource.map((s: any) => ({
       name: s.name,
       years: s.years !== undefined ? s.years : (s.minimumYears || 0),
-      weight: s.weight 
+      level: s.level || (s.years >= 8 ? 5 : s.years >= 5 ? 4 : s.years >= 3 ? 3 : s.years >= 1 ? 2 : 1),
+      description: s.description
     })),
 
     contractTypes: data.contract_types || [],
@@ -126,8 +145,12 @@ const mapCandidateFromDB = (data: any): CandidateProfile => ({
     assessment_completed_at: data.assessment_completed_at,
     is_mock_data: data.is_mock_data || false,
     
-    verification_stats: data.verification_stats // Include stats
-});
+    verification_stats: data.verification_stats, // Include stats
+    
+    // 🆕 Enhanced Fields
+    current_impact_scope: data.current_impact_scope,
+    desired_impact_scope: data.desired_impact_scope || []
+}};
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
   id: data.id,
@@ -311,7 +334,16 @@ function MainApp() {
                   interested_industries: profile.interestedIndustries || [],
                   non_negotiables: profile.nonNegotiables || [],
                   desired_seniority: profile.desiredSeniority || [],
-                  skills: profile.skills || [],
+                  
+                  // Map skills to new structured format for DB storage
+                  skills: profile.skills.map(s => ({
+                      name: s.name,
+                      years: s.years,
+                      level: s.level, // Store level in old JSON for compatibility if needed, but primarily use new column
+                      description: s.description
+                  })),
+                  skills_with_levels: profile.skills, // New column
+
                   experience: profile.experience || [],
                   portfolio: profile.portfolio || [],
                   references_list: profile.references || [],
@@ -330,7 +362,11 @@ function MainApp() {
                   myers_briggs: profile.myers_briggs,
                   disc_profile: profile.disc_profile,
                   enneagram_type: profile.enneagram_type,
-                  assessment_completed_at: profile.assessment_completed_at
+                  assessment_completed_at: profile.assessment_completed_at,
+                  
+                  // New Impact Fields
+                  current_impact_scope: profile.current_impact_scope,
+                  desired_impact_scope: profile.desired_impact_scope
               }).eq('id', user.id);
           
           if (error) {
@@ -357,11 +393,13 @@ function MainApp() {
          ...job,
          company_id: user?.id,
          company_name: companyProfile?.companyName,
-         required_skills: job.requiredSkills,
+         required_skills: job.requiredSkills, // Backward compat
+         required_skills_with_levels: job.requiredSkills, // New Format
          values_list: job.values,
          desired_traits: job.desiredTraits,
          required_traits: job.requiredTraits,
-         perks: job.perks
+         perks: job.perks,
+         required_impact_scope: job.required_impact_scope
       }]);
       fetchData();
       setCurrentView('dashboard'); 
