@@ -40,15 +40,37 @@ export enum SeniorityLevel {
 export type ThemeColor = 'blue' | 'purple' | 'green' | 'orange' | 'pink' | 'slate';
 export type ThemeFont = 'sans' | 'serif' | 'mono' | 'display';
 
+// Enhanced Skill Interface
 export interface Skill {
   name: string;
-  years: number;
+  level: 1 | 2 | 3 | 4 | 5; // Primary indicator
+  years?: number; // Optional context
+  description?: string; // Proof of work
 }
 
+// Enhanced Job Skill Interface
 export interface JobSkill {
   name: string;
-  minimumYears: number;
+  required_level: 1 | 2 | 3 | 4 | 5; 
+  minimumYears?: number; 
   weight: 'required' | 'preferred';
+}
+
+export interface SkillLevelMetadata {
+  level: 1 | 2 | 3 | 4 | 5;
+  label: 'Learning' | 'Practicing' | 'Applying' | 'Mastering' | 'Innovating';
+  icon: string;
+  descriptor: string;
+  behaviors: string[];
+  example: string;
+}
+
+export interface ImpactScopeMetadata {
+  scope: 1 | 2 | 3 | 4 | 5;
+  label: string;
+  descriptor: string;
+  characteristics: string[];
+  typicalRoles: string[];
 }
 
 export interface Experience {
@@ -200,6 +222,10 @@ export interface CandidateProfile {
   // Verifications
   verification_stats?: VerificationStats;
   verifications?: ProfessionalVerification[];
+
+  // Impact
+  current_impact_scope?: 1 | 2 | 3 | 4 | 5;
+  desired_impact_scope?: Array<1 | 2 | 3 | 4 | 5>;
 }
 
 export interface CompanyProfile {
@@ -307,6 +333,9 @@ export interface JobPosting {
   };
   is_mock_data?: boolean;
   mock_data_seed?: any;
+  
+  // Impact
+  required_impact_scope?: 1 | 2 | 3 | 4 | 5;
 }
 
 export interface MatchDetails {
@@ -328,6 +357,7 @@ export interface MatchBreakdown {
     industry: MatchDetails;
     traits: MatchDetails;
     performance?: MatchDetails;
+    impact?: MatchDetails; // New
   };
   dealBreakers: string[];
   recommendations: string[];
