@@ -1,11 +1,11 @@
 
-
 import React, { useState } from 'react';
 import { TalentSearchCriteria, SeniorityLevel, WorkMode, JobType, JobSkill } from '../types';
 import GroupedMultiSelect from './GroupedMultiSelect';
+import JobSkillRequirementSelector from './JobSkillRequirementSelector';
 import { CULTURAL_VALUES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST, INDUSTRIES } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
-import { ArrowRight, ArrowLeft, Search, Lock, Unlock } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Search, Lock, Unlock, Zap, Info } from 'lucide-react';
 
 interface Props {
   initialCriteria: TalentSearchCriteria;
@@ -37,11 +37,15 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
       </button>
   );
 
-  const updateSkill = (name: string, field: keyof JobSkill, value: any) => {
-    setCriteria(prev => ({
-        ...prev,
-        requiredSkills: prev.requiredSkills?.map(s => s.name === name ? { ...s, [field]: value } : s)
-    }));
+  const updateSkill = (index: number, updatedSkill: JobSkill) => {
+    const updated = [...(criteria.requiredSkills || [])];
+    updated[index] = updatedSkill;
+    setCriteria({ ...criteria, requiredSkills: updated });
+  };
+
+  const removeSkill = (index: number) => {
+    const updated = criteria.requiredSkills.filter((_, i) => i !== index);
+    setCriteria({ ...criteria, requiredSkills: updated });
   };
 
   return (
@@ -169,10 +173,22 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
 
            {step === 2 && (
                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Technical Skills</h2>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold text-gray-900">Technical Skills</h2>
+                        <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                            <Zap className="w-3 h-3 mr-1" /> Precision Level Matching
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3 mb-6">
+                        <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-blue-800 leading-relaxed">
+                            Set required proficiency levels (1-5) instead of just years. This improves matching by focusing on what candidates can actually <strong>do</strong>. Default is <strong>Level 3 (Applying)</strong>.
+                        </p>
+                    </div>
                     
                     <GroupedMultiSelect 
-                        label="Required Skills"
+                        label="Search and Add Skills"
                         options={SKILLS_LIST}
                         selected={criteria.requiredSkills.map(s => s.name)}
                         onChange={(names) => {
@@ -180,7 +196,13 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                             const filtered = current.filter(s => names.includes(s.name));
                             names.forEach(n => {
                                 if(!filtered.find(s => s.name === n)) {
-                                    filtered.push({ name: n, minimumYears: 2, weight: 'required' });
+                                    // Default to Level 3 (Applying)
+                                    filtered.push({ 
+                                        name: n, 
+                                        required_level: 3, 
+                                        minimumYears: undefined, 
+                                        weight: 'required' 
+                                    });
                                 }
                             });
                             setCriteria({...criteria, requiredSkills: filtered});
@@ -189,28 +211,30 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                         searchable={true}
                     />
 
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                         {criteria.requiredSkills.map((skill, idx) => (
-                             <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                 <span className="font-bold text-gray-700 w-1/3 text-sm">{skill.name}</span>
-                                 <div className="flex items-center space-x-2">
-                                     <span className="text-xs text-gray-500">Min Years:</span>
-                                     <input 
-                                        type="number" 
-                                        value={skill.minimumYears}
-                                        onChange={e => updateSkill(skill.name, 'minimumYears', parseInt(e.target.value))}
-                                        className="w-12 p-1 border rounded text-center font-bold text-sm"
-                                     />
-                                     <button 
-                                        onClick={() => updateSkill(skill.name, 'weight', skill.weight === 'required' ? 'preferred' : 'required')}
-                                        className={`px-2 py-1 rounded text-xs font-bold ${skill.weight === 'required' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}
-                                     >
-                                         {skill.weight === 'required' ? 'Required' : 'Preferred'}
-                                     </button>
-                                 </div>
+                    {criteria.requiredSkills && criteria.requiredSkills.length > 0 ? (
+                        <div className="space-y-4">
+                             <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Configure Proficiency Requirements</h3>
+                                <span className="text-xs font-bold text-gray-400">{criteria.requiredSkills.length} selected</span>
                              </div>
-                         ))}
-                    </div>
+                             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                {criteria.requiredSkills.map((skill, idx) => (
+                                    <JobSkillRequirementSelector
+                                        key={skill.name}
+                                        skill={skill}
+                                        onChange={(updated) => updateSkill(idx, updated)}
+                                        onRemove={() => removeSkill(idx)}
+                                    />
+                                ))}
+                             </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                             <Zap className="w-10 h-10 text-gray-300 mx-auto mb-3 opacity-50" />
+                             <h3 className="text-lg font-bold text-gray-400">No skills added yet</h3>
+                             <p className="text-sm text-gray-400 max-w-xs mx-auto">Select technologies from the list above to set your proficiency requirements.</p>
+                        </div>
+                    )}
                </div>
            )}
 
@@ -319,11 +343,11 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
            ) : <div/>}
 
            {step < 4 ? (
-               <button onClick={() => setStep(s => s + 1)} className="flex items-center bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black">
+               <button onClick={() => setStep(s => s + 1)} className="flex items-center bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition-transform active:scale-95">
                    Next Step <ArrowRight className="w-4 h-4 ml-2"/>
                </button>
            ) : (
-               <button onClick={() => onSearch(criteria)} className="flex items-center bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg">
+               <button onClick={() => onSearch(criteria)} className="flex items-center bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all active:scale-95">
                    <Search className="w-4 h-4 mr-2"/> Run Match
                </button>
            )}
