@@ -682,7 +682,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
           )}
 
           {activeTab === 'verifications' && (
-            <VerificationDashboard candidateId={profile.id} stats={profile.verification_stats} />
+            <VerificationDashboard candidateId={profile.id} stats={profile.verification_stats} skills={profile.skills} />
           )}
         </div>
         
