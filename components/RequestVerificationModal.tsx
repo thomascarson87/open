@@ -1,15 +1,23 @@
 
 import React, { useState } from 'react';
-import { X, Search, Mail, CheckCircle, ArrowRight } from 'lucide-react';
+import { X, Search, Mail, CheckCircle, ArrowRight, Award } from 'lucide-react';
 import { verificationService } from '../services/verificationService';
+import { SKILL_LEVEL_METADATA } from '../constants/matchingData';
+import { Skill } from '../types';
 
 interface Props {
   candidateId: string;
+  candidateSkills: Skill[]; 
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const RequestVerificationModal: React.FC<Props> = ({ candidateId, onClose, onSuccess }) => {
+const RequestVerificationModal: React.FC<Props> = ({ 
+  candidateId, 
+  candidateSkills,
+  onClose, 
+  onSuccess 
+}) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [formData, setFormData] = useState({
     referee_email: '',
@@ -122,6 +130,39 @@ const RequestVerificationModal: React.FC<Props> = ({ candidateId, onClose, onSuc
                   placeholder="e.g. TechFlow Inc."
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
+              </div>
+
+              {/* Show Skills to be Verified */}
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <div className="flex items-center mb-2">
+                  <Award className="w-4 h-4 text-blue-600 mr-2" />
+                  <h4 className="text-sm font-bold text-blue-900">Skills to Verify</h4>
+                </div>
+                <p className="text-xs text-blue-700 mb-3">
+                  Your colleague will assess these skills and validate the proficiency levels:
+                </p>
+                <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+                  {candidateSkills.slice(0, 10).map((skill, idx) => {
+                    const levelMeta = SKILL_LEVEL_METADATA[skill.level];
+                    return (
+                      <div key={idx} className="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-blue-100">
+                        <span className="font-semibold text-gray-900">{skill.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{levelMeta.icon}</span>
+                          <span className="text-gray-600">{levelMeta.label}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {candidateSkills.length > 10 && (
+                    <p className="text-xs text-gray-500 text-center">
+                      +{candidateSkills.length - 10} more skills
+                    </p>
+                  )}
+                  {candidateSkills.length === 0 && (
+                      <p className="text-xs text-gray-500 text-center italic">No skills added yet.</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end pt-4">
