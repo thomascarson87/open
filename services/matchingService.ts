@@ -1,5 +1,5 @@
 
-import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill, TalentSearchCriteria, MatchDetails, Skill } from '../types';
+import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill, TalentSearchCriteria, MatchDetails, Skill, VerifiedSkillStats } from '../types';
 
 interface VerificationBoost {
   skillsMultiplier: number;
@@ -10,7 +10,7 @@ interface VerificationBoost {
     reliability: number;
     collaboration: number;
   };
-  verifiedSkills: string[];
+  verifiedSkills: any[]; // Changed from string[] to allow access to stats
 }
 
 function calculateVerificationBoost(candidate: CandidateProfile): VerificationBoost {
@@ -30,10 +30,20 @@ function calculateVerificationBoost(candidate: CandidateProfile): VerificationBo
     };
   }
   
-  // Boost multipliers based on verification count
+  // Base boost from verification count
   const verificationTier = Math.min(stats.total_verifications, 5);
-  const skillsMultiplier = 1.0 + (verificationTier * 0.05); // Up to 1.25x
+  let skillsMultiplier = 1.0 + (verificationTier * 0.05); // Up to 1.25x
   const traitsMultiplier = 1.0 + (verificationTier * 0.06); // Up to 1.30x
+  
+  // NEW: Additional boost for skills with high level agreement
+  const verifiedSkillsWithHighAgreement = (stats.verified_skills || []).filter(
+    (skill: any) => skill.level_agreement_rate >= 0.8 && skill.verification_count >= 2
+  );
+  
+  if (verifiedSkillsWithHighAgreement.length > 0) {
+    // Extra 5% boost for having highly-agreed verified skills
+    skillsMultiplier *= 1.05;
+  }
   
   return {
     skillsMultiplier,
@@ -48,9 +58,6 @@ function calculateVerificationBoost(candidate: CandidateProfile): VerificationBo
   };
 }
 
-/**
- * Estimate level from years for backward compatibility
- */
 function estimateLevelFromYears(years: number): 1 | 2 | 3 | 4 | 5 {
   if (years < 1) return 1;
   if (years < 2) return 2;
@@ -59,9 +66,6 @@ function estimateLevelFromYears(years: number): 1 | 2 | 3 | 4 | 5 {
   return 5;
 }
 
-/**
- * Helper: Get skills in new format, with fallback for old format
- */
 function normalizeSkillsForMatching(skills: any[]): Skill[] {
   if (!skills || skills.length === 0) return [];
   
@@ -82,35 +86,32 @@ function normalizeSkillsForMatching(skills: any[]): Skill[] {
   });
 }
 
-/**
- * Calculate skill match between candidate and job
- * Primary: Level alignment (proficiency)
- * Secondary: Years (context only, not weighted heavily)
- */
 function calculateSkillMatch(
   candidateSkill: Skill,
-  jobRequirement: JobSkill
+  jobRequirement: JobSkill,
+  verifiedSkillStats?: VerifiedSkillStats
 ): number {
-  const levelDiff = candidateSkill.level - jobRequirement.required_level;
+  let effectiveLevel = candidateSkill.level;
   
-  // Perfect level match
+  if (verifiedSkillStats && verifiedSkillStats.level_agreement_rate >= 0.7) {
+    effectiveLevel = Math.round(verifiedSkillStats.avg_assessed_level) as 1|2|3|4|5;
+  }
+
+  const levelDiff = effectiveLevel - jobRequirement.required_level;
+  
   if (levelDiff === 0) return 100;
-  
-  // Over-qualified (slight penalty to avoid boredom/overqualification risk)
   if (levelDiff === 1) return 95;
   if (levelDiff === 2) return 90;
   if (levelDiff >= 3) return 85;
-  
-  // Under-qualified (steeper penalty)
-  if (levelDiff === -1) return 70; // One level below
-  if (levelDiff === -2) return 40; // Two levels below
-  if (levelDiff <= -3) return 10; // Major skill gap
+  if (levelDiff === -1) return 70; 
+  if (levelDiff === -2) return 40; 
+  if (levelDiff <= -3) return 10; 
   
   return 0;
 }
 
 export function calculateSkillsMatch(
-  candidateSkills: any[], // Accept raw array
+  candidateSkills: any[], 
   jobSkills: JobSkill[],
   verificationBoost: VerificationBoost
 ): MatchDetails {
@@ -118,13 +119,13 @@ export function calculateSkillsMatch(
       return { score: 100, reason: 'No specific skills required' };
   }
 
-  // Normalize candidate skills to ensure 'level' property exists
   const safeCandidateSkills = normalizeSkillsForMatching(candidateSkills);
 
-  const verifiedSkillsSet = new Set(verificationBoost.verifiedSkills || []);
+  const verifiedSkillsMap = new Map(
+    (verificationBoost.verifiedSkills || []).map((s: any) => [s.skill, s])
+  );
+
   let totalScore = 0;
-  let requiredSkillsMet = 0;
-  let preferredSkillsMet = 0;
   
   jobSkills.forEach(jobSkill => {
       const candidateSkill = safeCandidateSkills.find(
@@ -134,26 +135,19 @@ export function calculateSkillsMatch(
       const isRequired = jobSkill.weight === 'required';
 
       if (candidateSkill) {
-        let matchScore = calculateSkillMatch(candidateSkill, jobSkill);
+        const verifiedStats = verifiedSkillsMap.get(candidateSkill.name);
+        let matchScore = calculateSkillMatch(candidateSkill, jobSkill, verifiedStats);
         
-        // Verification Boost for individual skills
-        if (verifiedSkillsSet.has(candidateSkill.name)) {
-            matchScore = Math.min(100, matchScore * 1.2); 
+        if (verifiedStats && verifiedStats.level_agreement_rate >= 0.8) {
+            matchScore = Math.min(100, matchScore * 1.1); 
         }
         
-        // Weighting: Required skills count double in score impact
         if (isRequired) {
             totalScore += matchScore * 2; 
         } else {
             totalScore += matchScore;
         }
-
-        if (isRequired && matchScore >= 70) requiredSkillsMet++;
-        if (!isRequired && matchScore >= 70) preferredSkillsMet++;
-
-      } else {
-        // Missing skill penalty handled by adding 0 to score
-      }
+      } 
   });
     
   const totalPossibleWeight = jobSkills.reduce((acc, s) => acc + (s.weight === 'required' ? 200 : 100), 0);
@@ -200,9 +194,6 @@ export function calculatePerformanceMatch(
   };
 }
 
-/**
- * Calculate impact scope alignment
- */
 function calculateImpactScopeMatch(
   candidateDesiredScopes: number[] | undefined | null,
   jobRequiredScope: number | undefined | null
@@ -216,17 +207,15 @@ function calculateImpactScopeMatch(
     return { score: 100, reason: 'Impact scope aligned' }; 
   }
   
-  // Calculate closest scope
   const minDistance = Math.min(
     ...candidateDesiredScopes.map(scope => Math.abs(scope - jobRequiredScope))
   );
   
   let score = 0;
-  // Penalize based on distance
   if (minDistance === 1) score = 80;
   else if (minDistance === 2) score = 60;
   else if (minDistance === 3) score = 40;
-  else score = 20; // 4+ levels away
+  else score = 20; 
 
   return { score, reason: 'Impact scope mismatch' };
 }
@@ -245,172 +234,252 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
           culture: { score: 0, reason: 'N/A' },
           perks: { score: 0, reason: 'N/A' },
           industry: { score: 0, reason: 'N/A' },
-          traits: { score: 0, reason: 'N/A' }
+          traits: { score: 0, reason: 'N/A' },
+          performance: { score: 0, reason: 'N/A' },
+          impact: { score: 0, reason: 'N/A' }
       },
       dealBreakers: ['Invalid data'],
       recommendations: []
     };
   }
 
-  const safeCandidate = {
-    ...candidate,
-    skills: candidate.skills || [],
-    contractTypes: candidate.contractTypes || [],
-    preferredWorkMode: candidate.preferredWorkMode || [],
-    values: candidate.values || [],
-    characterTraits: candidate.characterTraits || [],
-    desiredPerks: candidate.desiredPerks || [],
-    interestedIndustries: candidate.interestedIndustries || [],
-    desiredSeniority: candidate.desiredSeniority || [],
-    nonNegotiables: candidate.nonNegotiables || [],
-    location: candidate.location || ''
-  };
-
+  // Verification Boost
   const verificationBoost = calculateVerificationBoost(candidate);
-  const dealBreakers: string[] = [];
-  const recommendations: string[] = [];
 
-  const skillsMatch = calculateSkillsMatch(safeCandidate.skills, job.requiredSkills, verificationBoost);
+  // 1. Skills
+  const skillsMatch = calculateSkillsMatch(candidate.skills || [], job.requiredSkills || [], verificationBoost);
 
+  // 2. Salary (Dealbreaker potential)
   let salaryScore = 100;
-  if (job.salaryMax && safeCandidate.salaryMin) {
-      if (safeCandidate.salaryMin > job.salaryMax) {
-          const diff = safeCandidate.salaryMin - job.salaryMax;
-          const percentDiff = (diff / job.salaryMax);
-          salaryScore = Math.max(0, 100 - (percentDiff * 200)); 
-          if (safeCandidate.nonNegotiables.includes('salary')) {
-              dealBreakers.push('Salary expectation exceeds budget');
-              salaryScore = 0;
-          }
+  if (job.salaryMax && candidate.salaryMin) {
+      if (candidate.salaryMin > job.salaryMax) {
+          salaryScore = 0;
       }
   }
+  const salaryMatch = { score: salaryScore, reason: salaryScore === 0 ? 'Salary expectation exceeds budget' : 'Within budget' };
 
-  let contractScore = 0;
-  const sharedContracts = job.contractTypes.filter(t => safeCandidate.contractTypes.includes(t));
-  if (sharedContracts.length > 0) contractScore = 100;
-  else dealBreakers.push(`Job requires ${job.contractTypes.join('/')}`);
+  // 3. Location
+  let locationScore = 100;
+  if (job.workMode !== WorkMode.REMOTE && candidate.location) {
+      if (!candidate.location.toLowerCase().includes(job.location.toLowerCase().split(',')[0].trim().toLowerCase())) {
+          locationScore = 50;
+      }
+  }
+  const locationMatch = { score: locationScore, reason: locationScore === 100 ? 'Location aligned' : 'Location mismatch' };
 
-  let locationScore = 0;
+  // 4. Work Mode
   let workModeScore = 0;
-  if (safeCandidate.preferredWorkMode.includes(job.workMode)) workModeScore = 100;
-  else if (safeCandidate.nonNegotiables.includes('work_mode')) dealBreakers.push(`Work mode mismatch`);
-  else workModeScore = 50;
+  const preferredModes = candidate.preferredWorkMode || [];
+  if (preferredModes.includes(job.workMode)) workModeScore = 100;
+  else if (preferredModes.length === 0) workModeScore = 100;
+  const workModeMatch = { score: workModeScore, reason: workModeScore === 100 ? 'Work mode aligned' : 'Work mode mismatch' };
 
-  if (job.workMode === WorkMode.REMOTE) locationScore = 100;
-  else {
-      if (safeCandidate.location.toLowerCase().includes(job.location.toLowerCase())) locationScore = 100;
-      else if (safeCandidate.nonNegotiables.includes('location')) dealBreakers.push(`Location mismatch`);
-      else locationScore = 20; 
-  }
-  const locWorkScore = (locationScore + workModeScore) / 2;
-
+  // 5. Seniority
   let seniorityScore = 0;
-  if (safeCandidate.desiredSeniority.includes(job.seniority)) seniorityScore = 100;
-  else seniorityScore = 50;
-
-  let cultureScore = 0;
-  if (job.values.length > 0 && safeCandidate.values.length > 0) {
-      const shared = job.values.filter(v => safeCandidate.values.includes(v));
-      cultureScore = (shared.length / Math.max(job.values.length, safeCandidate.values.length)) * 100;
-  } else cultureScore = 100;
-
-  let perkScore = 100;
-  if (safeCandidate.desiredPerks.length > 0) {
-    const shared = job.perks.filter(p => safeCandidate.desiredPerks.includes(p));
-    perkScore = (shared.length / safeCandidate.desiredPerks.length) * 100;
+  const desiredSeniority = candidate.desiredSeniority || [];
+  if (desiredSeniority.length === 0 || desiredSeniority.includes(job.seniority)) {
+      seniorityScore = 100;
+  } else {
+      seniorityScore = 50; 
   }
+  const seniorityMatch = { score: seniorityScore, reason: seniorityScore === 100 ? 'Seniority aligned' : 'Seniority mismatch' };
 
-  let industryScore = 100;
-  if (safeCandidate.interestedIndustries.length > 0 && job.companyIndustry) {
-      if (job.companyIndustry.some(ind => safeCandidate.interestedIndustries.includes(ind))) industryScore = 100;
-      else industryScore = 20;
+  // 6. Contract Type
+  let contractScore = 0;
+  const candidateContracts = candidate.contractTypes || [];
+  const jobContracts = job.contractTypes || [];
+  const hasContractOverlap = jobContracts.some(t => candidateContracts.includes(t));
+  if (hasContractOverlap || candidateContracts.length === 0) contractScore = 100;
+  const contractMatch = { score: contractScore, reason: contractScore === 100 ? 'Contract type aligned' : 'Contract type mismatch' };
+
+  // 7. Culture & Values
+  const jobValues = job.values || [];
+  const candValues = candidate.values || [];
+  let cultureScore = 100;
+  if (jobValues.length > 0 && candValues.length > 0) {
+      const overlap = jobValues.filter(v => candValues.includes(v)).length;
+      cultureScore = (overlap / jobValues.length) * 100;
   }
+  const cultureMatch = { score: Math.min(100, cultureScore), reason: 'Based on shared values' };
 
+  // 8. Perks
+  const jobPerks = job.perks || [];
+  const candPerks = candidate.desiredPerks || [];
+  let perksScore = 100;
+  if (candPerks.length > 0) {
+      const overlap = candPerks.filter(p => jobPerks.includes(p)).length;
+      perksScore = (overlap / candPerks.length) * 100;
+  }
+  const perksMatch = { score: Math.min(100, perksScore), reason: 'Based on desired perks' };
+
+  // 9. Traits
+  const jobTraits = job.desiredTraits || [];
+  const candTraits = candidate.characterTraits || [];
   let traitsScore = 100;
-  if (job.requiredTraits && job.requiredTraits.length > 0) {
-    const hasRequired = job.requiredTraits.filter(t => safeCandidate.characterTraits.includes(t));
-    if (hasRequired.length < job.requiredTraits.length) {
-       traitsScore = 50;
-    }
+  if (jobTraits.length > 0) {
+      const overlap = jobTraits.filter(t => candTraits.includes(t)).length;
+      traitsScore = (overlap / jobTraits.length) * 100;
   }
   traitsScore = Math.min(100, traitsScore * verificationBoost.traitsMultiplier);
+  const traitsMatch = { score: traitsScore, reason: 'Based on personality traits' };
 
-  const performanceMatch = calculatePerformanceMatch(
-      verificationBoost.performanceScores,
-      job.desired_performance_scores
+  // 10. Performance
+  const performanceMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
+
+  // 11. Impact
+  const impactMatch = calculateImpactScopeMatch(candidate.desired_impact_scope, job.required_impact_scope);
+
+  // Dealbreakers
+  const dealBreakers: string[] = [];
+  if (salaryScore === 0) dealBreakers.push('Salary expectation too high');
+  if (workModeScore === 0 && candidate.nonNegotiables?.includes('work_mode')) dealBreakers.push('Work mode mismatch (Non-negotiable)');
+  if (contractScore === 0 && candidate.contractTypes?.length > 0 && candidate.nonNegotiables?.includes('contract_type')) dealBreakers.push('Contract type mismatch (Non-negotiable)');
+  
+  // Calculate Overall
+  const weightedScore = (
+      (skillsMatch.score * 0.30) +
+      (seniorityMatch.score * 0.10) +
+      (cultureMatch.score * 0.10) +
+      (traitsMatch.score * 0.10) +
+      (performanceMatch.score * 0.10) +
+      (impactMatch.score * 0.10) +
+      (salaryScore * 0.05) +
+      (locationScore * 0.05) + 
+      (workModeScore * 0.05) +
+      (contractScore * 0.05)
   );
-
-  // New Impact Match
-  const impactMatch = calculateImpactScopeMatch(safeCandidate.desired_impact_scope, job.required_impact_scope);
-
-  const weights = {
-    skills: 0.25,
-    salary: 0.15,
-    contract: 0.05,
-    locWork: 0.10,
-    seniority: 0.05,
-    culture: 0.10,
-    perks: 0.05,
-    industry: 0.05,
-    traits: 0.05,
-    performance: 0.10,
-    impact: 0.05 // New Weight
-  };
-
-  let overallScore = Math.round(
-      (skillsMatch.score * weights.skills) + 
-      (salaryScore * weights.salary) + 
-      (contractScore * weights.contract) + 
-      (locWorkScore * weights.locWork) + 
-      (seniorityScore * weights.seniority) + 
-      (cultureScore * weights.culture) + 
-      (perkScore * weights.perks) +
-      (industryScore * weights.industry) +
-      (traitsScore * weights.traits) + 
-      (performanceMatch.score * weights.performance) +
-      (impactMatch.score * weights.impact)
-  );
-
-  if (dealBreakers.length > 0) {
-      overallScore = Math.min(overallScore, 45);
-  }
 
   return {
-      overallScore,
+      overallScore: Math.round(weightedScore),
       details: {
           skills: skillsMatch,
-          salary: { score: Math.round(salaryScore), reason: salaryScore === 100 ? 'Within budget' : 'Outside range' },
-          contract: { score: Math.round(contractScore), reason: contractScore === 100 ? 'Type match' : 'Type mismatch' },
-          location: { score: Math.round(locationScore), reason: 'Location score' },
-          workMode: { score: Math.round(workModeScore), reason: 'Work mode score' },
-          seniority: { score: Math.round(seniorityScore), reason: 'Seniority score' },
-          culture: { score: Math.round(cultureScore), reason: 'Culture score' },
-          perks: { score: Math.round(perkScore), reason: 'Perks score' },
-          industry: { score: Math.round(industryScore), reason: 'Industry score' },
-          traits: { score: Math.round(traitsScore), reason: 'Traits score' },
+          seniority: seniorityMatch,
+          salary: salaryMatch,
+          location: locationMatch,
+          workMode: workModeMatch,
+          contract: contractMatch,
+          culture: cultureMatch,
+          perks: perksMatch,
+          industry: { score: 100, reason: 'Industry match not fully implemented' },
+          traits: traitsMatch,
           performance: performanceMatch,
           impact: impactMatch
       },
       dealBreakers,
-      recommendations
+      recommendations: []
   };
 };
 
 export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidate: CandidateProfile): MatchBreakdown => {
-    const jobLikeObject: any = {
-        requiredSkills: criteria.requiredSkills || [],
-        salaryMin: criteria.salaryMin, 
-        salaryMax: criteria.salaryMax,
-        contractTypes: criteria.contractTypes || [],
-        workMode: criteria.workMode?.[0] || 'Remote',
-        location: criteria.location || '',
-        seniority: criteria.seniority?.[0] || 'Senior',
-        values: criteria.values || [],
-        perks: criteria.desiredPerks || [],
-        companyIndustry: criteria.interestedIndustries || [],
-        requiredTraits: criteria.requiredTraits || [],
-        // Fallback for impact scope if not in search criteria
-        required_impact_scope: 3 
+    const verificationBoost = calculateVerificationBoost(candidate);
+
+    // 1. Skills
+    const skillsMatch = calculateSkillsMatch(candidate.skills || [], criteria.requiredSkills || [], verificationBoost);
+
+    // 2. Salary
+    let salaryScore = 100;
+    if (criteria.salaryMax && candidate.salaryMin) {
+        if (candidate.salaryMin > criteria.salaryMax) salaryScore = 0;
+    }
+    const salaryMatch = { score: salaryScore, reason: salaryScore === 0 ? 'Over budget' : 'Within budget' };
+
+    // 3. Location
+    let locationScore = 100;
+    if (criteria.location && candidate.location) {
+        if (!candidate.location.toLowerCase().includes(criteria.location.toLowerCase())) locationScore = 50; 
+    }
+    const locationMatch = { score: locationScore, reason: '' };
+
+    // 4. Seniority
+    let seniorityScore = 100;
+    if (criteria.seniority && criteria.seniority.length > 0) {
+        const overlap = (candidate.desiredSeniority || []).filter(s => criteria.seniority?.includes(s as any));
+        if (overlap.length === 0 && (candidate.desiredSeniority||[]).length > 0) seniorityScore = 0;
+    }
+    const seniorityMatch = { score: seniorityScore, reason: '' };
+
+    // 5. Work Mode
+    let workModeScore = 100;
+    if (criteria.workMode && criteria.workMode.length > 0) {
+        const overlap = (candidate.preferredWorkMode || []).filter(m => criteria.workMode?.includes(m));
+        if (overlap.length === 0 && (candidate.preferredWorkMode||[]).length > 0) workModeScore = 0;
+    }
+    const workModeMatch = { score: workModeScore, reason: '' };
+
+    // 6. Contract
+    let contractScore = 100;
+    if (criteria.contractTypes && criteria.contractTypes.length > 0) {
+        const overlap = (candidate.contractTypes || []).filter(t => criteria.contractTypes?.includes(t));
+        if (overlap.length === 0 && (candidate.contractTypes||[]).length > 0) contractScore = 0;
+    }
+    const contractMatch = { score: contractScore, reason: '' };
+
+    // 7. Values
+    let cultureScore = 100;
+    if (criteria.values && criteria.values.length > 0 && candidate.values) {
+        const overlap = candidate.values.filter(v => criteria.values?.includes(v)).length;
+        cultureScore = (overlap / criteria.values.length) * 100;
+    }
+    const cultureMatch = { score: cultureScore, reason: '' };
+
+    // 8. Traits
+    let traitsScore = 100;
+    if (criteria.desiredTraits && criteria.desiredTraits.length > 0 && candidate.characterTraits) {
+        const overlap = candidate.characterTraits.filter(t => criteria.desiredTraits?.includes(t)).length;
+        traitsScore = (overlap / criteria.desiredTraits.length) * 100;
+    }
+    traitsScore = Math.min(100, traitsScore * verificationBoost.traitsMultiplier);
+    const traitsMatch = { score: traitsScore, reason: '' };
+
+    // 9. Industry
+    let industryScore = 100;
+    if (criteria.interestedIndustries && criteria.interestedIndustries.length > 0 && candidate.interestedIndustries) {
+        const overlap = candidate.interestedIndustries.filter(i => criteria.interestedIndustries?.includes(i)).length;
+        industryScore = (overlap / criteria.interestedIndustries.length) * 100;
+    }
+    const industryMatch = { score: industryScore, reason: '' };
+
+    // 10. Education
+    let educationScore = 100;
+    if (criteria.required_education_level && candidate.education_level) {
+        if (criteria.education_required && candidate.education_level !== criteria.required_education_level) {
+             educationScore = 50; 
+        }
+    }
+
+    const dealBreakers: string[] = [];
+    if (salaryScore === 0) dealBreakers.push('Over Budget');
+    if (criteria.dealBreakers?.includes('location') && locationScore < 100) dealBreakers.push('Location Mismatch');
+    if (criteria.dealBreakers?.includes('work_mode') && workModeScore === 0) dealBreakers.push('Work Mode Mismatch');
+    if (criteria.dealBreakers?.includes('seniority') && seniorityScore === 0) dealBreakers.push('Seniority Mismatch');
+    if (criteria.dealBreakers?.includes('contract_type') && contractScore === 0) dealBreakers.push('Contract Type Mismatch');
+    if (criteria.dealBreakers?.includes('education') && educationScore < 100) dealBreakers.push('Education Mismatch');
+
+    const weightedScore = (
+        (skillsMatch.score * 0.40) +
+        (seniorityScore * 0.10) +
+        (cultureMatch.score * 0.10) +
+        (traitsMatch.score * 0.10) +
+        (locationScore * 0.10) +
+        (salaryScore * 0.10) + 
+        (industryScore * 0.10)
+    );
+
+    return {
+        overallScore: Math.round(weightedScore),
+        details: {
+            skills: skillsMatch,
+            seniority: { score: seniorityScore, reason: '' },
+            salary: salaryMatch,
+            location: locationMatch,
+            workMode: workModeMatch,
+            contract: contractMatch,
+            culture: cultureMatch,
+            perks: { score: 100, reason: '' },
+            industry: industryMatch,
+            traits: traitsMatch
+        },
+        dealBreakers,
+        recommendations: []
     };
-    return calculateMatch(jobLikeObject, candidate);
 };
