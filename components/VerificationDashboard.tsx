@@ -1,16 +1,68 @@
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Clock, Users, TrendingUp, Search, Mail, Eye, EyeOff, Plus, ChevronRight } from 'lucide-react';
-import { ProfessionalVerification, VerificationStats } from '../types';
+import { CheckCircle, Clock, Users, TrendingUp, Search, Mail, Eye, EyeOff, Plus, ChevronRight, Award } from 'lucide-react';
+import { ProfessionalVerification, VerificationStats, VerifiedSkillStats, Skill } from '../types';
 import { verificationService } from '../services/verificationService';
 import RequestVerificationModal from './RequestVerificationModal';
+import { SKILL_LEVEL_METADATA } from '../constants/matchingData';
 
 interface Props {
   candidateId: string;
   stats?: VerificationStats;
+  skills?: Skill[]; // New prop to pass candidate skills
 }
 
-const VerificationDashboard: React.FC<Props> = ({ candidateId, stats }) => {
+const VerifiedSkillBadge: React.FC<{ 
+  skill: VerifiedSkillStats;
+}> = ({ skill }) => {
+  const claimedMeta = SKILL_LEVEL_METADATA[Math.round(skill.avg_claimed_level) as 1|2|3|4|5] || SKILL_LEVEL_METADATA[1];
+  const assessedMeta = SKILL_LEVEL_METADATA[Math.round(skill.avg_assessed_level) as 1|2|3|4|5] || SKILL_LEVEL_METADATA[1];
+  
+  const levelDiff = skill.avg_assessed_level - skill.avg_claimed_level;
+  const agreementColor = 
+    skill.level_agreement_rate >= 0.8 ? 'text-green-600' :
+    skill.level_agreement_rate >= 0.6 ? 'text-yellow-600' :
+    'text-orange-600';
+  
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-all">
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <h5 className="font-bold text-sm text-gray-900">{skill.skill}</h5>
+          <p className="text-xs text-gray-500">
+            {skill.verification_count} {skill.verification_count === 1 ? 'verification' : 'verifications'}
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl">{assessedMeta.icon}</div>
+          <div className="text-[10px] font-bold text-gray-600">{assessedMeta.label}</div>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-gray-500">Agreement:</span>
+        <span className={`font-bold ${agreementColor}`}>
+          {Math.round(skill.level_agreement_rate * 100)}%
+        </span>
+      </div>
+      
+      {Math.abs(levelDiff) > 0.5 && (
+        <div className={`mt-2 text-xs px-2 py-1 rounded ${
+          levelDiff > 0 
+            ? 'bg-green-50 text-green-700' 
+            : 'bg-orange-50 text-orange-700'
+        }`}>
+          {levelDiff > 0 
+            ? `↗ Assessed ${levelDiff.toFixed(1)} levels higher`
+            : `↘ Assessed ${Math.abs(levelDiff).toFixed(1)} levels lower`
+          }
+        </div>
+      )}
+    </div>
+  );
+};
+
+const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [] }) => {
   const [verifications, setVerifications] = useState<ProfessionalVerification[]>([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -110,6 +162,26 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats }) => {
         />
       </div>
 
+      {/* Verified Skills Section (New) */}
+      {currentStats.verified_skills && currentStats.verified_skills.length > 0 && (
+        <div className="mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <Award className="w-5 h-5 mr-2 text-blue-500" />
+            Verified Skills
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentStats.verified_skills.slice(0, 9).map((skill, idx) => (
+                <VerifiedSkillBadge key={idx} skill={skill} />
+            ))}
+            </div>
+            {currentStats.verified_skills.length > 9 && (
+            <p className="text-sm text-gray-500 text-center mt-4">
+                +{currentStats.verified_skills.length - 9} more verified skills
+            </p>
+            )}
+        </div>
+      )}
+
       {/* CTA Box */}
       {currentStats.total_verifications < 1 && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 mb-8 border border-blue-100">
@@ -187,6 +259,7 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats }) => {
       {showRequestModal && (
         <RequestVerificationModal
           candidateId={candidateId}
+          candidateSkills={skills}
           onClose={() => setShowRequestModal(false)}
           onSuccess={() => {
             setShowRequestModal(false);
