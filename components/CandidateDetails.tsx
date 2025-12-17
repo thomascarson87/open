@@ -231,7 +231,7 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                         <div className="space-y-6">
                             {candidate.skills.map((skill, idx) => {
                                 const meta = SKILL_LEVEL_METADATA[skill.level];
-                                const isVerified = candidate.verification_stats?.verified_skills?.includes(skill.name);
+                                const isVerified = candidate.verification_stats?.verified_skills?.some(s => s.skill === skill.name);
                                 
                                 return (
                                     <div key={idx} className="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
