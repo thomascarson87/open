@@ -115,6 +115,14 @@ export interface Reference {
 }
 
 // Professional Verification Types
+export interface VerifiedSkill {
+  skill: string;
+  confirmed: boolean; // Did referee work with this skill?
+  candidate_claimed_level: 1 | 2 | 3 | 4 | 5; // What candidate said
+  referee_assessed_level: 1 | 2 | 3 | 4 | 5; // What referee validates
+  notes?: string; // Optional referee notes (50 chars max)
+}
+
 export interface ProfessionalVerification {
   id: string;
   candidate_id: string;
@@ -127,11 +135,7 @@ export interface ProfessionalVerification {
   years_worked_together: '<1 year' | '1-2 years' | '2-5 years' | '5+ years';
   
   // Skills
-  verified_skills: Array<{
-    skill: string;
-    confirmed: boolean;
-    proficiency: number; // 1-10
-  }>;
+  verified_skills: VerifiedSkill[];
   
   // Performance Ratings
   communication_written: number;
@@ -161,13 +165,22 @@ export interface ProfessionalVerification {
   expires_at: string;
 }
 
+export interface VerifiedSkillStats {
+  skill: string;
+  verification_count: number; // How many people verified this skill
+  avg_claimed_level: number; // Average of what candidate claimed
+  avg_assessed_level: number; // Average of what referees assessed
+  level_agreement_rate: number; // % who matched candidate's level ±1
+  last_verified: string; // ISO timestamp
+}
+
 export interface VerificationStats {
   total_verifications: number;
   avg_communication: number;
   avg_problem_solving: number;
   avg_reliability: number;
   avg_collaboration: number;
-  verified_skills: string[];
+  verified_skills: VerifiedSkillStats[];
   verified_traits: string[];
 }
 
