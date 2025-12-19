@@ -148,8 +148,9 @@ const mapCandidateFromDB = (data: any): CandidateProfile => {
     verification_stats: data.verification_stats, // Include stats
     
     // 🆕 Enhanced Fields
-    current_impact_scope: data.current_impact_scope,
-    desired_impact_scope: data.desired_impact_scope || []
+    // Fixed: map database fields to camelCase properties defined in CandidateProfile
+    currentImpactScope: data.current_impact_scope,
+    desiredImpactScopes: data.desired_impact_scope || []
 }};
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
@@ -331,7 +332,7 @@ function MainApp() {
                   contract_types: profile.contractTypes || [],
                   preferred_work_mode: profile.preferredWorkMode || [],
                   desired_perks: profile.desiredPerks || [],
-                  interested_industries: profile.interestedIndustries || [],
+                  interested_industries: profile.interested_industries || [],
                   non_negotiables: profile.nonNegotiables || [],
                   desired_seniority: profile.desiredSeniority || [],
                   
@@ -365,8 +366,9 @@ function MainApp() {
                   assessment_completed_at: profile.assessment_completed_at,
                   
                   // New Impact Fields
-                  current_impact_scope: profile.current_impact_scope,
-                  desired_impact_scope: profile.desired_impact_scope
+                  // Fixed: read from camelCase properties defined in CandidateProfile
+                  current_impact_scope: profile.currentImpactScope,
+                  desired_impact_scope: profile.desiredImpactScopes
               }).eq('id', user.id);
           
           if (error) {
