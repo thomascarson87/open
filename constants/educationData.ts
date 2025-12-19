@@ -1,3 +1,4 @@
+
 export const EDUCATION_LEVELS = [
   'High School',
   'Associate Degree',
@@ -7,6 +8,24 @@ export const EDUCATION_LEVELS = [
   'Professional Certification',
   'Bootcamp Graduate',
   'Self-Taught',
+  'Other'
+] as const;
+
+/* Added missing EDUCATION_FIELDS constant */
+export const EDUCATION_FIELDS = [
+  'Computer Science',
+  'Software Engineering',
+  'Information Technology',
+  'Data Science',
+  'Business Administration',
+  'Design / Fine Arts',
+  'Mathematics',
+  'Physics',
+  'Marketing',
+  'Psychology',
+  'Economics',
+  'Political Science',
+  'Linguistics',
   'Other'
 ] as const;
 
