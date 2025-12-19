@@ -1,120 +1,119 @@
 
 import React from 'react';
 import { IMPACT_SCOPE_METADATA } from '../constants/matchingData';
-import { Info, Check } from 'lucide-react';
+import { Check, Info } from 'lucide-react';
 
 interface Props {
   currentScope?: number;
   desiredScopes?: number[];
-  onChangeCurrent: (scope: number) => void;
-  onChangeDesired: (scopes: number[]) => void;
+  selected?: number[]; // Legacy support
+  onChange?: (scopes: number[]) => void; // Legacy support
+  onChangeCurrent?: (scope: number) => void;
+  onChangeDesired?: (scopes: number[]) => void;
+  maxSelections?: number;
 }
 
-const ImpactScopeSelector: React.FC<Props> = ({ currentScope, desiredScopes = [], onChangeCurrent, onChangeDesired }) => {
-  
-  const toggleDesired = (scope: number) => {
-      if (desiredScopes.includes(scope)) {
-          onChangeDesired(desiredScopes.filter(s => s !== scope));
-      } else {
-          onChangeDesired([...desiredScopes, scope].sort());
-      }
+const ImpactScopeSelector: React.FC<Props> = ({ 
+  currentScope,
+  desiredScopes = [],
+  selected = [],
+  onChange,
+  onChangeCurrent,
+  onChangeDesired,
+  maxSelections = 3 
+}) => {
+  // Use either new props or fallback to legacy 'selected'
+  const isSelected = (level: number) => {
+    if (currentScope === level) return true;
+    if (desiredScopes.includes(level)) return true;
+    if (selected.includes(level)) return true;
+    return false;
+  };
+
+  const handleToggle = (level: number) => {
+    if (onChangeCurrent) {
+        onChangeCurrent(level);
+    }
+    
+    if (onChangeDesired) {
+        const newDesired = desiredScopes.includes(level)
+            ? desiredScopes.filter(s => s !== level)
+            : [...desiredScopes, level].slice(0, maxSelections).sort((a, b) => a - b);
+        onChangeDesired(newDesired);
+    }
+
+    if (onChange) {
+        const newSelected = selected.includes(level)
+            ? selected.filter(s => s !== level)
+            : [...selected, level].slice(0, maxSelections).sort((a, b) => a - b);
+        onChange(newSelected);
+    }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-          <div>
-              <h3 className="text-lg font-bold text-gray-900">Impact Scope</h3>
-              <p className="text-sm text-gray-500">Measure the breadth of your influence, regardless of title.</p>
-          </div>
-          <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">New Framework</div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {[1, 2, 3, 4, 5].map((level) => {
+          const meta = IMPACT_SCOPE_METADATA[level];
+          const active = isSelected(level);
           
-          {/* Current Scope */}
-          <div>
-              <h4 className="text-sm font-bold text-gray-700 uppercase mb-4 tracking-wide">Current Role Impact</h4>
-              <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map(scope => {
-                      const meta = IMPACT_SCOPE_METADATA[scope];
-                      const isSelected = currentScope === scope;
-                      return (
-                          <div 
-                            key={scope}
-                            onClick={() => onChangeCurrent(scope)}
-                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all relative group ${
-                                isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-100 hover:border-blue-200'
-                            }`}
-                          >
-                              <div className="flex items-center">
-                                  <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                                      isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-300'
-                                  }`}>
-                                      {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                  </div>
-                                  <div>
-                                      <div className={`font-bold text-sm ${isSelected ? 'text-blue-900' : 'text-gray-700'}`}>
-                                          {meta.label}
-                                      </div>
-                                      <div className="text-xs text-gray-500">{meta.descriptor}</div>
-                                  </div>
-                              </div>
-
-                              {/* Tooltip */}
-                              <div className="hidden group-hover:block absolute z-20 left-0 bottom-full mb-2 w-64 bg-gray-900 text-white p-3 rounded-lg text-xs shadow-xl">
-                                  <div className="font-bold mb-1">Typical Roles:</div>
-                                  <div className="mb-2 text-gray-300">{meta.typicalRoles.join(', ')}</div>
-                                  <div className="font-bold mb-1">Characteristics:</div>
-                                  <ul className="list-disc list-inside text-gray-300">
-                                      {meta.characteristics.slice(0, 2).map((c, i) => <li key={i}>{c}</li>)}
-                                  </ul>
-                              </div>
-                          </div>
-                      );
-                  })}
+          return (
+            <div 
+              key={level}
+              onClick={() => handleToggle(level)}
+              className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative group ${
+                active 
+                  ? 'border-blue-600 bg-blue-50/50 shadow-sm' 
+                  : 'border-gray-100 bg-white hover:border-gray-200'
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0 transition-colors ${
+                  active ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'
+                }`}>
+                  {level}
+                </div>
+                
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className={`font-bold ${active ? 'text-blue-900' : 'text-gray-900'}`}>{meta.label}</h4>
+                    {active && <Check className="w-5 h-5 text-blue-600" />}
+                  </div>
+                  <p className="text-sm text-gray-500 leading-tight mb-3">{meta.descriptor}</p>
+                  
+                  {/* Expanded Content */}
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 pt-3 border-t border-dashed transition-all ${
+                    active ? 'border-blue-200 opacity-100 max-h-40' : 'border-gray-100 opacity-60 group-hover:opacity-100 max-h-40 overflow-hidden'
+                  }`}>
+                    <div>
+                      <div className="text-[10px] font-bold text-gray-400 uppercase mb-2">Typical Roles</div>
+                      <div className="flex flex-wrap gap-1">
+                        {meta.typicalRoles.slice(0, 3).map(role => (
+                          <span key={role} className="text-[10px] bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-600">
+                            {role}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-gray-400 uppercase mb-2">Characteristics</div>
+                      <ul className="text-[10px] text-gray-500 space-y-0.5 list-disc list-inside">
+                        {meta.characteristics.slice(0, 2).map((c, i) => (
+                          <li key={i} className="truncate">{c}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
-          </div>
-
-          {/* Desired Scope */}
-          <div>
-              <h4 className="text-sm font-bold text-gray-700 uppercase mb-4 tracking-wide">Desired Next Role(s)</h4>
-              <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map(scope => {
-                      const meta = IMPACT_SCOPE_METADATA[scope];
-                      const isSelected = desiredScopes.includes(scope);
-                      const isGrowth = currentScope && scope > currentScope;
-                      
-                      return (
-                          <div 
-                            key={scope}
-                            onClick={() => toggleDesired(scope)}
-                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                                isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200'
-                            }`}
-                          >
-                              <div className="flex items-center">
-                                  <div className={`w-5 h-5 rounded mr-3 flex items-center justify-center border-2 ${
-                                      isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                                  }`}>
-                                      {isSelected && <Check className="w-3 h-3 text-white" />}
-                                  </div>
-                                  <span className={`font-bold text-sm ${isSelected ? 'text-green-900' : 'text-gray-700'}`}>
-                                      {meta.label}
-                                  </span>
-                              </div>
-                              {isGrowth && (
-                                  <span className="text-[10px] uppercase font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded">Growth</span>
-                              )}
-                          </div>
-                      );
-                  })}
-              </div>
-              <div className="mt-6 bg-gray-50 p-4 rounded-lg text-xs text-gray-500 leading-relaxed">
-                  <Info className="w-4 h-4 inline mr-1 mb-0.5 text-gray-400"/>
-                  Select all impact levels you are open to. Choosing levels above your current scope indicates ambition for growth.
-              </div>
-          </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl text-xs text-gray-500 border border-gray-200 border-dashed">
+        <Info className="w-4 h-4 text-gray-400" />
+        <p>Impact scope measures the breadth of your influence beyond your job title. You can select up to {maxSelections} levels you are open to.</p>
       </div>
     </div>
   );
