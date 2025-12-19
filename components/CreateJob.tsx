@@ -25,15 +25,18 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
     const [step, setStep] = useState(1);
     const [jobData, setJobData] = useState<Partial<JobPosting>>({
         companyName: "TechFlow Inc.",
-        workMode: WorkMode.REMOTE,
+        /* Fixed WorkMode enum usage */
+        workMode: WorkMode.Remote,
         requiredSkills: [],
         values: [],
         perks: [],
         desiredTraits: [],
         requiredTraits: [],
-        seniority: SeniorityLevel.SENIOR,
-        contractTypes: [JobType.FULL_TIME],
+        /* Fixed SeniorityLevel and JobType enum usage */
+        seniority: SeniorityLevel.Senior,
+        contractTypes: [JobType.FullTime],
         salaryCurrency: 'USD',
+        /* approvals, responsibilities, key_deliverables, tech_stack added to JobPosting type */
         approvals: { hiringManager: { status: 'pending', assignedTo: '' }, finance: { status: 'pending', assignedTo: '' } },
         responsibilities: [],
         key_deliverables: [],
@@ -208,11 +211,11 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                         
                         {/* Impact Scope */}
                         <div className="border-t border-gray-100 pt-6">
+                            {/* Fixed ImpactScopeSelector props */}
                             <ImpactScopeSelector
-                                currentScope={jobData.required_impact_scope}
-                                onChangeCurrent={(scope) => setJobData({...jobData, required_impact_scope: scope as any})}
-                                desiredScopes={[]} // Not used for jobs
-                                onChangeDesired={() => {}} // Not used
+                                selected={jobData.required_impact_scope ? [jobData.required_impact_scope] : []}
+                                onChange={(scopes) => setJobData({...jobData, required_impact_scope: scopes[0] as any})}
+                                maxSelections={1}
                             />
                         </div>
 
@@ -237,7 +240,8 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Preferred Education (Nice to Have)</label>
                                     <select
                                         value={jobData.preferred_education_level || ''}
-                                        onChange={e => setJobData({...jobData, preferred_education_level: e.target.value})}
+                                        /* Fixed preferred_education_level usage */
+                                        onChange={e => setJobData(prev => ({...prev, preferred_education_level: e.target.value}))}
                                         className="w-full p-3 bg-white border border-gray-200 rounded-xl outline-none"
                                     >
                                         <option value="">No Preference</option>
@@ -550,13 +554,14 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                 <select 
                                     className="p-2 border rounded-lg text-sm min-w-[200px]"
                                     value={jobData.approvals?.hiringManager?.assignedTo || ''}
-                                    onChange={e => setJobData({
-                                        ...jobData, 
+                                    /* Fixed approvals usage */
+                                    onChange={e => setJobData(prev => ({
+                                        ...prev, 
                                         approvals: { 
-                                            ...jobData.approvals, 
+                                            ...(prev.approvals || {}), 
                                             hiringManager: { status: 'pending', assignedTo: e.target.value } 
                                         } 
-                                    })}
+                                    }))}
                                 >
                                     <option value="">Select Manager...</option>
                                     {teamMembers.filter(m => m.role === 'hiring_manager' || m.role === 'admin').map(m => (
@@ -574,13 +579,14 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers }) => {
                                 <select 
                                     className="p-2 border rounded-lg text-sm min-w-[200px]"
                                     value={jobData.approvals?.finance?.assignedTo || ''}
-                                    onChange={e => setJobData({
-                                        ...jobData, 
+                                    /* Fixed approvals usage */
+                                    onChange={e => setJobData(prev => ({
+                                        ...prev, 
                                         approvals: { 
-                                            ...jobData.approvals, 
+                                            ...(prev.approvals || {}), 
                                             finance: { status: 'pending', assignedTo: e.target.value } 
                                         } 
-                                    })}
+                                    }))}
                                 >
                                     <option value="">Select Finance Rep...</option>
                                     {teamMembers.filter(m => m.role === 'finance' || m.role === 'admin').map(m => (
