@@ -20,7 +20,7 @@ import { EDUCATION_LEVELS } from '../constants/educationData';
 
 // ===================================================================
 // NON-NEGOTIABLE TOGGLE SECTION - CRITICAL MATCHING FEATURE
-// DO NOT REMOVE: These toggles are essential for the matching algorithm
+// DO NOT REMOVE: These toggles are presidential for the matching algorithm
 // Removing them breaks the 8-dimensional matching system
 // ===================================================================
 const NonNegotiableToggle = ({ 
@@ -263,10 +263,11 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
               
               {/* Impact Scope Section */}
               <ImpactScopeSelector 
-                  currentScope={profile.current_impact_scope}
-                  desiredScopes={profile.desired_impact_scope}
-                  onChangeCurrent={(scope) => onUpdate({ current_impact_scope: scope as any })}
-                  onChangeDesired={(scopes) => onUpdate({ desired_impact_scope: scopes as any })}
+                  // Fixed: use camelCase properties from CandidateProfile
+                  currentScope={profile.currentImpactScope}
+                  desiredScopes={profile.desiredImpactScopes}
+                  onChangeCurrent={(scope) => onUpdate({ currentImpactScope: scope as any })}
+                  onChangeDesired={(scopes) => onUpdate({ desiredImpactScopes: scopes as any })}
               />
 
               {/* Skills Section - ENHANCED */}
