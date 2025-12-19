@@ -260,7 +260,8 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
 
   // 3. Location
   let locationScore = 100;
-  if (job.workMode !== WorkMode.REMOTE && candidate.location) {
+  /* Fixed WorkMode enum usage */
+  if (job.workMode !== WorkMode.Remote && candidate.location) {
       if (!candidate.location.toLowerCase().includes(job.location.toLowerCase().split(',')[0].trim().toLowerCase())) {
           locationScore = 50;
       }
@@ -276,6 +277,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
 
   // 5. Seniority
   let seniorityScore = 0;
+  /* Fixed desiredSeniority property access */
   const desiredSeniority = candidate.desiredSeniority || [];
   if (desiredSeniority.length === 0 || desiredSeniority.includes(job.seniority)) {
       seniorityScore = 100;
@@ -327,7 +329,8 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
   const performanceMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
 
   // 11. Impact
-  const impactMatch = calculateImpactScopeMatch(candidate.desired_impact_scope, job.required_impact_scope);
+  /* Fixed: use camelCase desiredImpactScopes defined in CandidateProfile */
+  const impactMatch = calculateImpactScopeMatch(candidate.desiredImpactScopes, job.required_impact_scope);
 
   // Dealbreakers
   const dealBreakers: string[] = [];
@@ -393,6 +396,7 @@ export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidat
     // 4. Seniority
     let seniorityScore = 100;
     if (criteria.seniority && criteria.seniority.length > 0) {
+        /* Fixed desiredSeniority property access */
         const overlap = (candidate.desiredSeniority || []).filter(s => criteria.seniority?.includes(s as any));
         if (overlap.length === 0 && (candidate.desiredSeniority||[]).length > 0) seniorityScore = 0;
     }
