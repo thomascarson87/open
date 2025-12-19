@@ -202,21 +202,22 @@ const CandidateDetails: React.FC<Props> = ({ candidate, onBack, onUnlock, isOwne
                   )}
 
                   {/* Impact Scope */}
-                  {candidate.current_impact_scope && (
+                  {/* Fixed: use camelCase currentImpactScope defined in CandidateProfile */}
+                  {candidate.currentImpactScope && (
                       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                               <Target className={`w-6 h-6 mr-3 ${theme.text}`}/> Impact & Influence
                           </h3>
                           <div className="flex items-center gap-6">
                               <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xl border-4 border-blue-100">
-                                  L{candidate.current_impact_scope}
+                                  L{candidate.currentImpactScope}
                               </div>
                               <div>
                                   <div className="text-lg font-bold text-gray-900">
-                                      {IMPACT_SCOPE_METADATA[candidate.current_impact_scope].label}
+                                      {IMPACT_SCOPE_METADATA[candidate.currentImpactScope].label}
                                   </div>
                                   <p className="text-gray-600">
-                                      {IMPACT_SCOPE_METADATA[candidate.current_impact_scope].descriptor}
+                                      {IMPACT_SCOPE_METADATA[candidate.currentImpactScope].descriptor}
                                   </p>
                               </div>
                           </div>
