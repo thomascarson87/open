@@ -38,15 +38,37 @@ export enum SeniorityLevel {
 export type ThemeColor = 'blue' | 'purple' | 'green' | 'orange' | 'pink' | 'slate';
 export type ThemeFont = 'sans' | 'serif' | 'mono' | 'display';
 
-// Enhanced Skill Interface
-export interface Skill {
-  name: string;
-  level: 1 | 2 | 3 | 4 | 5; // Primary matching indicator
-  years?: number; // Optional context
-  description?: string; // Proof of work (max 200 chars)
+export interface WorkStylePreferences {
+  workHours?: 'traditional_9_5' | 'flexible' | 'early_bird' | 'night_owl' | 'async_any';
+  workIntensity?: 'relaxed' | 'moderate' | 'fast_paced' | 'startup_hustle';
+  projectDuration?: 'short_sprints' | 'mixed' | 'long_term';
+  contextSwitching?: 'single_focus' | 'limited_switching' | 'comfortable_multitasking';
+  autonomyLevel?: 'high_direction' | 'balanced' | 'highly_autonomous';
+  decisionMaking?: 'collaborative' | 'consult_decide' | 'independent';
+  riskTolerance?: 'risk_averse' | 'calculated_risks' | 'high_risk_comfortable';
+  innovationStability?: 'proven_methods' | 'balanced' | 'cutting_edge';
+  ambiguityTolerance?: 'clear_structure' | 'comfortable_some' | 'thrives_ambiguity';
+  changeFrequency?: 'stable' | 'moderate_change' | 'rapid_iteration';
 }
 
-// Enhanced Job Skill Interface
+export interface TeamCollaborationPreferences {
+  teamSizePreference?: 'solo' | 'small_2_5' | 'medium_5_15' | 'large_15_plus';
+  orgSizePreference?: 'micro_lt_10' | 'small_10_50' | 'medium_50_200' | 'large_200_1000' | 'enterprise_1000_plus';
+  reportingStructure?: 'flat' | 'shallow_2_3' | 'hierarchical';
+  collaborationFrequency?: 'independent' | 'periodic_sync' | 'constant_collaboration';
+  pairProgramming?: 'never' | 'occasionally' | 'regularly' | 'primarily';
+  crossFunctional?: 'prefer_siloed' | 'some_collaboration' | 'highly_cross_functional';
+  teamDistribution?: 'colocated_only' | 'hybrid_ok' | 'fully_distributed';
+  timezoneOverlap?: 'full_overlap' | 'four_plus_hours' | 'two_plus_hours' | 'async_first';
+}
+
+export interface Skill {
+  name: string;
+  level: 1 | 2 | 3 | 4 | 5;
+  years?: number;
+  description?: string;
+}
+
 export interface JobSkill {
   name: string;
   required_level: 1 | 2 | 3 | 4 | 5; 
@@ -91,7 +113,6 @@ export interface PersonalityAssessments {
   enneagram?: string;
 }
 
-// Professional Verification Types
 export interface VerifiedSkill {
   skill: string;
   confirmed: boolean;
@@ -190,6 +211,13 @@ export interface CompanyProfile {
   credits?: number;
   is_mock_data?: boolean;
   mock_data_seed?: string;
+  workStyleCulture?: Partial<WorkStylePreferences>;
+  teamStructure?: {
+    orgSize?: TeamCollaborationPreferences['orgSizePreference'];
+    teamDistribution?: TeamCollaborationPreferences['teamDistribution'];
+    reportingStructure?: TeamCollaborationPreferences['reportingStructure'];
+    defaultCollaboration?: TeamCollaborationPreferences['collaborationFrequency'];
+  };
 }
 
 export interface Connection {
@@ -253,62 +281,40 @@ export interface CandidateProfile {
   videoIntroUrl?: string;
   bio: string;
   status: 'actively_looking' | 'open_to_offers' | 'happy_but_listening' | 'not_looking';
-  
-  // Dimension 1: Skills
   skills: Skill[];
   totalYearsExperience?: number;
-  
-  // Dimension 2: Education
   education_level?: string;
   education_field?: string;
   education_institution?: string;
   education_graduation_year?: number;
-  
-  // Dimension 3: Values
   values: string[];
-  
-  // Dimension 4: Personality
   characterTraits: string[];
   personalityAssessments?: PersonalityAssessments;
   myers_briggs?: string;
   disc_profile?: any;
   enneagram_type?: string;
-  
-  // Dimension 5: Compensation
   salaryMin: number;
   salaryExpectation?: string;
   salaryCurrency: string;
   openToEquity?: boolean;
   currentBonuses?: string;
   legalStatus?: string;
-  
-  // Dimension 6: Location & Work Mode
   preferredWorkMode: WorkMode[];
   willingToRelocate?: boolean;
   preferredTimezone?: string;
-  
-  // Dimension 7: Perks
   desiredPerks: string[];
-  
-  // Dimension 8: Culture Fit
   interestedIndustries: string[];
   preferredCompanySize?: string[];
   currentImpactScope?: number;
   desiredImpactScopes: number[];
-  
-  // Logistics
   contractTypes: JobType[];
   noticePeriod: string;
   nonNegotiables: string[];
   ambitions?: string;
   desiredSeniority?: SeniorityLevel[];
-  
-  // Metadata
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
-  
-  // UI Legacy / Compatibility
   experience?: Experience[];
   portfolio?: any[];
   references?: any[];
@@ -319,6 +325,8 @@ export interface CandidateProfile {
   verification_stats?: VerificationStats;
   isUnlocked?: boolean;
   matchScore?: number;
+  workStylePreferences?: WorkStylePreferences;
+  teamCollaborationPreferences?: TeamCollaborationPreferences;
 }
 
 export interface JobPosting {
@@ -365,6 +373,10 @@ export interface JobPosting {
   approvals?: any;
   is_mock_data?: boolean;
   mock_data_seed?: string;
+  workStyleRequirements?: Partial<WorkStylePreferences>;
+  workStyleDealBreakers?: (keyof WorkStylePreferences)[];
+  teamRequirements?: Partial<TeamCollaborationPreferences>;
+  teamDealBreakers?: (keyof TeamCollaborationPreferences)[];
 }
 
 export interface MatchDetails {
@@ -387,6 +399,8 @@ export interface MatchBreakdown {
     traits: MatchDetails;
     performance?: MatchDetails;
     impact?: MatchDetails;
+    workStyle?: MatchDetails;
+    teamFit?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
@@ -408,6 +422,8 @@ export interface TalentSearchCriteria {
   required_education_level?: string;
   education_required?: boolean;
   dealBreakers?: string[];
+  workStyleFilters?: Partial<WorkStylePreferences>;
+  teamFilters?: Partial<TeamCollaborationPreferences>;
 }
 
 export interface TalentSearchResult {
