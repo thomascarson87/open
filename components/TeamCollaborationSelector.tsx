@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Users, Building2, GitMerge, MessageSquare, Globe, Clock, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { TeamCollaborationPreferences } from '../types';
 import {
-  TEAM_SIZE_OPTIONS,
-  ORG_SIZE_OPTIONS,
-  COLLABORATION_FREQUENCY_OPTIONS,
+  // Fixed: Imported missing or misnamed constants
+  TEAM_SIZE_PREF_OPTIONS,
+  ORG_SIZE_PREF_OPTIONS,
+  COLLABORATION_FREQ_OPTIONS,
   PAIR_PROGRAMMING_OPTIONS,
   TEAM_DISTRIBUTION_OPTIONS
 } from '../constants/workStyleData';
@@ -57,8 +58,9 @@ const TeamCollaborationSelector: React.FC<Props> = ({ preferences, onChange, sho
         </button>
         {expanded.structure && (
           <div className="p-6 space-y-8 border-t border-gray-100">
-            <OptionSelector label="Team Size" icon={<Users className="w-4 h-4" />} options={TEAM_SIZE_OPTIONS} value={preferences.teamSizePreference} onChange={(v: any) => update('teamSizePreference', v)} />
-            <OptionSelector label="Org Size" icon={<Building2 className="w-4 h-4" />} options={ORG_SIZE_OPTIONS} value={preferences.orgSizePreference} onChange={(v: any) => update('orgSizePreference', v)} />
+            {/* Fixed: Option constant names updated */}
+            <OptionSelector label="Team Size" icon={<Users className="w-4 h-4" />} options={TEAM_SIZE_PREF_OPTIONS} value={preferences.teamSizePreference} onChange={(v: any) => update('teamSizePreference', v)} />
+            <OptionSelector label="Org Size" icon={<Building2 className="w-4 h-4" />} options={ORG_SIZE_PREF_OPTIONS} value={preferences.orgSizePreference} onChange={(v: any) => update('orgSizePreference', v)} />
           </div>
         )}
       </div>
@@ -69,7 +71,8 @@ const TeamCollaborationSelector: React.FC<Props> = ({ preferences, onChange, sho
         </button>
         {expanded.collab && (
           <div className="p-6 space-y-8 border-t border-gray-100">
-            <OptionSelector label="Sync Frequency" icon={<Clock className="w-4 h-4" />} options={COLLABORATION_FREQUENCY_OPTIONS} value={preferences.collaborationFrequency} onChange={(v: any) => update('collaborationFrequency', v)} />
+            {/* Fixed: Option constant name updated */}
+            <OptionSelector label="Sync Frequency" icon={<Clock className="w-4 h-4" />} options={COLLABORATION_FREQ_OPTIONS} value={preferences.collaborationFrequency} onChange={(v: any) => update('collaborationFrequency', v)} />
             <OptionSelector label="Pair Programming" icon={<Users className="w-4 h-4" />} options={PAIR_PROGRAMMING_OPTIONS} value={preferences.pairProgramming} onChange={(v: any) => update('pairProgramming', v)} />
           </div>
         )}
