@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -332,7 +331,8 @@ function MainApp() {
                   contract_types: profile.contractTypes || [],
                   preferred_work_mode: profile.preferredWorkMode || [],
                   desired_perks: profile.desiredPerks || [],
-                  interested_industries: profile.interested_industries || [],
+                  // Fixed: Changed profile.interested_industries to profile.interestedIndustries to match CandidateProfile type definition.
+                  interested_industries: profile.interestedIndustries || [],
                   non_negotiables: profile.nonNegotiables || [],
                   desired_seniority: profile.desiredSeniority || [],
                   
