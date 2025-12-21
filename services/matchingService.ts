@@ -1,5 +1,5 @@
-import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill, TalentSearchCriteria, MatchDetails, Skill, VerifiedSkillStats } from '../types';
-import { calculateWorkEnvironmentMatch } from './workStyleMatchingService';
+import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill, TalentSearchCriteria, MatchDetails, Skill, VerifiedSkillStats, CompanyProfile } from '../types';
+import { calculateWorkStyleMatch, calculateTeamCollabMatch } from './workStyleMatchingService';
 
 interface VerificationBoost {
   skillsMultiplier: number;
@@ -94,6 +94,19 @@ export function calculateSkillsMatch(candidateSkills: any[], jobSkills: JobSkill
   return { score: finalScore, reason: `${Math.round(finalScore)}% match` };
 }
 
+function calculateIndustryMatch(candidateInds: string[] = [], companyInds: string[] = []): MatchDetails {
+  if (companyInds.length === 0) return { score: 100, reason: 'No industry restrictions' };
+  const matches = candidateInds.filter(i => companyInds.includes(i));
+  const score = matches.length > 0 ? 100 : 50;
+  return { score, reason: matches.length > 0 ? `Matched ${matches[0]}` : 'Industry interest mismatch' };
+}
+
+function calculateCompanySizeMatch(preferred: string[] = [], actual?: string): MatchDetails {
+  if (!actual || preferred.length === 0) return { score: 100, reason: 'No size preference' };
+  const score = preferred.includes(actual) ? 100 : 60;
+  return { score, reason: preferred.includes(actual) ? 'Perfect size match' : 'Size differs from preference' };
+}
+
 export function calculatePerformanceMatch(candidatePerformance: any, jobRequirements?: any): MatchDetails {
   if (!jobRequirements || Object.keys(jobRequirements).length === 0) return { score: 100, reason: 'No performance requirements' };
   const dimensions = ['communication', 'problemSolving', 'reliability', 'collaboration'] as const;
@@ -108,26 +121,74 @@ export function calculatePerformanceMatch(candidatePerformance: any, jobRequirem
   return { score: checked > 0 ? totalScore / checked : 100, reason: 'Based on verified performance' };
 }
 
-export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): MatchBreakdown => {
+export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, company?: CompanyProfile): MatchBreakdown => {
   if (!candidate || !job) return { overallScore: 0, details: {} as any, dealBreakers: ['Invalid data'], recommendations: [] };
-  const verificationBoost = calculateVerificationBoost(candidate);
-  const workEnvMatch = calculateWorkEnvironmentMatch(candidate, job, null); // Company info missing in standard call
   
+  const verificationBoost = calculateVerificationBoost(candidate);
+  
+  // Work Style & Team Collaboration Matches
+  const workStyleMatch = calculateWorkStyleMatch(
+    candidate.workStylePreferences,
+    job.workStyleRequirements,
+    company?.workStyleCulture,
+    job.workStyleDealbreakers
+  );
+
+  const teamFitMatch = calculateTeamCollabMatch(
+    candidate.teamCollaborationPreferences,
+    job.teamRequirements,
+    company?.teamStructure ? {
+      teamDistribution: company.teamStructure.teamDistribution,
+      collaborationFrequency: company.teamStructure.defaultCollaboration,
+      reportingStructure: company.teamStructure.reportingStructure
+    } as any : undefined,
+    job.teamDealbreakers
+  );
+
+  // Core dimensions
   const skillsMatch = calculateSkillsMatch(candidate.skills || [], job.requiredSkills || [], verificationBoost);
+  const industryMatch = calculateIndustryMatch(candidate.interestedIndustries, company?.industry);
+  const companySizeMatch = calculateCompanySizeMatch(candidate.preferredCompanySize, company?.companySizeRange);
+  
   let salaryScore = 100;
   if (job.salaryMax && candidate.salaryMin && candidate.salaryMin > job.salaryMax) salaryScore = 0;
+  
   let workModeScore = (candidate.preferredWorkMode || []).includes(job.workMode) ? 100 : 0;
   let seniorityScore = (candidate.desiredSeniority || []).includes(job.seniority) || (candidate.desiredSeniority||[]).length === 0 ? 100 : 50;
   
+  const DIMENSION_WEIGHTS = {
+    skills: 0.25,
+    seniority: 0.10,
+    salary: 0.12,
+    industry: 0.08,
+    companySize: 0.05,
+    culture: 0.08,
+    perks: 0.05,
+    location: 0.05,
+    workStyle: 0.10,
+    teamFit: 0.07,
+    performance: 0.05
+  };
+
+  const perfMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
+
   const weightedScore = (
-      (skillsMatch.score * 0.30) +
-      (seniorityScore * 0.10) +
-      (workEnvMatch.workStyle.score * 0.08) +
-      (workEnvMatch.teamFit.score * 0.07) +
-      (salaryScore * 0.10) +
-      (workModeScore * 0.10) +
-      (calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores).score * 0.25)
+      (skillsMatch.score * DIMENSION_WEIGHTS.skills) +
+      (seniorityScore * DIMENSION_WEIGHTS.seniority) +
+      (salaryScore * DIMENSION_WEIGHTS.salary) +
+      (industryMatch.score * DIMENSION_WEIGHTS.industry) +
+      (companySizeMatch.score * DIMENSION_WEIGHTS.companySize) +
+      (workModeScore * DIMENSION_WEIGHTS.location) +
+      (workStyleMatch.score * DIMENSION_WEIGHTS.workStyle) +
+      (teamFitMatch.score * DIMENSION_WEIGHTS.teamFit) +
+      (perfMatch.score * DIMENSION_WEIGHTS.performance) +
+      (100 * 0.13) // Culture/Perks placeholder
   );
+
+  const dealBreakers: string[] = [];
+  if (salaryScore === 0) dealBreakers.push('Salary expectation too high');
+  if (workStyleMatch.score === 0) dealBreakers.push('Incompatible work style');
+  if (teamFitMatch.score === 0) dealBreakers.push('Team collaboration mismatch');
 
   return {
       overallScore: Math.round(weightedScore),
@@ -135,54 +196,31 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile): Ma
           skills: skillsMatch,
           seniority: { score: seniorityScore, reason: '' },
           salary: { score: salaryScore, reason: '' },
-          location: { score: 100, reason: '' },
+          location: { score: workModeScore, reason: '' },
           workMode: { score: workModeScore, reason: '' },
           contract: { score: 100, reason: '' },
           culture: { score: 100, reason: '' },
           perks: { score: 100, reason: '' },
-          industry: { score: 100, reason: '' },
+          industry: industryMatch,
+          companySize: companySizeMatch,
           traits: { score: 100, reason: '' },
-          workStyle: workEnvMatch.workStyle,
-          teamFit: workEnvMatch.teamFit
+          workStyle: workStyleMatch,
+          teamFit: teamFitMatch,
+          performance: perfMatch
       },
-      dealBreakers: salaryScore === 0 ? ['Salary too high'] : [],
+      dealBreakers,
       recommendations: []
   };
 };
 
 export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidate: CandidateProfile): MatchBreakdown => {
-    const verificationBoost = calculateVerificationBoost(candidate);
-    const workEnvMatch = calculateWorkEnvironmentMatch(candidate, { 
+    // Wrapper for search criteria matching
+    return calculateMatch({ 
+        requiredSkills: criteria.requiredSkills,
         workStyleRequirements: criteria.workStyleFilters,
-        teamRequirements: criteria.teamFilters
-    } as any, null);
-
-    const skillsMatch = calculateSkillsMatch(candidate.skills || [], criteria.requiredSkills || [], verificationBoost);
-    
-    const weightedScore = (
-        (skillsMatch.score * 0.35) +
-        (workEnvMatch.workStyle.score * 0.10) +
-        (workEnvMatch.teamFit.score * 0.10) +
-        (100 * 0.45) // placeholder for other factors
-    );
-
-    return {
-        overallScore: Math.round(weightedScore),
-        details: {
-            skills: skillsMatch,
-            seniority: { score: 100, reason: '' },
-            salary: { score: 100, reason: '' },
-            location: { score: 100, reason: '' },
-            workMode: { score: 100, reason: '' },
-            contract: { score: 100, reason: '' },
-            culture: { score: 100, reason: '' },
-            perks: { score: 100, reason: '' },
-            industry: { score: 100, reason: '' },
-            traits: { score: 100, reason: '' },
-            workStyle: workEnvMatch.workStyle,
-            teamFit: workEnvMatch.teamFit
-        },
-        dealBreakers: [],
-        recommendations: []
-    };
+        teamRequirements: criteria.teamFilters,
+        seniority: criteria.seniority?.[0] || 'Senior',
+        salaryMax: criteria.salaryMax,
+        workMode: criteria.workMode?.[0] || 'Remote'
+    } as any, candidate);
 };
