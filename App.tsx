@@ -68,7 +68,6 @@ const mapJobFromDB = (data: any): JobPosting => {
     desiredTraits: data.desired_traits || [],
     requiredTraits: data.required_traits || [],
     
-    // 🆕 PHASE 1 FIELDS
     companyIndustry: data.company_industry || [],
     required_education_level: data.required_education_level,
     preferred_education_level: data.preferred_education_level,
@@ -84,9 +83,15 @@ const mapJobFromDB = (data: any): JobPosting => {
     tech_stack: data.tech_stack || [],
     is_mock_data: data.is_mock_data || false,
     mock_data_seed: data.mock_data_seed,
-    
-    // 🆕 Enhanced Fields
-    required_impact_scope: data.required_impact_scope
+    required_impact_scope: data.required_impact_scope,
+
+    // Work Style & Team Mappings
+    workStyleRequirements: data.work_style_requirements || {},
+    workStyleDealbreakers: data.work_style_dealbreakers || [],
+    teamRequirements: data.team_requirements || {},
+    teamDealbreakers: data.team_dealbreakers || [],
+    requiredLanguages: data.required_languages || [],
+    timezoneRequirements: data.timezone_requirements
 }};
 
 const mapCandidateFromDB = (data: any): CandidateProfile => {
@@ -144,12 +149,17 @@ const mapCandidateFromDB = (data: any): CandidateProfile => {
     assessment_completed_at: data.assessment_completed_at,
     is_mock_data: data.is_mock_data || false,
     
-    verification_stats: data.verification_stats, // Include stats
+    verification_stats: data.verification_stats,
     
-    // 🆕 Enhanced Fields
-    // Fixed: map database fields to camelCase properties defined in CandidateProfile
     currentImpactScope: data.current_impact_scope,
-    desiredImpactScopes: data.desired_impact_scope || []
+    desiredImpactScopes: data.desired_impact_scope || [],
+
+    // Work Style & Team Mappings
+    workStylePreferences: data.work_style_preferences || {},
+    teamCollaborationPreferences: data.team_collaboration_preferences || {},
+    timezone: data.timezone,
+    languages: data.languages || [],
+    totalYearsExperience: data.total_years_experience
 }};
 
 const mapCompanyFromDB = (data: any): CompanyProfileType => ({
@@ -181,7 +191,10 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => ({
   billing_plan: data.billing_plan || 'pay_per_hire',
   credits: data.credits || 0,
   is_mock_data: data.is_mock_data || false,
-  mock_data_seed: data.mock_data_seed
+  mock_data_seed: data.mock_data_seed,
+  workStyleCulture: data.work_style_culture || {},
+  teamStructure: data.team_structure || {},
+  companyLanguages: data.company_languages || []
 });
 
 function MainApp() {
@@ -326,26 +339,29 @@ function MainApp() {
                   location: profile.location,
                   status: profile.status,
                   avatar_urls: profile.avatarUrls || [],
+                  video_intro_url: profile.videoIntroUrl,
+                  theme_color: profile.themeColor,
+                  theme_font: profile.themeFont,
                   character_traits: profile.characterTraits || [],
                   values_list: profile.values || [],
                   contract_types: profile.contractTypes || [],
                   preferred_work_mode: profile.preferredWorkMode || [],
                   desired_perks: profile.desiredPerks || [],
-                  // Fixed: Changed profile.interested_industries to profile.interestedIndustries to match CandidateProfile type definition.
                   interested_industries: profile.interestedIndustries || [],
                   non_negotiables: profile.nonNegotiables || [],
                   desired_seniority: profile.desiredSeniority || [],
                   
-                  // Map skills to new structured format for DB storage
+                  // Skills (both formats for compatibility)
                   skills: profile.skills.map(s => ({
                       name: s.name,
                       years: s.years,
-                      level: s.level, // Store level in old JSON for compatibility if needed, but primarily use new column
+                      level: s.level,
                       description: s.description
                   })),
-                  skills_with_levels: profile.skills, // New column
+                  skills_with_levels: profile.skills,
 
                   experience: profile.experience || [],
+                  total_years_experience: profile.totalYearsExperience,
                   portfolio: profile.portfolio || [],
                   references_list: profile.references || [],
                   salary_expectation: profile.salaryExpectation,
@@ -355,8 +371,6 @@ function MainApp() {
                   legal_status: profile.legalStatus,
                   current_bonuses: profile.currentBonuses,
                   ambitions: profile.ambitions,
-                  theme_color: profile.themeColor,
-                  theme_font: profile.themeFont,
                   education_level: profile.education_level,
                   education_field: profile.education_field,
                   education_institution: profile.education_institution,
@@ -365,14 +379,21 @@ function MainApp() {
                   enneagram_type: profile.enneagram_type,
                   assessment_completed_at: profile.assessment_completed_at,
                   
-                  // New Impact Fields
-                  // Fixed: read from camelCase properties defined in CandidateProfile
+                  // Impact Fields
                   current_impact_scope: profile.currentImpactScope,
-                  desired_impact_scope: profile.desiredImpactScopes
+                  desired_impact_scope: profile.desiredImpactScopes,
+
+                  // New Enrichment Fields
+                  work_style_preferences: profile.workStylePreferences || {},
+                  team_collaboration_preferences: profile.teamCollaborationPreferences || {},
+                  timezone: profile.timezone,
+                  languages: profile.languages || []
               }).eq('id', user.id);
           
           if (error) {
-              alert('Failed to save profile.'); return;
+              console.error('Failed to save profile:', error);
+              alert('Failed to save profile.'); 
+              return;
           }
           setCandidateProfile(profile);
           setCurrentView('dashboard');
@@ -401,7 +422,13 @@ function MainApp() {
          desired_traits: job.desiredTraits,
          required_traits: job.requiredTraits,
          perks: job.perks,
-         required_impact_scope: job.required_impact_scope
+         required_impact_scope: job.required_impact_scope,
+         work_style_requirements: job.workStyleRequirements,
+         work_style_dealbreakers: job.workStyleDealbreakers,
+         team_requirements: job.teamRequirements,
+         team_dealbreakers: job.teamDealbreakers,
+         required_languages: job.requiredLanguages,
+         timezone_requirements: job.timezoneRequirements
       }]);
       fetchData();
       setCurrentView('dashboard'); 
@@ -463,7 +490,7 @@ function MainApp() {
           case 'messages': return <Messages />;
           case 'schedule': return <Schedule />;
           case 'notifications': return <Notifications notifications={notifications} />;
-          case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} />;
+          case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} companyProfile={companyProfile} />;
           case 'my-jobs': return <RecruiterMyJobs />;
           case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={handleUnlockCandidate} onSchedule={navigateToSchedule} onMessage={navigateToMessage} />;
           case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />; 
