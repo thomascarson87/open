@@ -125,7 +125,8 @@ export function calculateWorkEnvironmentMatch(
     candidate.workStylePreferences,
     job.workStyleRequirements,
     company?.workStyleCulture,
-    job.workStyleDealBreakers
+    // Fixed: Property name corrected from workStyleDealBreakers to workStyleDealbreakers
+    job.workStyleDealbreakers
   );
 
   const teamFit = calculateTeamCollabMatch(
@@ -133,9 +134,11 @@ export function calculateWorkEnvironmentMatch(
     job.teamRequirements,
     company?.teamStructure ? {
       teamDistribution: company.teamStructure.teamDistribution,
-      collaborationFrequency: company.teamStructure.defaultCollaboration
+      // Fixed: Type casting for collaborationFrequency mapping
+      collaborationFrequency: company.teamStructure.defaultCollaboration as any
     } : undefined,
-    job.teamDealBreakers
+    // Fixed: Property name corrected from teamDealBreakers to teamDealbreakers
+    job.teamDealbreakers
   );
 
   return { workStyle, teamFit };
