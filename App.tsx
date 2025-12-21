@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
@@ -257,7 +256,6 @@ function MainApp() {
         } catch (e) { console.error(e); } finally { setIsLoadingProfile(false); }
     };
 
-    // Fixed: Added missing handleTeamMemberUpdate function to refresh role-specific data
     const handleTeamMemberUpdate = () => {
         if (userRole) loadRoleData(userRole);
     };
@@ -294,7 +292,7 @@ function MainApp() {
                 name: profile.name, headline: profile.headline, bio: profile.bio, location: profile.location,
                 status: profile.status, avatar_urls: profile.avatarUrls || [], video_intro_url: profile.videoIntroUrl,
                 theme_color: profile.themeColor, theme_font: profile.themeFont, character_traits: profile.characterTraits || [],
-                values_list: profile.values || [], contract_types: profile.contractTypes || [], preferred_work_mode: profile.preferred_work_mode || [],
+                values_list: profile.values || [], contract_types: profile.contractTypes || [], preferred_work_mode: profile.preferredWorkMode || [],
                 desired_perks: profile.desiredPerks || [], interested_industries: profile.interestedIndustries || [],
                 non_negotiables: profile.nonNegotiables || [], desired_seniority: profile.desiredSeniority || [],
                 skills: profile.skills.map(s => ({ name: s.name, years: s.years, level: s.level, description: s.description })),
@@ -305,8 +303,10 @@ function MainApp() {
                 education_level: profile.education_level, education_field: profile.education_field, education_institution: profile.education_institution,
                 myers_briggs: profile.myers_briggs, disc_profile: profile.disc_profile, enneagram_type: profile.enneagram_type,
                 assessment_completed_at: profile.assessment_completed_at, current_impact_scope: profile.currentImpactScope,
-                desired_impact_scope: profile.desiredImpactScopes, work_style_preferences: profile.work_style_preferences || {},
-                team_collaboration_preferences: profile.team_collaboration_preferences || {}, timezone: profile.timezone, languages: profile.languages || []
+                desired_impact_scope: profile.desiredImpactScopes, 
+                // Fix: corrected property names from profile.work_style_preferences and profile.team_collaboration_preferences to profile.workStylePreferences and profile.teamCollaborationPreferences
+                work_style_preferences: profile.workStylePreferences || {},
+                team_collaboration_preferences: profile.teamCollaborationPreferences || {}, timezone: profile.timezone, languages: profile.languages || []
             }).eq('id', user.id);
             if (error) throw error;
             setCandidateProfile(profile);
@@ -321,7 +321,8 @@ function MainApp() {
             values_list: job.values, desired_traits: job.desiredTraits, required_traits: job.requiredTraits,
             perks: job.perks, required_impact_scope: job.required_impact_scope, work_style_requirements: job.workStyleRequirements,
             work_style_dealbreakers: job.workStyleDealbreakers, team_requirements: job.teamRequirements,
-            team_dealbreakers: job.team_dealbreakers, required_languages: job.requiredLanguages, timezone_requirements: job.timezoneRequirements
+            // Fix: corrected property name from job.team_dealbreakers to job.teamDealbreakers
+            team_dealbreakers: job.teamDealbreakers, required_languages: job.requiredLanguages, timezone_requirements: job.timezoneRequirements
         }]);
         fetchData();
         setCurrentView('dashboard'); 
@@ -368,9 +369,13 @@ function MainApp() {
             case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} companyProfile={companyProfile} />;
             case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={(id) => setCandidatesList(prev => prev.map(c => c.id === id ? {...c, isUnlocked: true} : c))} onSchedule={(id) => { setSearchParams({candidateId: id}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
             case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={(id) => setSelectedCandidate({...selectedCandidate, isUnlocked: true})} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id}); setCurrentView('schedule'); }} />);
+            case 'my-jobs': return <RecruiterMyJobs />;
+            case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />;
+            case 'network': return <Network connections={connections} />;
+            case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={() => setCurrentView('messages')} /> : <RecruiterATS />;
             default: 
-                if (userRole === 'candidate') return <div className="max-w-7xl mx-auto px-4 py-8">{jobPostings.map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}</div>;
-                return <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">{candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={() => {}} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}</div>;
+                if (userRole === 'candidate') return <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">{jobPostings.filter(j => j.status === 'published').map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}</div>;
+                return <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={(id) => setSelectedCandidate({...c, isUnlocked: true})} onMessage={navigateToMessage} onSchedule={() => {}} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}</div>;
         }
     };
 
@@ -384,9 +389,37 @@ function MainApp() {
 
 function AuthWrapper() {
     const { session, loading } = useAuth();
+    const [showAuth, setShowAuth] = useState(false);
+    const [selectedRole, setSelectedRole] = useState<Role>(null);
+
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
+    
+    // If logged in, always show MainApp
     if (session) return <MainApp />;
-    return <LandingPage onSelectRole={(r) => { localStorage.setItem('open_selected_role', r); window.location.reload(); }} />;
+
+    // If requested login view via CTA or direct URL
+    if (showAuth) {
+        return (
+            <Login 
+                selectedRole={selectedRole as 'candidate' | 'recruiter'} 
+                onBack={() => {
+                    setShowAuth(false);
+                    setSelectedRole(null);
+                }} 
+            />
+        );
+    }
+
+    // Default: Show Landing Page
+    return (
+        <LandingPage 
+            onSelectRole={(role) => { 
+                localStorage.setItem('open_selected_role', role);
+                setSelectedRole(role);
+                setShowAuth(true);
+            }} 
+        />
+    );
 }
 
 export default function App() {
