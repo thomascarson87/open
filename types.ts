@@ -53,13 +53,18 @@ export interface WorkStylePreferences {
 
 export interface TeamCollaborationPreferences {
   teamSizePreference?: 'solo' | 'small_2_5' | 'medium_5_15' | 'large_15_plus';
-  orgSizePreference?: 'micro_lt_10' | 'small_10_50' | 'medium_50_200' | 'large_200_1000' | 'enterprise_1000_plus';
+  orgSizePreference?: 'tiny_under_10' | 'small_10_50' | 'medium_50_200' | 'large_200_1000' | 'enterprise_1000_plus';
   reportingStructure?: 'flat' | 'shallow_2_3' | 'hierarchical';
   collaborationFrequency?: 'independent' | 'periodic_sync' | 'constant_collaboration';
   pairProgramming?: 'never' | 'occasionally' | 'regularly' | 'primarily';
   crossFunctional?: 'prefer_siloed' | 'some_collaboration' | 'highly_cross_functional';
-  teamDistribution?: 'colocated_only' | 'hybrid_ok' | 'fully_distributed';
-  timezoneOverlap?: 'full_overlap' | 'four_plus_hours' | 'two_plus_hours' | 'async_first';
+  teamDistribution?: 'colocated' | 'hybrid_ok' | 'fully_distributed';
+  timezoneOverlap?: 'full_overlap' | 'overlap_4_plus' | 'overlap_2_plus' | 'async_first';
+}
+
+export interface LanguageEntry {
+  language: string;
+  proficiency: 'native' | 'fluent' | 'professional' | 'conversational' | 'basic';
 }
 
 export interface Skill {
@@ -213,11 +218,11 @@ export interface CompanyProfile {
   mock_data_seed?: string;
   workStyleCulture?: Partial<WorkStylePreferences>;
   teamStructure?: {
-    orgSize?: TeamCollaborationPreferences['orgSizePreference'];
-    teamDistribution?: TeamCollaborationPreferences['teamDistribution'];
-    reportingStructure?: TeamCollaborationPreferences['reportingStructure'];
-    defaultCollaboration?: TeamCollaborationPreferences['collaborationFrequency'];
+    teamDistribution?: string;
+    defaultCollaboration?: string;
+    reportingStructure?: string;
   };
+  companyLanguages?: string[];
 }
 
 export interface Connection {
@@ -327,6 +332,8 @@ export interface CandidateProfile {
   matchScore?: number;
   workStylePreferences?: WorkStylePreferences;
   teamCollaborationPreferences?: TeamCollaborationPreferences;
+  timezone?: string;
+  languages?: LanguageEntry[];
 }
 
 export interface JobPosting {
@@ -374,9 +381,11 @@ export interface JobPosting {
   is_mock_data?: boolean;
   mock_data_seed?: string;
   workStyleRequirements?: Partial<WorkStylePreferences>;
-  workStyleDealBreakers?: (keyof WorkStylePreferences)[];
+  workStyleDealbreakers?: string[];
   teamRequirements?: Partial<TeamCollaborationPreferences>;
-  teamDealBreakers?: (keyof TeamCollaborationPreferences)[];
+  teamDealbreakers?: string[];
+  requiredLanguages?: { language: string; minProficiency: string }[];
+  timezoneRequirements?: string;
 }
 
 export interface MatchDetails {
@@ -401,6 +410,7 @@ export interface MatchBreakdown {
     impact?: MatchDetails;
     workStyle?: MatchDetails;
     teamFit?: MatchDetails;
+    companySize?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
