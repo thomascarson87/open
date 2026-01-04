@@ -1,13 +1,22 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+// import { useNavigate, useSearchParams } from 'react-router-dom'; // Removed due to missing exports
 import { googleCalendar } from '../services/googleCalendar';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const GoogleAuthCallback: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  // Custom navigation implementation since useNavigate is missing
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new Event('popstate'));
+  };
+
+  // Custom implementation of searchParams since useSearchParams is missing
+  const [searchParams] = React.useMemo(() => {
+    return [new URLSearchParams(window.location.search)] as const;
+  }, [window.location.search]);
+
   const { user, loading: authLoading } = useAuth();
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -32,7 +41,7 @@ const GoogleAuthCallback: React.FC = () => {
         console.error('❌ Google Auth Error:', error);
         setStatus('error');
         setMessage('Access denied or cancelled.');
-        setTimeout(() => navigate('/schedule'), 3000);
+        setTimeout(() => navigate('/?view=schedule'), 3000);
         return;
       }
 
@@ -41,7 +50,7 @@ const GoogleAuthCallback: React.FC = () => {
       if (!code) {
         setStatus('error');
         setMessage('No authorization code received.');
-        setTimeout(() => navigate('/schedule'), 3000);
+        setTimeout(() => navigate('/?view=schedule'), 3000);
         return;
       }
 
@@ -64,17 +73,17 @@ const GoogleAuthCallback: React.FC = () => {
         setMessage('Successfully Connected!');
         
         console.log('✅ Connection complete. Redirecting...');
-        setTimeout(() => navigate('/schedule'), 2000);
+        setTimeout(() => navigate('/?view=schedule'), 2000);
       } catch (err: any) {
         console.error('❌ Callback processing failed:', err);
         setStatus('error');
         setMessage('Failed to connect. Please try again.');
-        setTimeout(() => navigate('/schedule'), 4000);
+        setTimeout(() => navigate('/?view=schedule'), 4000);
       }
     };
 
     processCallback();
-  }, [authLoading, user, searchParams, navigate]);
+  }, [authLoading, user, searchParams]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -108,7 +117,7 @@ const GoogleAuthCallback: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900">Connection Failed</h2>
             <p className="text-red-500 font-medium">{message}</p>
             <button 
-              onClick={() => navigate('/schedule')}
+              onClick={() => navigate('/?view=schedule')}
               className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
             >
               Return to Schedule
