@@ -6,11 +6,16 @@ import StatusBadge from './StatusBadge';
 import { atsService } from '../services/atsService';
 import { ApplicationStatus } from '../types';
 import { Search, Filter, MoreHorizontal, MessageSquare, X, Check } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const RecruiterATS: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  
+  // Custom navigation implementation since useNavigate is missing
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new Event('popstate'));
+  };
+
   const [applications, setApplications] = useState<any[]>([]);
   const [filter, setFilter] = useState<ApplicationStatus | 'all'>('all');
   const [loading, setLoading] = useState(true);
@@ -43,10 +48,6 @@ const RecruiterATS: React.FC = () => {
         candidate:candidate_profiles(id, name, email, headline, avatar_urls),
         job:jobs(id, title)
       `)
-      // Need to filter by company's jobs.
-      // This is complex in one query without View. 
-      // Simplified: We rely on RLS or filtering locally for MVP, but proper way is inner join on Jobs.
-      // Assuming RLS policy "Recruiters view applications for their jobs" works.
       .order('created_at', { ascending: false });
 
     if (filter !== 'all') {
@@ -56,8 +57,6 @@ const RecruiterATS: React.FC = () => {
     const { data, error } = await query;
     if (error) console.error(error);
     
-    // Client side filter to ensure we only see apps for our company's jobs (if RLS is loose)
-    // In production, RLS handles this.
     setApplications(data || []);
     setLoading(false);
   };
@@ -90,9 +89,7 @@ const RecruiterATS: React.FC = () => {
   };
 
   const openMessage = (app: any) => {
-      // Find conversation or create one?
-      // For now navigate to messages
-      navigate('/messages');
+      navigate('/?view=messages');
   };
 
   const TABS: { id: ApplicationStatus | 'all', label: string }[] = [
@@ -190,13 +187,11 @@ const RecruiterATS: React.FC = () => {
                                         <MessageSquare className="w-4 h-4"/>
                                     </button>
                                     
-                                    {/* Action Dropdown simulated */}
                                     <div className="relative group">
                                         <button className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
                                             <MoreHorizontal className="w-4 h-4"/>
                                         </button>
                                         
-                                        {/* Dropdown Menu */}
                                         <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 hidden group-hover:block z-10 p-1">
                                             <button 
                                                 onClick={() => handleStatusChange(app.id, 'reviewing')}
