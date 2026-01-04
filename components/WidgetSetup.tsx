@@ -6,7 +6,12 @@ import {
   Shield, ExternalLink, Users, TrendingUp, DollarSign, Loader2 
 } from 'lucide-react';
 
-export default function WidgetSetup({ onBack }: { onBack: () => void }) {
+interface WidgetSetupProps {
+  onBack: () => void;
+  isEmbedded?: boolean;
+}
+
+export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<any>({
@@ -121,12 +126,14 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
   
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in duration-300">
-      <button 
-        onClick={onBack} 
-        className="flex items-center text-gray-500 hover:text-gray-900 mb-6 font-medium transition"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2"/> Back to Dashboard
-      </button>
+      {!isEmbedded && (
+        <button 
+          onClick={onBack} 
+          className="flex items-center text-gray-500 hover:text-gray-900 mb-6 font-medium transition"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2"/> Back to Dashboard
+        </button>
+      )}
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Career Page Widget</h1>
@@ -136,7 +143,6 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
         </p>
       </div>
 
-      {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -144,11 +150,6 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
             <BarChart2 className="w-4 h-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-gray-900">{stats.views.toLocaleString()}</div>
-          {stats.viewsGrowth !== 0 && (
-            <div className={`text-xs mt-1 ${stats.viewsGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats.viewsGrowth > 0 ? '↑' : '↓'} {Math.abs(stats.viewsGrowth)}% vs last week
-            </div>
-          )}
         </div>
         
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -157,9 +158,6 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
             <Users className="w-4 h-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-green-600">{stats.applications.toLocaleString()}</div>
-          <div className="text-xs text-gray-500 mt-1">
-            {stats.views > 0 ? ((stats.applications / stats.views) * 100).toFixed(1) : 0}% apply rate
-          </div>
         </div>
         
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -168,9 +166,6 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
             <TrendingUp className="w-4 h-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-purple-600">{stats.conversions}</div>
-          <div className="text-xs text-gray-500 mt-1">
-            {stats.applications > 0 ? ((stats.conversions / stats.applications) * 100).toFixed(1) : 0}% signup rate
-          </div>
         </div>
         
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -181,16 +176,11 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
           <div className="text-2xl font-bold text-gray-900">
             ${((stats.applications * 50) - (stats.applications * 2)).toLocaleString()}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            vs ${(stats.applications * 50).toLocaleString()} agency cost
-          </div>
         </div>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Configuration */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Code Snippet */}
           <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
             <div className="bg-gray-800 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center text-gray-300 text-sm font-medium">
@@ -211,7 +201,6 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
             </div>
           </div>
 
-          {/* Instructions */}
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
             <h3 className="font-bold text-blue-900 flex items-center mb-4">
               <Globe className="w-5 h-5 mr-2"/> Quick Start Guide
@@ -223,126 +212,41 @@ export default function WidgetSetup({ onBack }: { onBack: () => void }) {
               <li>Applicants submit their info and see matched opportunities.</li>
             </ol>
           </div>
-
-          {/* Test Demo */}
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
-            <h3 className="font-bold text-purple-900 mb-3 flex items-center gap-2">
-              <Globe className="w-5 h-5" /> Test Your Widget
-            </h3>
-            <p className="text-sm text-purple-800 mb-4">
-              See how your widget looks before deploying it to your website.
-            </p>
-            <a 
-              href={`/demo/career-page.html?companyId=${companyId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm"
-            >
-              <ExternalLink className="w-4 h-4" />
-              Open Demo Page
-            </a>
-          </div>
         </div>
 
-        {/* Right: Settings */}
         <div className="space-y-6">
-          {/* Appearance Settings */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h3 className="font-bold text-gray-900 mb-6">Widget Appearance</h3>
-            
             <div className="space-y-6">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                  Primary Color
-                </label>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Primary Color</label>
                 <div className="flex gap-2">
-                  <input 
-                    type="color" 
-                    value={config.brand_color_primary}
-                    onChange={e => setConfig({...config, brand_color_primary: e.target.value})}
-                    className="w-10 h-10 rounded cursor-pointer border-0 p-0"
-                  />
-                  <input 
-                    type="text"
-                    value={config.brand_color_primary}
-                    onChange={e => setConfig({...config, brand_color_primary: e.target.value})}
-                    className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
-                  />
+                  <input type="color" value={config.brand_color_primary} onChange={e => setConfig({...config, brand_color_primary: e.target.value})} className="w-10 h-10 rounded cursor-pointer border-0 p-0" />
+                  <input type="text" value={config.brand_color_primary} onChange={e => setConfig({...config, brand_color_primary: e.target.value})} className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono" />
                 </div>
               </div>
-
               <div className="space-y-3">
                 <label className="flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={config.show_company_logo}
-                    onChange={e => setConfig({...config, show_company_logo: e.target.checked})}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-2"
-                  />
+                  <input type="checkbox" checked={config.show_company_logo} onChange={e => setConfig({...config, show_company_logo: e.target.checked})} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-2" />
                   <span className="text-sm text-gray-700 font-medium">Show Company Logo</span>
                 </label>
-                
                 <label className="flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={config.show_salary_range}
-                    onChange={e => setConfig({...config, show_salary_range: e.target.checked})}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-2"
-                  />
+                  <input type="checkbox" checked={config.show_salary_range} onChange={e => setConfig({...config, show_salary_range: e.target.checked})} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-2" />
                   <span className="text-sm text-gray-700 font-medium">Show Salary Ranges</span>
                 </label>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                  Custom CSS (Advanced)
-                </label>
-                <textarea 
-                  value={config.custom_css || ''}
-                  onChange={e => setConfig({...config, custom_css: e.target.value})}
-                  className="w-full p-3 border border-gray-200 rounded-lg text-xs font-mono h-24 resize-none"
-                  placeholder=".open-job-card { border-radius: 0; }"
-                />
-              </div>
             </div>
           </div>
 
-          {/* Security Settings */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-600" /> Security
-            </h3>
-            <p className="text-xs text-gray-500 mb-4">
-              Restrict which domains can embed your widget
-            </p>
-            
+            <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><Shield className="w-5 h-5 text-blue-600" /> Security</h3>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                Allowed Domains
-              </label>
-              <input 
-                type="text"
-                value={(config.domain_whitelist || []).join(', ')}
-                onChange={e => {
-                  const domains = e.target.value.split(',').map((d: string) => d.trim()).filter((d: string) => d.length > 0);
-                  setConfig({...config, domain_whitelist: domains});
-                }}
-                className="w-full p-3 border border-gray-200 rounded-lg text-sm"
-                placeholder="mycompany.com, careers.mycompany.com"
-              />
-              <small className="text-xs text-gray-500 block mt-2">
-                Leave empty to allow all domains (not recommended).
-              </small>
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Allowed Domains</label>
+              <input type="text" value={(config.domain_whitelist || []).join(', ')} onChange={e => setConfig({...config, domain_whitelist: e.target.value.split(',').map((d: string) => d.trim()).filter((d: string) => d.length > 0)})} className="w-full p-3 border border-gray-200 rounded-lg text-sm" placeholder="mycompany.com" />
             </div>
           </div>
 
-          {/* Save Button */}
-          <button 
-            onClick={handleSave}
-            className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors"
-          >
-            Save Configuration
-          </button>
+          <button onClick={handleSave} className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors">Save Configuration</button>
         </div>
       </div>
     </div>
