@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
@@ -22,7 +21,6 @@ import LandingPage from './components/LandingPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
-import WidgetSetup from './components/WidgetSetup'; 
 import VerificationForm from './components/VerificationForm';
 import CandidateProfileTabs from './components/CandidateProfileTabs';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
@@ -127,6 +125,8 @@ const mapCandidateFromDB = (data: any): CandidateProfile => {
         education_institution: data.education_institution,
         myers_briggs: data.myers_briggs,
         disc_profile: data.disc_profile || { D: 0, I: 0, S: 0, C: 0 },
+        call_ready: data.call_ready,
+        call_link: data.call_link,
         enneagram_type: data.enneagram_type,
         assessment_completed_at: data.assessment_completed_at,
         is_mock_data: data.is_mock_data || false,
@@ -181,7 +181,30 @@ function MainApp() {
     const [userRole, setUserRole] = useState<Role>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
     const [currentView, setCurrentView] = useState('dashboard');
-    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // Reactive searchParams implementation
+    const [searchParams, setSearchParamsState] = useState(() => new URLSearchParams(window.location.search));
+
+    useEffect(() => {
+        const handlePopState = () => {
+            const params = new URLSearchParams(window.location.search);
+            setSearchParamsState(params);
+            const view = params.get('view');
+            if (view) setCurrentView(view);
+        };
+        
+        window.addEventListener('popstate', handlePopState);
+        handlePopState();
+        
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const setSearchParams = (newParams: Record<string, string>) => {
+        const nextSearch = new URLSearchParams(newParams).toString();
+        window.history.pushState({}, '', `${window.location.pathname}?${nextSearch}`);
+        setSearchParamsState(new URLSearchParams(nextSearch));
+    };
+
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
     const [candidatesList, setCandidatesList] = useState<CandidateProfile[]>([]);
@@ -204,11 +227,6 @@ function MainApp() {
             fetchData();
         }
     }, [userRole]);
-
-    useEffect(() => {
-        const view = searchParams.get('view');
-        if (view) setCurrentView(view);
-    }, [searchParams]);
 
     const fetchUserProfile = async () => {
         try {
@@ -304,7 +322,6 @@ function MainApp() {
                 myers_briggs: profile.myers_briggs, disc_profile: profile.disc_profile, enneagram_type: profile.enneagram_type,
                 assessment_completed_at: profile.assessment_completed_at, current_impact_scope: profile.currentImpactScope,
                 desired_impact_scope: profile.desiredImpactScopes, 
-                // Fix: corrected property names from profile.work_style_preferences and profile.team_collaboration_preferences to profile.workStylePreferences and profile.teamCollaborationPreferences
                 work_style_preferences: profile.workStylePreferences || {},
                 team_collaboration_preferences: profile.teamCollaborationPreferences || {}, timezone: profile.timezone, languages: profile.languages || []
             }).eq('id', user.id);
@@ -321,7 +338,6 @@ function MainApp() {
             values_list: job.values, desired_traits: job.desiredTraits, required_traits: job.requiredTraits,
             perks: job.perks, required_impact_scope: job.required_impact_scope, work_style_requirements: job.workStyleRequirements,
             work_style_dealbreakers: job.workStyleDealbreakers, team_requirements: job.teamRequirements,
-            // Fix: corrected property name from job.team_dealbreakers to job.teamDealbreakers
             team_dealbreakers: job.teamDealbreakers, required_languages: job.requiredLanguages, timezone_requirements: job.timezoneRequirements
         }]);
         fetchData();
@@ -339,7 +355,7 @@ function MainApp() {
     const navigateToMessage = async (candidateId: string) => {
         try {
             const convId = await messageService.getOrCreateConversation(user!.id, candidateId);
-            setSearchParams({ conversationId: convId });
+            setSearchParams({ conversationId: convId, view: 'messages' });
             setCurrentView('messages');
         } catch (e) { console.error(e); }
     };
@@ -362,17 +378,19 @@ function MainApp() {
     const renderContent = () => {
         switch (currentView) {
             case 'profile':
-                if (userRole === 'recruiter') return companyProfile && <CompanyProfile profile={companyProfile} onSave={setCompanyProfile} teamMembers={teamMembers} onTeamUpdate={handleTeamMemberUpdate}/>;
+                const tab = searchParams.get('tab') || 'profile';
+                if (userRole === 'recruiter') return companyProfile && <CompanyProfile profile={companyProfile} onSave={setCompanyProfile} teamMembers={teamMembers} onTeamUpdate={handleTeamMemberUpdate} initialTab={tab} />;
                 return candidateProfile && <CandidateProfileTabs profile={candidateProfile} onUpdate={(u) => setCandidateProfile({...candidateProfile, ...u})} onSave={() => handleUpdateCandidate(candidateProfile)} />;
             case 'messages': return <Messages />;
             case 'schedule': return <Schedule />;
             case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} companyProfile={companyProfile} />;
-            case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={(id) => setCandidatesList(prev => prev.map(c => c.id === id ? {...c, isUnlocked: true} : c))} onSchedule={(id) => { setSearchParams({candidateId: id}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
-            case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={(id) => setSelectedCandidate({...selectedCandidate, isUnlocked: true})} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id}); setCurrentView('schedule'); }} />);
+            case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={(id) => setCandidatesList(prev => prev.map(c => c.id === id ? {...c, isUnlocked: true} : c))} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
+            case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={(id) => setSelectedCandidate({...selectedCandidate, isUnlocked: true})} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} />);
+            case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
             case 'my-jobs': return <RecruiterMyJobs />;
-            case 'widget-setup': return <WidgetSetup onBack={() => setCurrentView('dashboard')} />;
             case 'network': return <Network connections={connections} />;
             case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={() => setCurrentView('messages')} /> : <RecruiterATS />;
+            case 'notifications': return <Notifications notifications={notifications} />;
             default: 
                 if (userRole === 'candidate') return <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">{jobPostings.filter(j => j.status === 'published').map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}</div>;
                 return <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={(id) => setSelectedCandidate({...c, isUnlocked: true})} onMessage={navigateToMessage} onSchedule={() => {}} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}</div>;
@@ -394,10 +412,8 @@ function AuthWrapper() {
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
     
-    // If logged in, always show MainApp
     if (session) return <MainApp />;
 
-    // If requested login view via CTA or direct URL
     if (showAuth) {
         return (
             <Login 
@@ -410,7 +426,6 @@ function AuthWrapper() {
         );
     }
 
-    // Default: Show Landing Page
     return (
         <LandingPage 
             onSelectRole={(role) => { 
@@ -423,15 +438,23 @@ function AuthWrapper() {
 }
 
 export default function App() {
+    const [path, setPath] = useState(window.location.pathname);
+
+    useEffect(() => {
+        const handlePopState = () => setPath(window.location.pathname);
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const renderRoute = () => {
+        if (path === '/auth/google/callback') return <GoogleAuthCallback />;
+        if (path.startsWith('/verify/')) return <VerificationForm />;
+        return <AuthWrapper />;
+    };
+
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <Routes>
-                    <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-                    <Route path="/verify/:token" element={<VerificationForm />} />
-                    <Route path="/*" element={<AuthWrapper />} />
-                </Routes>
-            </AuthProvider>
-        </BrowserRouter>
+        <AuthProvider>
+            {renderRoute()}
+        </AuthProvider>
     );
 }
