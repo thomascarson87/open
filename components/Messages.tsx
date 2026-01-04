@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+// import { useSearchParams } from 'react-router-dom'; // Removed due to missing export
 import { Search, Send, ArrowLeft, MessageSquare, Loader2, Calendar, Phone, Paperclip, Plus, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,7 +11,12 @@ import { messageService } from '../services/messageService';
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
-    const [searchParams] = useSearchParams();
+    
+    // Custom implementation of searchParams logic since useSearchParams is missing
+    const [searchParams] = React.useMemo(() => {
+        return [new URLSearchParams(window.location.search)] as const;
+    }, [window.location.search]);
+
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
