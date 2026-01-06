@@ -1,3 +1,4 @@
+
 export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
@@ -463,4 +464,61 @@ export interface Notification {
   timestamp: string;
   link?: string;
   metadata?: any;
+}
+
+// APPLICATION HUB FOUNDATION ADDITIONS
+
+export type ApplicationFilter = 'all' | 'active' | 'interviewing' | 'offers' | 'closed';
+
+export interface ApplicationStatusHistory {
+  id: string;
+  application_id: string;
+  old_status: string | null;
+  new_status: string;
+  changed_by: string;
+  change_type: 'manual' | 'automatic' | 'system';
+  trigger_source: string | null;
+  trigger_id: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ApplicationHubItem {
+  // Core application data (from applications table)
+  id: string;
+  job_id: string;
+  candidate_id: string;
+  status: ApplicationStatus;
+  match_score: number;
+  match_breakdown: any;
+  created_at: string;
+  updated_at: string;
+  
+  // Joined job data (from jobs table)
+  job: {
+    id: string;
+    title: string;
+    company_id: string;
+    company_name: string;
+    company_logo: string | null;
+    location: string;
+    salary_range: string;
+    salary_min: number | null;
+    salary_max: number | null;
+    salary_currency: string;
+    work_mode: string;
+    seniority: string;
+    description: string;
+    impact_statement: string | null;
+    responsibilities: string[];
+    tech_stack: string[];
+    values_list: string[];
+    perks: string[];
+  };
+  
+  // Enriched data (computed from related tables)
+  conversationId: string | null;
+  unreadCount: number;
+  upcomingEvents: CalendarEvent[];
+  recentHistory: ApplicationStatusHistory[];
 }
