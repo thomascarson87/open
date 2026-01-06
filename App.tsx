@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -10,6 +11,7 @@ import CandidateCard from './components/CandidateCard';
 import CandidateDetails from './components/CandidateDetails';
 import CandidateDetailsLocked from './components/CandidateDetailsLocked';
 import RecruiterATS from './components/RecruiterATS';
+import ApplicationHub from './components/candidate/ApplicationHub';
 import CandidateApplications from './components/CandidateApplications';
 import Messages from './components/Messages';
 import Schedule from './components/Schedule';
@@ -381,15 +383,32 @@ function MainApp() {
                 const tab = searchParams.get('tab') || 'profile';
                 if (userRole === 'recruiter') return companyProfile && <CompanyProfile profile={companyProfile} onSave={setCompanyProfile} teamMembers={teamMembers} onTeamUpdate={handleTeamMemberUpdate} initialTab={tab} />;
                 return candidateProfile && <CandidateProfileTabs profile={candidateProfile} onUpdate={(u) => setCandidateProfile({...candidateProfile, ...u})} onSave={() => handleUpdateCandidate(candidateProfile)} />;
-            case 'messages': return <Messages />;
-            case 'schedule': return <Schedule />;
+            case 'messages': 
+                if (userRole === 'candidate') {
+                    // Redirect candidates to ApplicationHub - messages are now inline
+                    setCurrentView('applications');
+                    return <ApplicationHub />;
+                }
+                return <Messages />;
+            case 'schedule': 
+                if (userRole === 'candidate') {
+                    // Redirect candidates to ApplicationHub - schedule is now inline
+                    setCurrentView('applications');
+                    return <ApplicationHub />;
+                }
+                return <Schedule />;
             case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} companyProfile={companyProfile} />;
             case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={(id) => setCandidatesList(prev => prev.map(c => c.id === id ? {...c, isUnlocked: true} : c))} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
             case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={(id) => setSelectedCandidate({...selectedCandidate, isUnlocked: true})} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} />);
             case 'job-details': return selectedJob ? <JobDetails job={selectedJob} onBack={() => setCurrentView('dashboard')} onApply={handleApply} /> : null;
             case 'my-jobs': return <RecruiterMyJobs />;
             case 'network': return <Network connections={connections} />;
-            case 'ats': return userRole === 'candidate' ? <CandidateApplications jobs={jobPostings} onViewMessage={() => setCurrentView('messages')} /> : <RecruiterATS />;
+            case 'ats': 
+                return userRole === 'candidate' 
+                  ? <ApplicationHub /> 
+                  : <RecruiterATS />;
+            case 'applications':
+                return <ApplicationHub />;
             case 'notifications': return <Notifications notifications={notifications} />;
             default: 
                 if (userRole === 'candidate') return <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">{jobPostings.filter(j => j.status === 'published').map(job => <JobCard key={job.id} job={job} candidateProfile={candidateProfile!} onApply={handleApply} onViewDetails={(j) => { setSelectedJob(j); setCurrentView('job-details'); }} />)}</div>;
