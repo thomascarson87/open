@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Role } from '../types';
 import { 
@@ -81,9 +82,7 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
   const candidateNav = [
     { id: 'dashboard', label: 'Discover', icon: Layout },
     { id: 'network', label: 'Network', icon: Users },
-    { id: 'ats', label: 'My Apps', icon: ClipboardList },
-    { id: 'messages', label: 'Chat', icon: MessageSquare },
-    { id: 'schedule', label: 'Calendar', icon: Calendar }
+    { id: 'applications', label: 'Applications', icon: ClipboardList }
   ];
 
   const handleNavItemClick = (id: string, tab?: string) => {
