@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 
 class MessageService {
@@ -67,39 +66,55 @@ class MessageService {
       return conv.id;
   }
 
-  async getOrCreateConversation(recruiterId: string, candidateId: string, applicationId: string | null = null, jobId: string | null = null): Promise<string> {
-      // 1. Try to find existing conversation between these two users
-      const { data: recruiterConvs } = await supabase
-          .from('conversation_participants')
-          .select('conversation_id')
-          .eq('user_id', recruiterId);
+  async getOrCreateConversation(
+    recruiterId: string, 
+    candidateId: string, 
+    applicationId: string | null = null, 
+    jobId: string | null = null
+  ): Promise<string> {
+    // 1. First, try to find existing conversation for this application
+    if (applicationId) {
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('application_id', applicationId)
+        .maybeSingle();
+      
+      if (existingConv) return existingConv.id;
+    }
 
-      if (recruiterConvs && recruiterConvs.length > 0) {
-          const convIds = recruiterConvs.map(c => c.conversation_id);
-          
-          const { data: shared } = await supabase
-              .from('conversation_participants')
-              .select('conversation_id')
-              .eq('user_id', candidateId)
-              .in('conversation_id', convIds)
-              .limit(1)
-              .maybeSingle();
+    // 2. Try to find existing conversation between these two users
+    const { data: existingParticipation } = await supabase
+      .from('conversation_participants')
+      .select('conversation_id')
+      .eq('user_id', candidateId);
 
-          if (shared) {
-              // If application ID provided, link it if missing
-              if (applicationId) {
-                  await supabase
-                      .from('conversations')
-                      .update({ application_id: applicationId })
-                      .eq('id', shared.conversation_id)
-                      .is('application_id', null);
-              }
-              return shared.conversation_id;
-          }
+    if (existingParticipation && existingParticipation.length > 0) {
+      const convIds = existingParticipation.map(p => p.conversation_id);
+      
+      const { data: matchingConv } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', recruiterId)
+        .in('conversation_id', convIds)
+        .limit(1)
+        .maybeSingle();
+
+      if (matchingConv) {
+        // If we found a general conversation but now have an application context, link it
+        if (applicationId) {
+          await supabase
+            .from('conversations')
+            .update({ application_id: applicationId })
+            .eq('id', matchingConv.conversation_id)
+            .is('application_id', null);
+        }
+        return matchingConv.conversation_id;
       }
+    }
 
-      // 2. No existing conversation, create new
-      return await this.createConversation(applicationId, candidateId, recruiterId);
+    // 3. Create new conversation
+    return await this.createConversation(applicationId, candidateId, recruiterId);
   }
 }
 
