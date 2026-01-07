@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { CandidateProfile, SeniorityLevel, WorkMode, JobType, Skill, LanguageEntry } from '../types';
 import { 
   User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign, 
   MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout, 
-  Smile, ShieldCheck, Globe, Users, X, Info, Target, GraduationCap
+  Smile, ShieldCheck, Globe, Users, X, Info, Target, GraduationCap, Loader2
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import VerificationDashboard from './VerificationDashboard';
@@ -51,9 +52,10 @@ interface Props {
   profile: CandidateProfile;
   onUpdate: (data: Partial<CandidateProfile>) => void;
   onSave: () => void;
+  isSaving?: boolean;
 }
 
-const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) => {
+const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSaving }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'career' | 'preferences' | 'values' | 'verifications'>('overview');
 
   const calculateCompletion = () => {
@@ -177,7 +179,18 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave }) =>
 
           {activeTab === 'verifications' && <VerificationDashboard candidateId={profile.id} stats={profile.verification_stats} skills={profile.skills} />}
         </div>
-        <div className="bg-gray-50 px-12 py-8 border-t flex flex-col md:flex-row justify-between items-center gap-6"><div className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest"><Clock className="w-4 h-4"/> Syncing to Open Market</div><button onClick={onSave} className="w-full md:w-auto bg-gray-900 text-white px-12 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-2xl hover:scale-[1.02] transform active:scale-95"><CheckCircle className="w-5 h-5 mr-3"/> Save & Go Live</button></div>
+        <div className="bg-gray-50 px-12 py-8 border-t flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest">
+            <Clock className="w-4 h-4"/> Syncing to Open Market
+          </div>
+          <button 
+            onClick={onSave} 
+            disabled={isSaving}
+            className="w-full md:w-auto bg-gray-900 text-white px-12 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center shadow-2xl hover:scale-[1.02] transform active:scale-95 disabled:opacity-70"
+          >
+            {isSaving ? <><Loader2 className="w-5 h-5 mr-3 animate-spin" /> Saving...</> : <><CheckCircle className="w-5 h-5 mr-3"/> Save & Go Live</>}
+          </button>
+        </div>
       </div>
     </div>
   );
