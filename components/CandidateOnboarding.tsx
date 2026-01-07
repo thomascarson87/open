@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { 
   CandidateProfile, WorkMode, JobType, Skill, SeniorityLevel, LanguageEntry 
 } from '../types';
 import { 
   ArrowRight, ArrowLeft, CheckCircle, User, Zap, GraduationCap, 
-  Briefcase, DollarSign, Heart, Smile, Building, TrendingUp, Sparkles, MapPin, Clock, Users, Globe, X, Plus
+  Briefcase, DollarSign, Heart, Smile, Building, TrendingUp, Sparkles, MapPin, Clock, Users, Globe, X, Plus, Loader2
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import SkillLevelSelector from './SkillLevelSelector';
@@ -33,6 +34,7 @@ interface Props {
   profile: CandidateProfile;
   onUpdate: (data: Partial<CandidateProfile>) => void;
   onComplete: () => void;
+  isSaving?: boolean;
 }
 
 const STEPS = [
@@ -66,7 +68,7 @@ const LanguageSelector: React.FC<{ languages: LanguageEntry[], onChange: (l: Lan
   );
 };
 
-const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete }) => {
+const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete, isSaving }) => {
   const [idx, setIdx] = useState(0);
   const step = STEPS[idx];
 
@@ -192,7 +194,13 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
              <ProfileReviewCard title="Work Style" icon={Clock} completionPercent={Object.keys(profile.workStylePreferences || {}).length > 0 ? 100 : 0} summary={`${Object.keys(profile.workStylePreferences || {}).length}/10 set`} onEdit={() => setIdx(3)} />
              <ProfileReviewCard title="Team Prefs" icon={Users} completionPercent={Object.keys(profile.teamCollaborationPreferences || {}).length > 0 ? 100 : 0} summary="Configured" onEdit={() => setIdx(4)} />
           </div>
-          <button onClick={onComplete} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 transition-all">Go Live</button>
+          <button 
+            onClick={onComplete} 
+            disabled={isSaving}
+            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+          >
+            {isSaving ? <><Loader2 className="w-6 h-6 animate-spin" /> Saving...</> : 'Go Live'}
+          </button>
         </div>
       );
       default: return null;
@@ -208,7 +216,13 @@ const CandidateOnboarding: React.FC<Props> = ({ profile, onUpdate, onComplete })
       <div className="flex-1 py-12 px-4">{renderContent()}</div>
       <div className="sticky bottom-0 bg-white border-t border-gray-100 p-6 flex justify-between items-center z-50">
         <button onClick={() => idx > 0 && setIdx(idx - 1)} className={`font-bold ${idx === 0 ? 'opacity-0' : ''}`}>Back</button>
-        <button onClick={handleNext} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold flex items-center">Continue <ArrowRight className="ml-2 w-4 h-4"/></button>
+        <button 
+          onClick={handleNext} 
+          disabled={isSaving}
+          className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold flex items-center disabled:opacity-70 transition-opacity"
+        >
+          {step.id === 'review' && isSaving ? 'Completing...' : 'Continue'} <ArrowRight className="ml-2 w-4 h-4"/>
+        </button>
       </div>
     </div>
   );
