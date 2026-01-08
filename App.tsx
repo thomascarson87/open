@@ -334,16 +334,89 @@ function MainApp() {
     };
 
     const handlePublishJob = async (job: JobPosting) => { 
-        await supabase.from('jobs').insert([{
-            ...job, company_id: user?.id, company_name: companyProfile?.companyName,
-            required_skills: job.requiredSkills, required_skills_with_levels: job.requiredSkills,
-            values_list: job.values, desired_traits: job.desiredTraits, required_traits: job.requiredTraits,
-            perks: job.perks, required_impact_scope: job.required_impact_scope, work_style_requirements: job.workStyleRequirements,
-            work_style_dealbreakers: job.workStyleDealbreakers, team_requirements: job.teamRequirements,
-            team_dealbreakers: job.teamDealbreakers, required_languages: job.requiredLanguages, timezone_requirements: job.timezoneRequirements
-        }]);
-        fetchData();
-        setCurrentView('dashboard'); 
+        try {
+            // 1. Generate human-readable salary range if not provided
+            const salaryRangeStr = job.salaryRange || (
+                job.salaryMin && job.salaryMax
+                    ? `${job.salaryCurrency || '$'} ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}`
+                    : job.salaryMin
+                        ? `${job.salaryCurrency || '$'} ${job.salaryMin.toLocaleString()}+`
+                        : 'Competitive'
+            );
+
+            // 2. Prepare database payload with explicit snake_case mapping for the matching algorithm
+            const dbJobPayload = {
+                // Identity & Status
+                company_id: user?.id,
+                company_name: companyProfile?.companyName,
+                company_logo: companyProfile?.logoUrl || job.companyLogo,
+                title: job.title,
+                description: job.description,
+                status: 'published', // Force published status for visibility to candidates
+                location: job.location,
+
+                // Core Match Dimensions
+                work_mode: job.workMode,
+                seniority: job.seniority,
+                contract_types: job.contractTypes || [],
+
+                // Compensation & Logistics
+                salary_min: job.salaryMin,
+                salary_max: job.salaryMax,
+                salary_currency: job.salaryCurrency || 'USD',
+                salary_range: salaryRangeStr,
+                start_date: job.startDate,
+
+                // Technical Proficiencies (Sacred 8-dimensional data)
+                required_skills: job.requiredSkills,
+                required_skills_with_levels: job.requiredSkills,
+                tech_stack: job.tech_stack || [],
+                required_impact_scope: job.required_impact_scope,
+
+                // Culture, Values & Traits
+                values_list: job.values || [],
+                perks: job.perks || [],
+                desired_traits: job.desiredTraits || [],
+                required_traits: job.requiredTraits || [],
+                company_industry: job.companyIndustry || companyProfile?.industry || [],
+
+                // Education Requirements
+                required_education_level: job.required_education_level,
+                preferred_education_level: job.preferred_education_level,
+                education_required: job.education_required || false,
+
+                // Deep Role Specifics (Measurement & Impact)
+                responsibilities: job.responsibilities || [],
+                impact_statement: job.impact_statement,
+                key_deliverables: job.key_deliverables || [],
+                success_metrics: job.success_metrics || [],
+                team_structure: job.team_structure,
+                growth_opportunities: job.growth_opportunities,
+                desired_performance_scores: job.desired_performance_scores,
+
+                // Multi-dimensional Work Environment Prefs
+                work_style_requirements: job.workStyleRequirements || {},
+                work_style_dealbreakers: job.workStyleDealbreakers || [],
+                team_requirements: job.teamRequirements || {},
+                team_dealbreakers: job.teamDealbreakers || [],
+
+                // Operational Meta
+                approvals: job.approvals || {},
+                posted_date: new Date().toISOString()
+            };
+
+            const { error } = await supabase.from('jobs').insert([dbJobPayload]);
+
+            if (error) throw error;
+
+            // Success: update UI state and notify user
+            await fetchData();
+            setCurrentView('dashboard');
+            alert('Job successfully published to the Open market!');
+        } catch (err: any) {
+            console.error('❌ Error publishing job:', err);
+            alert(`Failed to publish job: ${err.message || 'Unknown database error'}`);
+        }
     };
 
     const handleApply = async (jobId: string) => { 
