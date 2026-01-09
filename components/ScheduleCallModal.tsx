@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { X, Calendar as CalIcon, Clock, AlignLeft, CheckCircle } from 'lucide-react';
+import { X, Calendar as CalIcon, Clock, AlignLeft, CheckCircle, Users } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { googleCalendar } from '../services/googleCalendar';
 import { atsService } from '../services/atsService';
@@ -8,11 +7,20 @@ import { messageService } from '../services/messageService';
 import { notificationService } from '../services/notificationService';
 import { useAuth } from '../contexts/AuthContext';
 
+interface CandidateOption {
+    id: string;
+    name: string;
+    email: string;
+    applicationId?: string;
+    jobTitle?: string;
+}
+
 interface Props {
     onClose: () => void;
     onSchedule: (data: any) => Promise<void>;
     candidateId?: string; // Optional if pre-selected
     applicationId?: string;
+    showCandidateSelector?: boolean;
 }
 
 const DURATIONS = [
@@ -23,12 +31,16 @@ const DURATIONS = [
   { value: 90, label: '1.5 hours' }
 ];
 
-const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, applicationId }) => {
+const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, applicationId, showCandidateSelector }) => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [candidateEmail, setCandidateEmail] = useState('');
     const [candidateName, setCandidateName] = useState('');
     const [resolvedAppId, setResolvedAppId] = useState(applicationId);
+    
+    const [availableCandidates, setAvailableCandidates] = useState<CandidateOption[]>([]);
+    const [loadingCandidates, setLoadingCandidates] = useState(false);
+    const [selectedCandidateId, setSelectedCandidateId] = useState<string | undefined>(candidateId);
 
     const [formData, setFormData] = useState({
         title: 'Interview',
@@ -50,8 +62,6 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                 }
 
                 if (!resolvedAppId) {
-                    // Try to find application between recruiter's company jobs and this candidate
-                    // Simplified: just find latest application for this candidate
                     const { data: app } = await supabase
                         .from('applications')
                         .select('id')
@@ -67,8 +77,115 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
         fetchCandidateInfo();
     }, [candidateId, resolvedAppId]);
 
+    // Load available candidates when selector is needed
+    useEffect(() => {
+        const loadAvailableCandidates = async () => {
+            if (!showCandidateSelector || candidateId) return;
+            
+            setLoadingCandidates(true);
+            try {
+                // Get company ID - try team_members first, fall back to user.id
+                const { data: teamMember } = await supabase
+                    .from('team_members')
+                    .select('company_id')
+                    .eq('user_id', user?.id)
+                    .maybeSingle();
+                
+                const companyId = teamMember?.company_id || user?.id;
+                
+                // Get all jobs for this company
+                const { data: jobs } = await supabase
+                    .from('jobs')
+                    .select('id')
+                    .eq('company_id', companyId);
+                
+                const jobIds = jobs?.map(j => j.id) || [];
+                
+                if (jobIds.length === 0) {
+                    setAvailableCandidates([]);
+                    setLoadingCandidates(false);
+                    return;
+                }
+                
+                // Get applications with candidate info for these jobs
+                const { data: apps, error } = await supabase
+                    .from('applications')
+                    .select(`
+                        id,
+                        candidate_id,
+                        job_id,
+                        candidate_profiles:candidate_id(id, name, email),
+                        jobs:job_id(title)
+                    `)
+                    .in('job_id', jobIds)
+                    .not('candidate_id', 'is', null)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('Error loading candidates:', error);
+                    setLoadingCandidates(false);
+                    return;
+                }
+                
+                if (apps) {
+                    // Dedupe by candidate ID
+                    const seen = new Set<string>();
+                    const candidates: CandidateOption[] = [];
+                    
+                    for (const app of apps) {
+                        const candidateData = app.candidate_profiles as any;
+                        if (candidateData && candidateData.id && !seen.has(candidateData.id)) {
+                            seen.add(candidateData.id);
+                            candidates.push({
+                                id: candidateData.id,
+                                name: candidateData.name || 'Unknown',
+                                email: candidateData.email || '',
+                                applicationId: app.id,
+                                jobTitle: (app.jobs as any)?.title
+                            });
+                        }
+                    }
+                    
+                    setAvailableCandidates(candidates);
+                }
+            } catch (err) {
+                console.error('Failed to load candidates:', err);
+            } finally {
+                setLoadingCandidates(false);
+            }
+        };
+        
+        loadAvailableCandidates();
+    }, [showCandidateSelector, candidateId, user]);
+
+    const handleCandidateSelect = (selectedId: string) => {
+        setSelectedCandidateId(selectedId);
+        const candidate = availableCandidates.find(c => c.id === selectedId);
+        if (candidate) {
+            setCandidateEmail(candidate.email);
+            setCandidateName(candidate.name);
+            setResolvedAppId(candidate.applicationId);
+            
+            // Update title based on interview type
+            const type = formData.type;
+            let title = `Interview with ${candidate.name}`;
+            if (type === 'screening') title = `Phone Screen: ${candidate.name}`;
+            if (type === 'technical_test') title = `Tech Interview: ${candidate.name}`;
+            
+            setFormData(prev => ({ ...prev, title }));
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation for candidate selection
+        const effectiveCandidateId = selectedCandidateId || candidateId;
+        if (!effectiveCandidateId && showCandidateSelector) {
+            alert('Please select a candidate');
+            return;
+        }
+
         setLoading(true);
 
         const startDateTime = new Date(`${formData.date}T${formData.time}`);
@@ -87,7 +204,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     end_time: endDateTime.toISOString(),
                     attendees: candidateEmail ? [{ email: candidateEmail, name: candidateName }] : [],
                     application_id: resolvedAppId,
-                    candidate_id: candidateId,
+                    candidate_id: effectiveCandidateId,
                     status: 'confirmed'
                 }])
                 .select()
@@ -96,11 +213,11 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
             if (err1) throw err1;
 
             // 2. Create Event for Candidate (if known)
-            if (candidateId) {
+            if (effectiveCandidateId) {
                 await supabase
                     .from('calendar_events')
                     .insert([{
-                        user_id: candidateId, // The candidate sees this
+                        user_id: effectiveCandidateId, // The candidate sees this
                         title: formData.title,
                         description: formData.notes,
                         event_type: formData.type,
@@ -153,9 +270,9 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
             }
 
             // 5. Send Notification to Candidate
-            if (candidateId) {
+            if (effectiveCandidateId) {
                 await notificationService.createNotification(
-                    candidateId,
+                    effectiveCandidateId,
                     'interview_scheduled',
                     'Interview Scheduled',
                     `${formData.title} scheduled for ${startDateTime.toLocaleDateString()} at ${startDateTime.toLocaleTimeString()}`,
@@ -164,8 +281,8 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
             }
 
             // 6. Send System Message in Chat
-            if (candidateId) {
-                const convId = await messageService.getOrCreateConversation(user!.id, candidateId, resolvedAppId);
+            if (effectiveCandidateId) {
+                const convId = await messageService.getOrCreateConversation(user!.id, effectiveCandidateId, resolvedAppId);
                 await messageService.sendSystemMessage(
                     convId,
                     `📅 Interview Scheduled: ${formData.title} on ${startDateTime.toLocaleDateString()} at ${startDateTime.toLocaleTimeString()}`,
@@ -194,6 +311,38 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                 </div>
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {/* Candidate Selector - only show when needed */}
+                    {showCandidateSelector && !candidateId && (
+                        <div className="mb-4">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                                Select Candidate
+                            </label>
+                            {loadingCandidates ? (
+                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm">
+                                    Loading candidates...
+                                </div>
+                            ) : availableCandidates.length === 0 ? (
+                                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-700 text-sm">
+                                    No candidates with applications found. Candidates must apply to your jobs first.
+                                </div>
+                            ) : (
+                                <select 
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                    value={selectedCandidateId || ''}
+                                    onChange={e => handleCandidateSelect(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Choose a candidate...</option>
+                                    {availableCandidates.map(c => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.name} {c.jobTitle ? `— ${c.jobTitle}` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    )}
+
                     {candidateName && (
                         <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-700 font-medium mb-2">
                             Scheduling with: <span className="font-bold">{candidateName}</span>
@@ -280,7 +429,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     <div className="pt-2">
                         <button 
                             type="submit" 
-                            disabled={loading}
+                            disabled={loading || (showCandidateSelector && !selectedCandidateId && !candidateId)}
                             className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg flex items-center justify-center disabled:opacity-50"
                         >
                             {loading ? 'Scheduling...' : <><CheckCircle className="w-4 h-4 mr-2"/> Confirm & Send Invites</>}
