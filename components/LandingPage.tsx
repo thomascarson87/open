@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Briefcase, ArrowRight, CheckCircle, Zap, MapPin, DollarSign, Clock, Layout, Globe, Star, ArrowLeft, MousePointer2, ShieldCheck, BarChart3, Search, Video, MessageSquare } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import ForCompaniesInfo from './landing/ForCompaniesInfo';
+import ForTalentInfo from './landing/ForTalentInfo';
 
 interface Props {
     onSelectRole: (role: 'candidate' | 'recruiter') => void;
@@ -380,19 +381,10 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
                         onBack={() => setShowInfoPage(false)}
                     />
                 ) : (
-                    <div className="pt-20 text-center px-4 animate-in fade-in duration-500">
-                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <User className="w-10 h-10 text-blue-600" />
-                        </div>
-                        <h1 className="text-4xl font-black mb-4">Talent Page Coming Soon</h1>
-                        <p className="text-gray-500 mb-8 max-w-md mx-auto">We're building the perfect destination for technical professionals to discover opportunities that fit their life.</p>
-                        <button 
-                            onClick={() => setShowInfoPage(false)}
-                            className="text-blue-600 font-bold hover:underline flex items-center justify-center mx-auto"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
-                        </button>
-                    </div>
+                    <ForTalentInfo 
+                        onGetStarted={() => onSelectRole('candidate')}
+                        onBack={() => setShowInfoPage(false)}
+                    />
                 )}
             </main>
 
