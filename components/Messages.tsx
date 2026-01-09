@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 // import { useSearchParams } from 'react-router-dom'; // Removed due to missing export
 import { Search, Send, ArrowLeft, MessageSquare, Loader2, Calendar, Phone, Paperclip, Plus, X } from 'lucide-react';
@@ -19,6 +18,7 @@ const Messages: React.FC = () => {
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [activeCandidateId, setActiveCandidateId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
     const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ const Messages: React.FC = () => {
         if (urlConvId && !loading) {
             // Check if it exists in loaded conversations, if not, we might need to wait or it will select when loaded
             if (conversations.some(c => c.id === urlConvId)) {
-                setActiveId(urlConvId);
+                selectConversation(urlConvId);
             }
         }
     }, [searchParams, loading, conversations]);
@@ -170,8 +170,16 @@ const Messages: React.FC = () => {
     const startNewConversation = async (candidateId: string) => {
         const convId = await messageService.getOrCreateConversation(user!.id, candidateId);
         setShowNewMessageModal(false);
-        setActiveId(convId);
+        selectConversation(convId);
         fetchConversations();
+    };
+
+    const selectConversation = (conversationId: string) => {
+        setActiveId(conversationId);
+        const conv = conversations.find(c => c.id === conversationId);
+        if (conv?.participants?.[0]?.id) {
+            setActiveCandidateId(conv.participants[0].id);
+        }
     };
 
     return (
@@ -193,7 +201,7 @@ const Messages: React.FC = () => {
                     {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin mx-auto text-gray-400"/></div> : 
                      conversations.length === 0 ? <div className="p-4 text-center text-gray-500 text-sm">No conversations yet.</div> :
                      conversations.map(c => (
-                        <div key={c.id} onClick={() => setActiveId(c.id)} className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${activeId === c.id ? 'bg-blue-50' : ''}`}>
+                        <div key={c.id} onClick={() => selectConversation(c.id)} className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${activeId === c.id ? 'bg-blue-50' : ''}`}>
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-xs text-gray-600 overflow-hidden">
                                     {c.participants[0]?.avatar ? <img src={c.participants[0].avatar} className="w-full h-full object-cover"/> : c.participants[0]?.name.charAt(0)}
@@ -214,7 +222,7 @@ const Messages: React.FC = () => {
                     <>
                         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setActiveId(null)} className="md:hidden"><ArrowLeft className="w-5 h-5"/></button>
+                                <button onClick={() => { setActiveId(null); setActiveCandidateId(null); }} className="md:hidden"><ArrowLeft className="w-5 h-5"/></button>
                                 <span className="font-bold">{conversations.find(c => c.id === activeId)?.participants[0]?.name}</span>
                             </div>
                             <button onClick={() => setShowScheduleModal(true)} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200" title="Schedule Interview"><Calendar className="w-4 h-4"/></button>
@@ -278,7 +286,13 @@ const Messages: React.FC = () => {
                 </div>
             )}
             
-            {showScheduleModal && <ScheduleCallModal onClose={() => setShowScheduleModal(false)} onSchedule={async () => {}} />}
+            {showScheduleModal && activeCandidateId && (
+                <ScheduleCallModal 
+                    onClose={() => setShowScheduleModal(false)} 
+                    onSchedule={async () => { setShowScheduleModal(false); }} 
+                    candidateId={activeCandidateId}
+                />
+            )}
         </div>
     );
 };
