@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Briefcase, ArrowRight, CheckCircle, Zap, MapPin, DollarSign, Clock, Layout, Globe, Star, ArrowLeft, MousePointer2, ShieldCheck, BarChart3, Search, Video, MessageSquare } from 'lucide-react';
+import { User, Briefcase, ArrowRight, CheckCircle, Zap, MapPin, DollarSign, Clock, Layout, Globe, Star, ArrowLeft, MousePointer2, ShieldCheck, BarChart3, Search, Video, MessageSquare, Menu, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import ForCompaniesInfo from './landing/ForCompaniesInfo';
 import ForTalentInfo from './landing/ForTalentInfo';
@@ -279,6 +279,7 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
     const [candidates, setCandidates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showInfoPage, setShowInfoPage] = useState<false | 'companies' | 'talent'>(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -330,23 +331,25 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
             <header className="px-6 py-6 max-w-7xl mx-auto w-full flex items-center justify-between sticky top-0 z-50 bg-gray-50/80 backdrop-blur-sm border-b border-transparent">
                 <div 
                     className="flex items-center space-x-2 cursor-pointer group" 
-                    onClick={() => { setShowInfoPage(false); window.scrollTo(0,0); }}
+                    onClick={() => { setShowInfoPage(false); setMobileMenuOpen(false); window.scrollTo(0,0); }}
                 >
                     <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">O</div>
                     <span className="text-xl font-bold tracking-tight">Open</span>
                 </div>
-                <div className="flex items-center space-x-6">
+
+                {/* Desktop Nav */}
+                <div className="hidden sm:flex items-center space-x-6">
                     <button 
-                        onClick={() => setShowInfoPage('talent')} 
-                        className={`text-sm font-medium transition-colors hidden sm:block ${
+                        onClick={() => { setShowInfoPage('talent'); setMobileMenuOpen(false); }} 
+                        className={`text-sm font-medium transition-colors ${
                             showInfoPage === 'talent' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-gray-900'
                         }`}
                     >
                         For Talent
                     </button>
                     <button 
-                        onClick={() => setShowInfoPage('companies')} 
-                        className={`text-sm font-medium transition-colors hidden sm:block ${
+                        onClick={() => { setShowInfoPage('companies'); setMobileMenuOpen(false); }} 
+                        className={`text-sm font-medium transition-colors ${
                             showInfoPage === 'companies' ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-gray-900'
                         }`}
                     >
@@ -359,7 +362,75 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
                         Get Started
                     </button>
                 </div>
+
+                {/* Mobile Header Controls */}
+                <div className="flex items-center gap-3 sm:hidden">
+                    <button 
+                        onClick={() => onSelectRole('candidate')} 
+                        className="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-800 transition-all active:scale-95"
+                    >
+                        Get Started
+                    </button>
+                    <button 
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                        aria-label="Toggle menu"
+                    >
+                        {mobileMenuOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
+                    </button>
+                </div>
             </header>
+
+            {/* Mobile Menu Dropdown */}
+            {mobileMenuOpen && (
+                <div className="sm:hidden bg-white border-b border-gray-200 shadow-xl fixed top-[80px] left-0 right-0 z-40 animate-in slide-in-from-top-2 duration-200">
+                    <div className="px-6 py-6 space-y-3">
+                        <button 
+                            onClick={() => {
+                                setShowInfoPage('talent');
+                                setMobileMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-4 rounded-2xl font-bold transition-all flex items-center justify-between ${
+                                showInfoPage === 'talent' 
+                                    ? 'bg-purple-50 text-purple-700 ring-1 ring-purple-200' 
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                            }`}
+                        >
+                            For Talent
+                            <ArrowRight className="w-4 h-4 opacity-50" />
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setShowInfoPage('companies');
+                                setMobileMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-4 rounded-2xl font-bold transition-all flex items-center justify-between ${
+                                showInfoPage === 'companies' 
+                                    ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' 
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                            }`}
+                        >
+                            For Companies
+                            <ArrowRight className="w-4 h-4 opacity-50" />
+                        </button>
+                        <div className="pt-2">
+                            <button 
+                                onClick={() => {
+                                    setShowInfoPage(false);
+                                    setMobileMenuOpen(false);
+                                }}
+                                className={`w-full text-center px-4 py-3 rounded-xl font-bold text-sm transition-colors ${
+                                    !showInfoPage 
+                                        ? 'text-gray-900 bg-gray-100' 
+                                        : 'text-gray-400 hover:text-gray-600'
+                                }`}
+                            >
+                                Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <main className="flex-grow flex flex-col items-center pb-20">
                 {!showInfoPage ? (
