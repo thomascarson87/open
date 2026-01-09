@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 // import { useSearchParams } from 'react-router-dom'; // Removed due to missing export
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Video, Users, Clock, Trash2, ExternalLink, X, MapPin } from 'lucide-react';
@@ -182,6 +181,7 @@ const Schedule: React.FC = () => {
             onClose={() => setShowCreateModal(false)} 
             onSchedule={handleEventScheduled}
             candidateId={preSelectedCandidateId}
+            showCandidateSelector={!preSelectedCandidateId}
         />
       )}
     </div>
