@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Search, X, Check } from 'lucide-react';
+import SkillIcon from './SkillIcon';
 
 interface Props {
   label: string;
@@ -73,12 +74,13 @@ const GroupedMultiSelect: React.FC<Props> = ({
         {selected.map(item => (
           <span 
             key={item}
-            className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+            className="inline-flex items-center gap-2 bg-blue-50 text-blue-900 px-3 py-2 rounded-xl text-sm font-medium border border-blue-200"
           >
-            {item}
+            <SkillIcon skillName={item} size={20} showFallback={false} />
+            <span>{item}</span>
             <button
               onClick={() => removeSelected(item)}
-              className="ml-2 text-blue-600 hover:text-blue-800"
+              className="ml-1 text-blue-600 hover:text-blue-800"
             >
               <X className="w-3 h-3" />
             </button>
@@ -137,7 +139,10 @@ const GroupedMultiSelect: React.FC<Props> = ({
                           onClick={() => toggleOption(item)}
                           className="w-full text-left px-3 py-2 hover:bg-blue-50 rounded flex items-center justify-between"
                         >
-                          <span className="text-sm text-gray-700">{item}</span>
+                          <div className="flex items-center gap-2">
+                            <SkillIcon skillName={item} size={20} showFallback={false} />
+                            <span className="text-sm text-gray-700">{item}</span>
+                          </div>
                           {selected.includes(item) && (
                             <Check className="w-4 h-4 text-blue-600" />
                           )}
@@ -156,7 +161,10 @@ const GroupedMultiSelect: React.FC<Props> = ({
                       onClick={() => toggleOption(item)}
                       className="w-full text-left px-3 py-2 hover:bg-blue-50 rounded flex items-center justify-between"
                     >
-                      <span className="text-sm text-gray-700">{item}</span>
+                      <div className="flex items-center gap-2">
+                        <SkillIcon skillName={item} size={20} showFallback={false} />
+                        <span className="text-sm text-gray-700">{item}</span>
+                      </div>
                       {selected.includes(item) && (
                         <Check className="w-4 h-4 text-blue-600" />
                       )}
