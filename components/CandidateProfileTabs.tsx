@@ -4,12 +4,14 @@ import { CandidateProfile, SeniorityLevel, WorkMode, JobType, Skill, LanguageEnt
 import { 
   User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign, 
   MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout, 
-  Smile, ShieldCheck, Globe, Users, X, Info, Target, GraduationCap, Loader2
+  Smile, ShieldCheck, Globe, Users, X, Info, Target, GraduationCap, Loader2, TrendingUp
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import VerificationDashboard from './VerificationDashboard';
 import SkillLevelSelector from './SkillLevelSelector';
 import ImpactScopeSelector from './ImpactScopeSelector';
+import SkillIcon from './SkillIcon';
+import SkillSelectorModal from './SkillSelectorModal';
 import { CULTURAL_VALUES, INDUSTRIES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
 import { 
@@ -57,6 +59,7 @@ interface Props {
 
 const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSaving }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'career' | 'preferences' | 'values' | 'verifications'>('overview');
+  const [isSkillSelectorOpen, setIsSkillSelectorOpen] = useState(false);
 
   const calculateCompletion = () => {
     let score = 0;
@@ -128,8 +131,44 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
           {activeTab === 'career' && (
             <div className="space-y-16 animate-in slide-in-from-bottom-4 duration-500">
+              <section className="bg-gray-50 rounded-[2.5rem] p-8 border border-gray-100 shadow-inner">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-black text-gray-900 mb-2 flex items-center"><TrendingUp className="w-6 h-6 mr-2 text-blue-600" /> Professional Tenure</h3>
+                    <p className="text-gray-500 text-sm font-medium mb-6">How many years of relevant industry experience do you have?</p>
+                    <div className="flex items-center gap-6">
+                      <div className="flex-1">
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="25" 
+                          step="0.5" 
+                          value={profile.totalYearsExperience || 0} 
+                          onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) })} 
+                          className="w-full accent-blue-600" 
+                        />
+                        <div className="flex justify-between mt-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                          <span>0 Years</span>
+                          <span>25+ Years</span>
+                        </div>
+                      </div>
+                      <div className="w-24 relative">
+                        <input 
+                          type="number" 
+                          value={profile.totalYearsExperience || ''} 
+                          onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) || 0 })}
+                          className="w-full p-3 bg-white border border-gray-200 rounded-xl text-center font-black text-lg focus:ring-2 focus:ring-blue-100 outline-none"
+                          placeholder="0.0"
+                        />
+                        <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase">YRS</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <section><div><h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center"><Target className="w-6 h-6 mr-2 text-blue-500" /> Impact Scope</h3><p className="text-gray-500 text-sm font-medium mb-8">Role-agnostic influence breadth.</p></div><ImpactScopeSelector currentScope={profile.currentImpactScope} desiredScopes={profile.desiredImpactScopes} onChangeCurrent={s => onUpdate({ currentImpactScope: s })} onChangeDesired={s => onUpdate({ desiredImpactScopes: s })} /></section>
-              <section><div className="flex items-center justify-between mb-8"><div><h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center"><Award className="w-6 h-6 mr-2 text-yellow-500" /> Technical Skills</h3><p className="text-gray-500 text-sm font-medium">Precision level assessments.</p></div><button onClick={() => onUpdate({ skills: [...(profile.skills || []), { name: '', level: 1, years: 0 }] })} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all"><Plus className="w-4 h-4" /> Add</button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{profile.skills?.map((s, i) => <SkillLevelSelector key={i} skill={s} onChange={u => handleUpdateSkill(u, i)} onRemove={() => onUpdate({ skills: profile.skills.filter((_, x) => x !== i) })} />)}</div></section>
+              <section><div className="flex items-center justify-between mb-8"><div><h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center"><Award className="w-6 h-6 mr-2 text-yellow-500" /> Technical Skills</h3><p className="text-gray-500 text-sm font-medium">Precision level assessments.</p></div><button onClick={() => setIsSkillSelectorOpen(true)} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"><Plus className="w-4 h-4 inline mr-2" /> Add Skill</button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{profile.skills?.map((s, i) => <SkillLevelSelector key={i} skill={s} onChange={u => handleUpdateSkill(u, i)} onRemove={() => onUpdate({ skills: profile.skills.filter((_, x) => x !== i) })} />)}</div></section>
               
               <section className="pt-12 border-t"><h3 className="text-2xl font-black text-gray-900 mb-8 flex items-center"><Clock className="w-6 h-6 mr-2 text-blue-500" /> Work Style Preferences</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -192,6 +231,18 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
           </button>
         </div>
       </div>
+      
+      {/* Skill Selector Modal */}
+      <SkillSelectorModal
+        isOpen={isSkillSelectorOpen}
+        onClose={() => setIsSkillSelectorOpen(false)}
+        onSelectSkill={(skillName) => {
+          onUpdate({ 
+            skills: [...(profile.skills || []), { name: skillName, level: 3, years: 0 }] 
+          });
+        }}
+        alreadySelected={profile.skills?.map(s => s.name) || []}
+      />
     </div>
   );
 };
