@@ -1,0 +1,359 @@
+
+import React, { useState } from 'react';
+import { TalentSearchCriteria, SeniorityLevel, WorkMode, JobType, JobSkill } from '../types';
+import GroupedMultiSelect from './GroupedMultiSelect';
+import JobSkillRequirementSelector from './JobSkillRequirementSelector';
+import { CULTURAL_VALUES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST, INDUSTRIES } from '../constants/matchingData';
+import { EDUCATION_LEVELS } from '../constants/educationData';
+import { ArrowRight, ArrowLeft, Search, Lock, Unlock, Zap, Info } from 'lucide-react';
+
+interface Props {
+  initialCriteria: TalentSearchCriteria;
+  onSearch: (criteria: TalentSearchCriteria) => void;
+}
+
+const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
+  const [step, setStep] = useState(1);
+  const [criteria, setCriteria] = useState<TalentSearchCriteria>(initialCriteria);
+
+  const toggleDealBreaker = (field: string) => {
+      setCriteria(prev => ({
+          ...prev,
+          dealBreakers: prev.dealBreakers?.includes(field) 
+            ? prev.dealBreakers.filter(f => f !== field)
+            : [...(prev.dealBreakers || []), field]
+      }));
+  };
+
+  const isDealBreaker = (field: string) => criteria.dealBreakers?.includes(field);
+
+  const DealBreakerToggle = ({ field }: { field: string }) => (
+      <button 
+        onClick={() => toggleDealBreaker(field)}
+        className={`ml-2 p-1 rounded-full transition-all flex items-center text-[10px] font-bold ${isDealBreaker(field) ? 'bg-red-50 text-red-500 border border-red-200' : 'bg-gray-50 text-gray-400 border border-transparent'}`}
+        title={isDealBreaker(field) ? "Strict Match Required" : "Flexible Match"}
+      >
+          {isDealBreaker(field) ? <><Lock className="w-3 h-3 mr-1" /> Strict</> : <><Unlock className="w-3 h-3 mr-1" /> Flex</>}
+      </button>
+  );
+
+  const updateSkill = (index: number, updatedSkill: JobSkill) => {
+    const updated = [...(criteria.requiredSkills || [])];
+    updated[index] = updatedSkill;
+    setCriteria({ ...criteria, requiredSkills: updated });
+  };
+
+  const removeSkill = (index: number) => {
+    const updated = criteria.requiredSkills.filter((_, i) => i !== index);
+    setCriteria({ ...criteria, requiredSkills: updated });
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
+       {/* Steps Header */}
+       <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+           <div className="flex space-x-2">
+               {[1, 2, 3, 4].map(s => (
+                   <div key={s} className={`h-2 w-12 rounded-full transition-all ${s <= step ? 'bg-gray-900' : 'bg-gray-200'}`}></div>
+               ))}
+           </div>
+           <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Step {step} of 4</div>
+       </div>
+
+       <div className="flex-1 p-8 overflow-y-auto">
+           {step === 1 && (
+               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                   <h2 className="text-xl font-bold text-gray-900 mb-4">Core Requirements</h2>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div>
+                           <label className="block text-sm font-bold text-gray-700 mb-2">Job Title / Role</label>
+                           <input 
+                              value={criteria.title || ''}
+                              onChange={e => setCriteria({...criteria, title: e.target.value})}
+                              placeholder="e.g. Senior Product Manager"
+                              className="w-full p-3 border border-gray-200 rounded-xl"
+                           />
+                       </div>
+                       
+                       <div>
+                           <div className="flex justify-between">
+                               <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
+                               <DealBreakerToggle field="location"/>
+                           </div>
+                           <input 
+                              value={criteria.location || ''}
+                              onChange={e => setCriteria({...criteria, location: e.target.value})}
+                              placeholder="City, Country"
+                              className="w-full p-3 border border-gray-200 rounded-xl"
+                           />
+                       </div>
+                   </div>
+
+                   <div>
+                       <div className="flex justify-between mb-2">
+                            <label className="block text-sm font-bold text-gray-700">Seniority Level</label>
+                            <DealBreakerToggle field="seniority"/>
+                       </div>
+                       <div className="flex flex-wrap gap-2">
+                            {Object.values(SeniorityLevel).map(level => (
+                                <button
+                                    key={level}
+                                    onClick={() => setCriteria(p => ({
+                                        ...p,
+                                        seniority: p.seniority?.includes(level) 
+                                            ? p.seniority.filter(l => l !== level)
+                                            : [...(p.seniority || []), level]
+                                    }))}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.seniority?.includes(level) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}
+                                >
+                                    {level}
+                                </button>
+                            ))}
+                       </div>
+                   </div>
+
+                   <div>
+                       <div className="flex justify-between mb-2">
+                            <label className="block text-sm font-bold text-gray-700">Work Mode</label>
+                            <DealBreakerToggle field="work_mode"/>
+                       </div>
+                       <div className="flex flex-wrap gap-2">
+                            {Object.values(WorkMode).map(mode => (
+                                <button
+                                    key={mode}
+                                    onClick={() => setCriteria(p => ({
+                                        ...p,
+                                        workMode: p.workMode?.includes(mode) 
+                                            ? p.workMode.filter(m => m !== mode)
+                                            : [...(p.workMode || []), mode]
+                                    }))}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.workMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}
+                                >
+                                    {mode}
+                                </button>
+                            ))}
+                       </div>
+                   </div>
+
+                   <div className="pt-4 border-t border-gray-100">
+                       <div className="flex justify-between mb-2">
+                            <label className="block text-sm font-bold text-gray-700">Education Requirements</label>
+                            <DealBreakerToggle field="education"/>
+                       </div>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <select 
+                                    value={criteria.required_education_level || ''}
+                                    onChange={e => setCriteria({...criteria, required_education_level: e.target.value})}
+                                    className="w-full p-3 border border-gray-200 rounded-xl bg-white"
+                                >
+                                    <option value="">Any Education Level</option>
+                                    {EDUCATION_LEVELS.map(level => (
+                                        <option key={level} value={level}>{level}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex items-center">
+                                <label className="flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={criteria.education_required || false}
+                                        onChange={e => setCriteria({...criteria, education_required: e.target.checked})}
+                                        className="mr-2 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" 
+                                    />
+                                    <span className="text-sm text-gray-600">Strict requirement (no experience substitution)</span>
+                                </label>
+                            </div>
+                       </div>
+                       <p className="text-xs text-gray-400 mt-2">Leave blank to match all education levels</p>
+                   </div>
+               </div>
+           )}
+
+           {step === 2 && (
+               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold text-gray-900">Technical Skills</h2>
+                        <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                            <Zap className="w-3 h-3 mr-1" /> Precision Level Matching
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3 mb-6">
+                        <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-blue-800 leading-relaxed">
+                            Set required proficiency levels (1-5) instead of just years. This improves matching by focusing on what candidates can actually <strong>do</strong>. Default is <strong>Level 3 (Applying)</strong>.
+                        </p>
+                    </div>
+                    
+                    <GroupedMultiSelect 
+                        label="Search and Add Skills"
+                        options={SKILLS_LIST}
+                        selected={criteria.requiredSkills.map(s => s.name)}
+                        onChange={(names) => {
+                            const current = criteria.requiredSkills || [];
+                            const filtered = current.filter(s => names.includes(s.name));
+                            names.forEach(n => {
+                                if(!filtered.find(s => s.name === n)) {
+                                    // Default to Level 3 (Applying)
+                                    filtered.push({ 
+                                        name: n, 
+                                        required_level: 3, 
+                                        minimumYears: undefined, 
+                                        weight: 'required' 
+                                    });
+                                }
+                            });
+                            setCriteria({...criteria, requiredSkills: filtered});
+                        }}
+                        grouped={true}
+                        searchable={true}
+                    />
+
+                    {criteria.requiredSkills && criteria.requiredSkills.length > 0 ? (
+                        <div className="space-y-4">
+                             <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Configure Proficiency Requirements</h3>
+                                <span className="text-xs font-bold text-gray-400">{criteria.requiredSkills.length} selected</span>
+                             </div>
+                             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                {criteria.requiredSkills.map((skill, idx) => (
+                                    <JobSkillRequirementSelector
+                                        key={skill.name}
+                                        skill={skill}
+                                        onChange={(updated) => updateSkill(idx, updated)}
+                                        onRemove={() => removeSkill(idx)}
+                                    />
+                                ))}
+                             </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                             <Zap className="w-10 h-10 text-gray-300 mx-auto mb-3 opacity-50" />
+                             <h3 className="text-lg font-bold text-gray-400">No skills added yet</h3>
+                             <p className="text-sm text-gray-400 max-w-xs mx-auto">Select technologies from the list above to set your proficiency requirements.</p>
+                        </div>
+                    )}
+               </div>
+           )}
+
+           {step === 3 && (
+               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                   <h2 className="text-xl font-bold text-gray-900 mb-4">Culture Fit</h2>
+                   
+                   <GroupedMultiSelect
+                        label="Company Values"
+                        options={CULTURAL_VALUES}
+                        selected={criteria.values || []}
+                        onChange={vals => setCriteria({...criteria, values: vals})}
+                        placeholder="Select values..."
+                        maxSelections={5}
+                   />
+                   
+                   <GroupedMultiSelect
+                        label="Desired Traits"
+                        options={CHARACTER_TRAITS_CATEGORIES}
+                        selected={criteria.desiredTraits || []}
+                        onChange={vals => setCriteria({...criteria, desiredTraits: vals})}
+                        placeholder="Ideal candidate traits..."
+                        grouped={true}
+                        maxSelections={5}
+                   />
+
+                   <GroupedMultiSelect
+                        label="Industry Experience"
+                        options={INDUSTRIES}
+                        selected={criteria.interestedIndustries || []}
+                        onChange={vals => setCriteria({...criteria, interestedIndustries: vals})}
+                        placeholder="Relevant industries..."
+                        maxSelections={5}
+                   />
+               </div>
+           )}
+
+            {step === 4 && (
+               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                   <h2 className="text-xl font-bold text-gray-900 mb-4">Practical Details</h2>
+
+                   <div>
+                       <div className="flex justify-between mb-2">
+                            <label className="block text-sm font-bold text-gray-700">Budget Max (Annual)</label>
+                            <DealBreakerToggle field="salary"/>
+                       </div>
+                       <div className="flex gap-2">
+                            <select 
+                                value={criteria.salaryCurrency}
+                                onChange={e => setCriteria({...criteria, salaryCurrency: e.target.value})}
+                                className="p-3 bg-gray-50 border border-gray-200 rounded-xl font-bold"
+                            >
+                                <option value="USD">USD</option>
+                                <option value="GBP">GBP</option>
+                                <option value="EUR">EUR</option>
+                            </select>
+                            <input 
+                                type="number"
+                                value={criteria.salaryMax || ''}
+                                onChange={e => setCriteria({...criteria, salaryMax: parseInt(e.target.value)})}
+                                className="flex-1 p-3 border border-gray-200 rounded-xl"
+                                placeholder="e.g. 150000"
+                            />
+                       </div>
+                   </div>
+
+                   <div>
+                       <div className="flex justify-between mb-2">
+                            <label className="block text-sm font-bold text-gray-700">Contract Types</label>
+                            <DealBreakerToggle field="contract_type"/>
+                       </div>
+                       <div className="flex flex-wrap gap-2">
+                            {Object.values(JobType).map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => setCriteria(p => ({
+                                        ...p,
+                                        contractTypes: p.contractTypes?.includes(type) 
+                                            ? p.contractTypes.filter(t => t !== type)
+                                            : [...(p.contractTypes || []), type]
+                                    }))}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                       </div>
+                   </div>
+
+                   <GroupedMultiSelect
+                        label="Perks Offered"
+                        options={PERKS_CATEGORIES}
+                        selected={criteria.desiredPerks || []}
+                        onChange={vals => setCriteria({...criteria, desiredPerks: vals})}
+                        grouped={true}
+                   />
+               </div>
+           )}
+       </div>
+
+       <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-between">
+           {step > 1 ? (
+               <button onClick={() => setStep(s => s - 1)} className="flex items-center text-gray-600 font-bold hover:text-gray-900">
+                   <ArrowLeft className="w-4 h-4 mr-2"/> Back
+               </button>
+           ) : <div/>}
+
+           {step < 4 ? (
+               <button onClick={() => setStep(s => s + 1)} className="flex items-center bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition-transform active:scale-95">
+                   Next Step <ArrowRight className="w-4 h-4 ml-2"/>
+               </button>
+           ) : (
+               <button onClick={() => onSearch(criteria)} className="flex items-center bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all active:scale-95">
+                   <Search className="w-4 h-4 mr-2"/> Run Match
+               </button>
+           )}
+       </div>
+    </div>
+  );
+};
+
+export default TalentSearchForm;

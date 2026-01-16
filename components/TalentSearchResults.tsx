@@ -1,0 +1,195 @@
+import React, { useState } from 'react';
+import { TalentSearchResult, CandidateProfile, TalentSearchCriteria } from '../types';
+import CandidateCard from './CandidateCard';
+import { Save, Filter, Download, ArrowLeft, Zap, CheckCircle } from 'lucide-react';
+import { talentMatcherService } from '../services/talentMatcherService';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../services/supabaseClient';
+
+interface Props {
+  results: TalentSearchResult[];
+  criteria: TalentSearchCriteria;
+  onBack: () => void;
+  onUnlock: (id: string) => void;
+  onSchedule: (id: string) => void;
+  onMessage: (id: string) => void;
+  onViewProfile: (candidate: CandidateProfile) => void;
+}
+
+const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnlock, onSchedule, onMessage, onViewProfile }) => {
+    const { user } = useAuth();
+    const [sortBy, setSortBy] = useState<'match' | 'salary_low' | 'salary_high'>('match');
+    const [saveName, setSaveName] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+
+    const sortedResults = [...results].sort((a, b) => {
+        if (sortBy === 'match') return b.matchScore - a.matchScore;
+        if (sortBy === 'salary_low') {
+             return (parseInt(a.candidate.salaryExpectation) || 0) - (parseInt(b.candidate.salaryExpectation) || 0);
+        }
+        if (sortBy === 'salary_high') {
+             return (parseInt(b.candidate.salaryExpectation) || 0) - (parseInt(a.candidate.salaryExpectation) || 0);
+        }
+        return 0;
+    });
+
+    const handleSaveSearch = async () => {
+        if (!saveName) return;
+        setIsSaving(true);
+        
+        // Get company ID
+        const { data: teamMember } = await supabase.from('team_members').select('company_id').eq('user_id', user!.id).maybeSingle();
+        const companyId = teamMember?.company_id || user!.id;
+        
+        await talentMatcherService.saveSearch({
+            user_id: user!.id,
+            company_id: companyId,
+            name: saveName,
+            criteria: criteria,
+            alert_enabled: false
+        });
+        
+        setIsSaving(false);
+        setShowSaveDialog(false);
+        alert('Search saved!');
+    };
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-4">
+                     <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                         <ArrowLeft className="w-5 h-5 text-gray-600"/>
+                     </button>
+                     <div>
+                         <h2 className="text-2xl font-bold text-gray-900">Matches Found</h2>
+                         <p className="text-gray-500">{results.length} candidates fit your precision criteria</p>
+                     </div>
+                </div>
+                
+                <div className="flex flex-wrap justify-center gap-2">
+                    <select 
+                        className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                        value={sortBy}
+                        onChange={e => setSortBy(e.target.value as any)}
+                    >
+                        <option value="match">Best Match</option>
+                        <option value="salary_low">Lowest Salary</option>
+                        <option value="salary_high">Highest Salary</option>
+                    </select>
+                    
+                    <button 
+                        onClick={() => setShowSaveDialog(true)}
+                        className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition-colors"
+                    >
+                        <Save className="w-4 h-4 mr-2 text-blue-600"/> Save Search
+                    </button>
+                    
+                    <button className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition-colors">
+                        <Download className="w-4 h-4 mr-2 text-gray-400"/> Export
+                    </button>
+                </div>
+            </div>
+
+            {/* Results Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedResults.map((res) => (
+                    <div key={res.candidate.id} className="relative group bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
+                         <CandidateCard 
+                            candidate={{...res.candidate, matchScore: res.matchScore}} 
+                            onUnlock={onUnlock} 
+                            onSchedule={onSchedule} 
+                            onMessage={onMessage} 
+                            onViewProfile={onViewProfile}
+                         />
+                         
+                         {/* Precision Skill Level Alignment Overlay */}
+                         <div className="px-6 pb-4 -mt-2">
+                            <div className="border-t border-gray-100 pt-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                    <Zap className="w-3 h-3 text-blue-500" />
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Skill Alignment</span>
+                                </div>
+                                <div className="space-y-1.5">
+                                    {(res.candidate.skills || []).slice(0, 3).map((candidateSkill, i) => {
+                                        const requirement = criteria.requiredSkills?.find(
+                                            r => r.name.toLowerCase() === candidateSkill.name.toLowerCase()
+                                        );
+                                        
+                                        if (!requirement) return null;
+                                        
+                                        const levelMatch = candidateSkill.level >= requirement.required_level;
+                                        
+                                        return (
+                                            <div key={i} className="flex items-center justify-between">
+                                                <span className="text-[11px] font-bold text-gray-700 truncate max-w-[120px]">{candidateSkill.name}</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`text-[11px] font-black px-1.5 py-0.5 rounded ${levelMatch ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                                                        L{candidateSkill.level}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-400">→</span>
+                                                    <span className="text-[11px] font-bold text-gray-500">L{requirement.required_level} req</span>
+                                                    {levelMatch && <CheckCircle className="w-3 h-3 text-green-500" />}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                         </div>
+
+                         {res.matchBreakdown.dealBreakers.length > 0 && (
+                             <div className="absolute top-2 right-2 bg-red-50 text-red-700 text-[10px] font-bold px-2 py-1 rounded z-20 border border-red-100 shadow-sm animate-pulse">
+                                Dealbreaker: {res.matchBreakdown.dealBreakers[0]}
+                             </div>
+                         )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Empty State */}
+            {results.length === 0 && (
+                <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+                    <Filter className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-gray-900">No perfect matches</h3>
+                    <p className="text-gray-500 mt-2 max-w-md mx-auto">Try loosening your strict requirements or broadening your skill search.</p>
+                </div>
+            )}
+
+            {/* Save Dialog */}
+            {showSaveDialog && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in zoom-in duration-200">
+                        <h3 className="text-2xl font-black text-gray-900 mb-2">Save Search</h3>
+                        <p className="text-sm text-gray-500 mb-6 leading-relaxed">Save these requirements to run them again with a single click or enable automatic match alerts.</p>
+                        
+                        <div className="mb-6">
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Search Title</label>
+                            <input 
+                                autoFocus
+                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-100 outline-none"
+                                placeholder="e.g. Senior React Devs (London)"
+                                value={saveName}
+                                onChange={e => setSaveName(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="flex gap-3">
+                             <button onClick={() => setShowSaveDialog(false)} className="flex-1 px-4 py-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors">Cancel</button>
+                             <button 
+                                onClick={handleSaveSearch} 
+                                disabled={!saveName || isSaving} 
+                                className="flex-1 px-4 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black shadow-lg disabled:opacity-50 transition-all transform active:scale-95"
+                             >
+                                 {isSaving ? 'Saving...' : 'Save Search'}
+                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default TalentSearchResults;
