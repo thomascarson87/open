@@ -107,6 +107,118 @@ function calculateCompanySizeMatch(preferred: string[] = [], actual?: string): M
   return { score, reason: preferred.includes(actual) ? 'Perfect size match' : 'Size differs from preference' };
 }
 
+// Language matching: checks if candidate meets job language requirements
+function calculateLanguageMatch(
+  candidateLanguages: Array<{language: string; proficiency: string}> = [],
+  jobLanguages: Array<{language: string; minimumLevel: string; required: boolean}> = []
+): MatchDetails {
+  if (!jobLanguages || jobLanguages.length === 0) return { score: 100, reason: 'No language requirements' };
+
+  const proficiencyOrder = ['basic', 'conversational', 'professional', 'fluent', 'native'];
+
+  let matchedRequired = 0, totalRequired = 0;
+  let matchedPreferred = 0, totalPreferred = 0;
+
+  jobLanguages.forEach(req => {
+    const candidateLang = candidateLanguages.find(
+      cl => cl.language.toLowerCase() === req.language.toLowerCase()
+    );
+
+    if (req.required) {
+      totalRequired++;
+      if (candidateLang) {
+        const candLevel = proficiencyOrder.indexOf(candidateLang.proficiency);
+        const reqLevel = proficiencyOrder.indexOf(req.minimumLevel);
+        if (candLevel >= reqLevel) matchedRequired++;
+      }
+    } else {
+      totalPreferred++;
+      if (candidateLang) {
+        const candLevel = proficiencyOrder.indexOf(candidateLang.proficiency);
+        const reqLevel = proficiencyOrder.indexOf(req.minimumLevel);
+        if (candLevel >= reqLevel) matchedPreferred++;
+      }
+    }
+  });
+
+  // Required languages are critical
+  if (totalRequired > 0 && matchedRequired < totalRequired) {
+    return { score: 0, reason: `Missing ${totalRequired - matchedRequired} required language(s)` };
+  }
+
+  // Preferred languages boost score
+  const preferredScore = totalPreferred > 0 ? (matchedPreferred / totalPreferred) * 30 : 0;
+  const score = 70 + preferredScore; // Base 70 for meeting requirements + up to 30 for preferred
+
+  return { score, reason: `Meets language requirements` };
+}
+
+// Timezone matching: checks overlap compatibility
+function calculateTimezoneMatch(
+  candidateTimezone?: string,
+  candidatePreferredTimezone?: string,
+  jobTimezoneOverlap?: string,
+  companyTimezone?: string
+): MatchDetails {
+  if (!jobTimezoneOverlap || jobTimezoneOverlap === 'async_first') {
+    return { score: 100, reason: 'Async-first or no timezone requirements' };
+  }
+
+  // Simplified timezone offset mapping (real implementation would use a timezone library)
+  const getOffset = (tz?: string): number => {
+    if (!tz) return 0;
+    const offsets: Record<string, number> = {
+      'UTC': 0, 'America/New_York': -5, 'America/Chicago': -6, 'America/Denver': -7,
+      'America/Los_Angeles': -8, 'Europe/London': 0, 'Europe/Paris': 1, 'Europe/Berlin': 1,
+      'Asia/Dubai': 4, 'Asia/Kolkata': 5.5, 'Asia/Singapore': 8, 'Asia/Shanghai': 8,
+      'Asia/Tokyo': 9, 'Australia/Sydney': 10, 'Pacific/Auckland': 12
+    };
+    return offsets[tz] || 0;
+  };
+
+  const candidateTz = candidatePreferredTimezone || candidateTimezone;
+  const candidateOffset = getOffset(candidateTz);
+  const companyOffset = getOffset(companyTimezone);
+  const hoursDiff = Math.abs(candidateOffset - companyOffset);
+
+  switch (jobTimezoneOverlap) {
+    case 'full_overlap':
+      return hoursDiff <= 1
+        ? { score: 100, reason: 'Full timezone overlap' }
+        : { score: Math.max(0, 100 - hoursDiff * 15), reason: `${hoursDiff}h timezone difference` };
+    case 'overlap_4_plus':
+      return hoursDiff <= 4
+        ? { score: 100, reason: '4+ hours overlap' }
+        : { score: Math.max(0, 100 - (hoursDiff - 4) * 20), reason: `Limited overlap (${hoursDiff}h diff)` };
+    case 'overlap_2_plus':
+      return hoursDiff <= 6
+        ? { score: 100, reason: '2+ hours overlap' }
+        : { score: 50, reason: `Minimal overlap possible` };
+    default:
+      return { score: 100, reason: 'Flexible timezone' };
+  }
+}
+
+// Visa and relocation matching
+function calculateVisaRelocationMatch(
+  candidateNeedsVisa: boolean = false,
+  candidateWillingToRelocate: boolean = false,
+  jobOffersVisa: boolean = false,
+  jobOffersRelocation: boolean = false
+): MatchDetails {
+  // If candidate needs visa but job doesn't offer, it's a potential issue
+  if (candidateNeedsVisa && !jobOffersVisa) {
+    return { score: 50, reason: 'Visa sponsorship may be needed' };
+  }
+
+  // If relocation is needed and job offers it, bonus
+  if (candidateWillingToRelocate && jobOffersRelocation) {
+    return { score: 100, reason: 'Relocation assistance available' };
+  }
+
+  return { score: 100, reason: 'No visa/relocation concerns' };
+}
+
 export function calculatePerformanceMatch(candidatePerformance: any, jobRequirements?: any): MatchDetails {
   if (!jobRequirements || Object.keys(jobRequirements).length === 0) return { score: 100, reason: 'No performance requirements' };
   const dimensions = ['communication', 'problemSolving', 'reliability', 'collaboration'] as const;
@@ -149,7 +261,25 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
   const skillsMatch = calculateSkillsMatch(candidate.skills || [], job.requiredSkills || [], verificationBoost);
   const industryMatch = calculateIndustryMatch(candidate.interestedIndustries, company?.industry);
   const companySizeMatch = calculateCompanySizeMatch(candidate.preferredCompanySize, company?.companySizeRange);
-  
+
+  // New logistics dimensions
+  const languageMatch = calculateLanguageMatch(
+    candidate.languages,
+    job.preferredLanguages
+  );
+  const timezoneMatch = calculateTimezoneMatch(
+    candidate.timezone,
+    candidate.preferredTimezone,
+    job.requiredTimezoneOverlap,
+    company?.defaultTimezone
+  );
+  const visaRelocationMatch = calculateVisaRelocationMatch(
+    candidate.legalStatus === 'requires_sponsorship',
+    candidate.willingToRelocate,
+    job.visaSponsorshipAvailable,
+    job.relocationAssistance
+  );
+
   let salaryScore = 100;
   if (job.salaryMax && candidate.salaryMin && candidate.salaryMin > job.salaryMax) salaryScore = 0;
   
@@ -157,17 +287,21 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
   let seniorityScore = (candidate.desiredSeniority || []).includes(job.seniority) || (candidate.desiredSeniority||[]).length === 0 ? 100 : 50;
   
   const DIMENSION_WEIGHTS = {
-    skills: 0.25,
-    seniority: 0.10,
-    salary: 0.12,
-    industry: 0.08,
-    companySize: 0.05,
-    culture: 0.08,
-    perks: 0.05,
-    location: 0.05,
-    workStyle: 0.10,
-    teamFit: 0.07,
-    performance: 0.05
+    skills: 0.22,
+    seniority: 0.08,
+    salary: 0.10,
+    industry: 0.06,
+    companySize: 0.04,
+    culture: 0.06,
+    perks: 0.04,
+    location: 0.04,
+    workStyle: 0.08,
+    teamFit: 0.06,
+    performance: 0.04,
+    language: 0.06,
+    timezone: 0.06,
+    visa: 0.03,
+    relocation: 0.03
   };
 
   const perfMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
@@ -182,13 +316,17 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
       (workStyleMatch.score * DIMENSION_WEIGHTS.workStyle) +
       (teamFitMatch.score * DIMENSION_WEIGHTS.teamFit) +
       (perfMatch.score * DIMENSION_WEIGHTS.performance) +
-      (100 * 0.13) // Culture/Perks placeholder
+      (languageMatch.score * DIMENSION_WEIGHTS.language) +
+      (timezoneMatch.score * DIMENSION_WEIGHTS.timezone) +
+      (visaRelocationMatch.score * (DIMENSION_WEIGHTS.visa + DIMENSION_WEIGHTS.relocation)) +
+      (100 * 0.10) // Culture/Perks placeholder
   );
 
   const dealBreakers: string[] = [];
   if (salaryScore === 0) dealBreakers.push('Salary expectation too high');
   if (workStyleMatch.score === 0) dealBreakers.push('Incompatible work style');
   if (teamFitMatch.score === 0) dealBreakers.push('Team collaboration mismatch');
+  if (languageMatch.score === 0) dealBreakers.push('Missing required language skills');
 
   return {
       overallScore: Math.round(weightedScore),
@@ -206,7 +344,11 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
           traits: { score: 100, reason: '' },
           workStyle: workStyleMatch,
           teamFit: teamFitMatch,
-          performance: perfMatch
+          performance: perfMatch,
+          language: languageMatch,
+          timezone: timezoneMatch,
+          visa: visaRelocationMatch,
+          relocation: visaRelocationMatch
       },
       dealBreakers,
       recommendations: []
@@ -215,7 +357,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
 
 export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidate: CandidateProfile): MatchBreakdown => {
     // Wrapper for search criteria matching
-    return calculateMatch({ 
+    return calculateMatch({
         requiredSkills: criteria.requiredSkills,
         workStyleRequirements: criteria.workStyleFilters,
         teamRequirements: criteria.teamFilters,
@@ -223,4 +365,44 @@ export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidat
         salaryMax: criteria.salaryMax,
         workMode: criteria.workMode?.[0] || 'Remote'
     } as any, candidate);
+};
+
+/**
+ * Calculate role alignment score between candidate roles and search criteria roles
+ * @param candidateRoleIds - Array of canonical_role_ids the candidate has
+ * @param searchRoleIds - Array of canonical_role_ids being searched for
+ * @param includeRelated - Whether related roles (same family) count as partial match
+ * @returns Object with score (0-100) and matchType
+ */
+export const calculateRoleAlignment = (
+  candidateRoleIds: string[],
+  searchRoleIds: string[],
+  includeRelated: boolean = false
+): { score: number; matchType: 'exact' | 'related' | 'none' } => {
+  if (!searchRoleIds || searchRoleIds.length === 0) {
+    return { score: 100, matchType: 'exact' }; // No role filter = full match
+  }
+
+  if (!candidateRoleIds || candidateRoleIds.length === 0) {
+    return { score: 0, matchType: 'none' }; // Candidate has no roles
+  }
+
+  // Check for exact match on any candidate role
+  const hasExactMatch = candidateRoleIds.some(cr => searchRoleIds.includes(cr));
+  if (hasExactMatch) {
+    return { score: 100, matchType: 'exact' };
+  }
+
+  // If includeRelated is true, related roles from same family get partial credit
+  // Note: For now, we assume if includeRelated is true and they matched via expanded IDs,
+  // the service already filtered to related roles. Here we just give partial credit.
+  if (includeRelated) {
+    // Since we can't easily check family here without async, we rely on the service
+    // to have expanded the role IDs. If candidate has ANY role, give related credit
+    // In practice, the service filters first, so reaching here means candidate exists
+    return { score: 60, matchType: 'related' };
+  }
+
+  // No match
+  return { score: 0, matchType: 'none' };
 };

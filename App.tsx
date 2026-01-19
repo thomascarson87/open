@@ -26,6 +26,7 @@ import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
 import VerificationForm from './components/VerificationForm';
 import CandidateProfileTabs from './components/CandidateProfileTabs';
+import DevPanel from './components/DevPanel';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
 import { Loader2, Briefcase } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -35,10 +36,11 @@ import { calculateMatch } from './services/matchingService';
 const mapJobFromDB = (data: any): JobPosting => {
     if (!data) return {} as JobPosting;
     const skillsSource = data.required_skills_with_levels || data.required_skills || [];
-    return { 
-        ...data, 
+    return {
+        ...data,
         id: data.id,
         company_id: data.company_id,
+        canonical_role_id: data.canonical_role_id,
         companyName: data.company_name,
         companyLogo: data.company_logo,
         title: data.title,
@@ -82,7 +84,14 @@ const mapJobFromDB = (data: any): JobPosting => {
         teamRequirements: data.team_requirements || {},
         teamDealbreakers: data.team_dealbreakers || [],
         requiredLanguages: data.required_languages || [],
-        timezoneRequirements: data.timezone_requirements
+        timezoneRequirements: data.timezone_requirements,
+        // New fields
+        preferredLanguages: data.preferred_languages || [],
+        requiredTimezoneOverlap: data.required_timezone_overlap,
+        visaSponsorshipAvailable: data.visa_sponsorship_available || false,
+        equityOffered: data.equity_offered || false,
+        relocationAssistance: data.relocation_assistance || false,
+        desiredEnneagramTypes: data.desired_enneagram_types || []
     };
 };
 
@@ -144,7 +153,16 @@ const mapCandidateFromDB = (data: any): CandidateProfile => {
         teamCollaborationPreferences: data.team_collaboration_preferences || {},
         timezone: data.timezone,
         languages: data.languages || [],
-        totalYearsExperience: data.total_years_experience
+        totalYearsExperience: data.total_years_experience,
+        // New fields
+        salaryMax: data.salary_max,
+        education_graduation_year: data.education_graduation_year,
+        callReady: data.call_ready,
+        callLink: data.call_link,
+        preferredTimezone: data.preferred_timezone,
+        preferredCompanySize: data.preferred_company_size || [],
+        willingToRelocate: data.willing_to_relocate,
+        openToEquity: data.open_to_equity
     };
 };
 
@@ -182,7 +200,10 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => {
         mock_data_seed: data.mock_data_seed,
         workStyleCulture: data.work_style_culture || {},
         teamStructure: data.team_structure || {},
-        companyLanguages: data.company_languages || []
+        companyLanguages: data.company_languages || [],
+        // New fields
+        defaultTimezone: data.default_timezone,
+        visaSponsorshipPolicy: data.visa_sponsorship_policy
     };
 };
 
@@ -369,7 +390,12 @@ function MainApp() {
                 assessment_completed_at: profile.assessment_completed_at, current_impact_scope: profile.currentImpactScope,
                 desired_impact_scope: profile.desiredImpactScopes, 
                 work_style_preferences: profile.workStylePreferences || {},
-                team_collaboration_preferences: profile.teamCollaborationPreferences || {}, timezone: profile.timezone, languages: profile.languages || []
+                team_collaboration_preferences: profile.teamCollaborationPreferences || {}, timezone: profile.timezone, languages: profile.languages || [],
+                // New fields
+                salary_max: profile.salaryMax, education_graduation_year: profile.education_graduation_year,
+                call_ready: profile.callReady, call_link: profile.callLink, preferred_timezone: profile.preferredTimezone,
+                preferred_company_size: profile.preferredCompanySize || [], willing_to_relocate: profile.willingToRelocate,
+                open_to_equity: profile.openToEquity
             }).eq('id', user.id);
             if (error) throw error;
             setCandidateProfile(profile);
@@ -389,6 +415,7 @@ function MainApp() {
 
             const dbJobPayload = {
                 company_id: user?.id,
+                canonical_role_id: job.canonical_role_id || null,
                 company_name: companyProfile?.companyName,
                 company_logo: companyProfile?.logoUrl || job.companyLogo,
                 title: job.title,
@@ -429,7 +456,14 @@ function MainApp() {
                 team_requirements: job.teamRequirements || {},
                 team_dealbreakers: job.teamDealbreakers || [],
                 approvals: job.approvals || {},
-                posted_date: new Date().toISOString()
+                posted_date: new Date().toISOString(),
+                // New fields
+                preferred_languages: job.preferredLanguages || [],
+                required_timezone_overlap: job.requiredTimezoneOverlap,
+                visa_sponsorship_available: job.visaSponsorshipAvailable || false,
+                equity_offered: job.equityOffered || false,
+                relocation_assistance: job.relocationAssistance || false,
+                desired_enneagram_types: job.desiredEnneagramTypes || []
             };
 
             const { error } = await supabase.from('jobs').insert([dbJobPayload]);
@@ -646,6 +680,7 @@ export default function App() {
     return (
         <AuthProvider>
             {renderRoute()}
+            <DevPanel />
         </AuthProvider>
     );
 }

@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { CandidateProfile } from '../types';
-import { Lock, Mail, Calendar, MapPin, DollarSign, Eye } from 'lucide-react';
+import { Lock, Mail, Calendar, MapPin, DollarSign, Eye, Briefcase, CheckCircle, Users } from 'lucide-react';
 
 interface Props {
-  candidate: CandidateProfile;
+  candidate: CandidateProfile & { roleMatchType?: 'exact' | 'related' | 'none' };
   onUnlock: (id: string) => void;
   onSchedule: (id: string) => void;
   onMessage: (id: string) => void;
@@ -13,13 +13,29 @@ interface Props {
 
 const CandidateCard: React.FC<Props> = ({ candidate, onUnlock, onSchedule, onMessage, onViewProfile }) => {
   const isLocked = !candidate.isUnlocked;
+  const roleMatchType = (candidate as any).roleMatchType;
 
   return (
-    <div 
+    <div
         onClick={() => onViewProfile(candidate)}
         className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer"
     >
-      
+
+      {/* Role Match Indicator */}
+      {roleMatchType && roleMatchType !== 'none' && (
+        <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
+          roleMatchType === 'exact'
+            ? 'bg-green-50 text-green-700 border-b border-green-100'
+            : 'bg-blue-50 text-blue-700 border-b border-blue-100'
+        }`}>
+          {roleMatchType === 'exact' ? (
+            <><CheckCircle className="w-3 h-3" /> Exact Role Match</>
+          ) : (
+            <><Users className="w-3 h-3" /> Related Role</>
+          )}
+        </div>
+      )}
+
       {/* Top Section */}
       <div className="p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
@@ -40,6 +56,29 @@ const CandidateCard: React.FC<Props> = ({ candidate, onUnlock, onSchedule, onMes
                 </div>
              )}
         </div>
+
+        {/* Primary Role Badge */}
+        {candidate.primaryRoleName && (
+          <div className="mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold border border-indigo-200">
+              <Briefcase className="w-3.5 h-3.5" />
+              {candidate.primaryRoleName}
+            </div>
+            {/* Secondary Roles */}
+            {candidate.secondaryRoles && candidate.secondaryRoles.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {candidate.secondaryRoles.map((role) => (
+                  <span
+                    key={role.id}
+                    className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-medium"
+                  >
+                    {role.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="space-y-2 text-sm text-gray-600">
              <div className="flex items-center">

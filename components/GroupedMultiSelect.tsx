@@ -13,6 +13,7 @@ interface Props {
   searchable?: boolean;
   maxSelections?: number;
   helpText?: string;
+  hideSelectedTags?: boolean;  // Hide the selected tags display (when using external pill editor)
 }
 
 const GroupedMultiSelect: React.FC<Props> = ({
@@ -24,7 +25,8 @@ const GroupedMultiSelect: React.FC<Props> = ({
   grouped = false,
   searchable = true,
   maxSelections,
-  helpText
+  helpText,
+  hideSelectedTags = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,23 +72,25 @@ const GroupedMultiSelect: React.FC<Props> = ({
       )}
 
       {/* Selected Tags */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        {selected.map(item => (
-          <span 
-            key={item}
-            className="inline-flex items-center gap-2 bg-blue-50 text-blue-900 px-3 py-2 rounded-xl text-sm font-medium border border-blue-200"
-          >
-            <SkillIcon skillName={item} size={20} showFallback={false} />
-            <span>{item}</span>
-            <button
-              onClick={() => removeSelected(item)}
-              className="ml-1 text-blue-600 hover:text-blue-800"
+      {!hideSelectedTags && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {selected.map(item => (
+            <span
+              key={item}
+              className="inline-flex items-center gap-2 bg-blue-50 text-blue-900 px-3 py-2 rounded-xl text-sm font-medium border border-blue-200"
             >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-      </div>
+              <SkillIcon skillName={item} size={20} showFallback={false} />
+              <span>{item}</span>
+              <button
+                onClick={() => removeSelected(item)}
+                className="ml-1 text-blue-600 hover:text-blue-800"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Dropdown Trigger */}
       <div className="relative">

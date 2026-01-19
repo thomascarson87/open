@@ -1,25 +1,28 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CandidateProfile, SeniorityLevel, WorkMode, JobType, Skill, LanguageEntry } from '../types';
-import { 
-  User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign, 
-  MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout, 
-  Smile, ShieldCheck, Globe, Users, X, Info, Target, GraduationCap, Loader2, TrendingUp
+import {
+  User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign,
+  MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout,
+  Smile, ShieldCheck, Globe, Users, X, Info, Target, GraduationCap, Loader2, TrendingUp,
+  Phone, Building2, Plane
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import VerificationDashboard from './VerificationDashboard';
-import SkillLevelSelector from './SkillLevelSelector';
 import ImpactScopeSelector from './ImpactScopeSelector';
-import SkillIcon from './SkillIcon';
 import SkillSelectorModal from './SkillSelectorModal';
+import CandidateRoleSelector from './CandidateRoleSelector';
+import SkillPillEditor from './SkillPillEditor';
 import { CULTURAL_VALUES, INDUSTRIES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
-import { 
+import { COMMON_TIMEZONES, COMPANY_SIZE_OPTIONS } from '../constants/languageData';
+import {
     WORK_HOURS_OPTIONS, WORK_INTENSITY_OPTIONS, AUTONOMY_LEVEL_OPTIONS, AMBIGUITY_TOLERANCE_OPTIONS,
     TEAM_SIZE_PREF_OPTIONS, TEAM_DISTRIBUTION_OPTIONS, COLLABORATION_FREQ_OPTIONS, TIMEZONE_OVERLAP_OPTIONS,
     TIMEZONE_OPTIONS, LANGUAGE_OPTIONS, LANGUAGE_PROFICIENCY_OPTIONS, PROJECT_DURATION_OPTIONS,
     CONTEXT_SWITCHING_OPTIONS, CHANGE_FREQUENCY_OPTIONS
 } from '../constants/workStyleData';
+import { getSkillLevelForSeniority, getImpactScopeForSeniority } from '../constants/seniorityData';
 
 const NonNegotiableToggle = ({ fieldName, isChecked, onToggle }: { fieldName: string; isChecked: boolean; onToggle: () => void; }) => {
   return (
@@ -61,6 +64,99 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
   const [activeTab, setActiveTab] = useState<'overview' | 'career' | 'preferences' | 'values' | 'verifications'>('overview');
   const [isSkillSelectorOpen, setIsSkillSelectorOpen] = useState(false);
 
+  // Handler for primary role selection - updates skills and impact scope
+  const handlePrimaryRoleChange = useCallback((
+    role: { id: string; name: string } | undefined,
+    templateSkills: Skill[]
+  ) => {
+    if (!role) {
+      // Clearing primary role - keep existing skills but clear role info
+      onUpdate({
+        primaryRoleId: undefined,
+        primaryRoleName: undefined,
+      });
+      return;
+    }
+
+    // Merge template skills with existing manually-added skills
+    const existingSkills = profile.skills || [];
+    const templateSkillNames = new Set(templateSkills.map(s => s.name.toLowerCase()));
+    const manualSkills = existingSkills.filter(
+      s => !templateSkillNames.has(s.name.toLowerCase())
+    );
+    const mergedSkills = [...templateSkills, ...manualSkills];
+
+    // Update impact scope based on seniority
+    const impactScope = getImpactScopeForSeniority(profile.currentSeniority);
+
+    onUpdate({
+      primaryRoleId: role.id,
+      primaryRoleName: role.name,
+      skills: mergedSkills,
+      currentImpactScope: impactScope,
+    });
+  }, [profile.skills, profile.currentSeniority, onUpdate]);
+
+  // Handler for secondary roles - merges additional skills
+  const handleSecondaryRolesChange = useCallback((
+    roles: { id: string; name: string }[],
+    additionalSkills: Skill[]
+  ) => {
+    // Merge new skills without duplicating
+    const existingSkillNames = new Set((profile.skills || []).map(s => s.name.toLowerCase()));
+    const newSkills = additionalSkills.filter(
+      s => !existingSkillNames.has(s.name.toLowerCase())
+    );
+
+    onUpdate({
+      secondaryRoles: roles,
+      skills: [...(profile.skills || []), ...newSkills],
+    });
+  }, [profile.skills, onUpdate]);
+
+  // Handler for seniority change - updates all skill levels and impact scope
+  const handleSeniorityChange = useCallback((seniority: SeniorityLevel) => {
+    const skillLevel = getSkillLevelForSeniority(seniority);
+    const impactScope = getImpactScopeForSeniority(seniority);
+
+    // Update all skill levels
+    const updatedSkills = (profile.skills || []).map(skill => ({
+      ...skill,
+      level: skillLevel,
+    }));
+
+    onUpdate({
+      currentSeniority: seniority,
+      skills: updatedSkills,
+      currentImpactScope: impactScope,
+    });
+  }, [profile.skills, onUpdate]);
+
+  // Convert Skill to JobSkill format for SkillPillEditor
+  const skillsAsJobSkills = (profile.skills || []).map(s => ({
+    name: s.name,
+    required_level: s.level,
+    minimumYears: s.years,
+    weight: 'preferred' as const,
+  }));
+
+  // Handler for updating a skill from SkillPillEditor
+  const handleUpdateSkillFromPill = useCallback((index: number, updated: { name: string; required_level: 1|2|3|4|5; minimumYears?: number; weight: 'required' | 'preferred' }) => {
+    const skills = [...(profile.skills || [])];
+    skills[index] = {
+      name: updated.name,
+      level: updated.required_level,
+      years: updated.minimumYears,
+    };
+    onUpdate({ skills });
+  }, [profile.skills, onUpdate]);
+
+  // Handler for removing a skill
+  const handleRemoveSkillFromPill = useCallback((index: number) => {
+    const skills = (profile.skills || []).filter((_, i) => i !== index);
+    onUpdate({ skills });
+  }, [profile.skills, onUpdate]);
+
   const calculateCompletion = () => {
     let score = 0;
     if (profile.name && profile.headline) score += 20;
@@ -75,11 +171,6 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
   };
 
   const completion = calculateCompletion();
-
-  const handleUpdateSkill = (updated: Skill, idx: number) => {
-      const ns = [...(profile.skills || [])]; ns[idx] = updated;
-      onUpdate({ skills: ns });
-  };
 
   const toggleNonNegotiable = (f: string) => {
     const c = profile.nonNegotiables || [];
@@ -131,6 +222,25 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
           {activeTab === 'career' && (
             <div className="space-y-16 animate-in slide-in-from-bottom-4 duration-500">
+              {/* Role & Seniority Section */}
+              <section className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[2.5rem] p-8 border border-blue-100">
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center">
+                  <Briefcase className="w-6 h-6 mr-2 text-blue-600" /> Your Role & Seniority
+                </h3>
+                <p className="text-gray-500 text-sm font-medium mb-8">
+                  Select your primary role to auto-populate relevant skills. Skill levels adjust based on seniority.
+                </p>
+                <CandidateRoleSelector
+                  primaryRole={profile.primaryRoleId ? { id: profile.primaryRoleId, name: profile.primaryRoleName || '' } : undefined}
+                  secondaryRoles={profile.secondaryRoles}
+                  currentSeniority={profile.currentSeniority}
+                  onPrimaryRoleChange={handlePrimaryRoleChange}
+                  onSecondaryRolesChange={handleSecondaryRolesChange}
+                  onSeniorityChange={handleSeniorityChange}
+                />
+              </section>
+
+              {/* Professional Tenure */}
               <section className="bg-gray-50 rounded-[2.5rem] p-8 border border-gray-100 shadow-inner">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="flex-1">
@@ -138,14 +248,14 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                     <p className="text-gray-500 text-sm font-medium mb-6">How many years of relevant industry experience do you have?</p>
                     <div className="flex items-center gap-6">
                       <div className="flex-1">
-                        <input 
-                          type="range" 
-                          min="0" 
-                          max="25" 
-                          step="0.5" 
-                          value={profile.totalYearsExperience || 0} 
-                          onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) })} 
-                          className="w-full accent-blue-600" 
+                        <input
+                          type="range"
+                          min="0"
+                          max="25"
+                          step="0.5"
+                          value={profile.totalYearsExperience || 0}
+                          onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) })}
+                          className="w-full accent-blue-600"
                         />
                         <div className="flex justify-between mt-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                           <span>0 Years</span>
@@ -153,9 +263,9 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                         </div>
                       </div>
                       <div className="w-24 relative">
-                        <input 
-                          type="number" 
-                          value={profile.totalYearsExperience || ''} 
+                        <input
+                          type="number"
+                          value={profile.totalYearsExperience || ''}
                           onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) || 0 })}
                           className="w-full p-3 bg-white border border-gray-200 rounded-xl text-center font-black text-lg focus:ring-2 focus:ring-blue-100 outline-none"
                           placeholder="0.0"
@@ -167,8 +277,56 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                 </div>
               </section>
 
-              <section><div><h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center"><Target className="w-6 h-6 mr-2 text-blue-500" /> Impact Scope</h3><p className="text-gray-500 text-sm font-medium mb-8">Role-agnostic influence breadth.</p></div><ImpactScopeSelector currentScope={profile.currentImpactScope} desiredScopes={profile.desiredImpactScopes} onChangeCurrent={s => onUpdate({ currentImpactScope: s })} onChangeDesired={s => onUpdate({ desiredImpactScopes: s })} /></section>
-              <section><div className="flex items-center justify-between mb-8"><div><h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center"><Award className="w-6 h-6 mr-2 text-yellow-500" /> Technical Skills</h3><p className="text-gray-500 text-sm font-medium">Precision level assessments.</p></div><button onClick={() => setIsSkillSelectorOpen(true)} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"><Plus className="w-4 h-4 inline mr-2" /> Add Skill</button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{profile.skills?.map((s, i) => <SkillLevelSelector key={i} skill={s} onChange={u => handleUpdateSkill(u, i)} onRemove={() => onUpdate({ skills: profile.skills.filter((_, x) => x !== i) })} />)}</div></section>
+              {/* Technical Skills Section */}
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center">
+                      <Award className="w-6 h-6 mr-2 text-yellow-500" /> Technical Skills
+                    </h3>
+                    <p className="text-gray-500 text-sm font-medium">
+                      {profile.primaryRoleName ? `Skills for ${profile.primaryRoleName}. ` : ''}
+                      Click any skill to adjust level and years.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsSkillSelectorOpen(true)}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" /> Add Skill
+                  </button>
+                </div>
+                {profile.primaryRoleId && skillsAsJobSkills.length > 0 && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6">
+                    <p className="text-sm text-blue-700">
+                      <span className="font-bold">Skills auto-populated from {profile.primaryRoleName}.</span> Levels set based on your seniority. Click any skill to customize.
+                    </p>
+                  </div>
+                )}
+                <SkillPillEditor
+                  skills={skillsAsJobSkills}
+                  onUpdateSkill={handleUpdateSkillFromPill}
+                  onRemoveSkill={handleRemoveSkillFromPill}
+                />
+              </section>
+
+              {/* Impact Scope */}
+              <section>
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center">
+                    <Target className="w-6 h-6 mr-2 text-blue-500" /> Impact Scope
+                  </h3>
+                  <p className="text-gray-500 text-sm font-medium mb-8">
+                    Role-agnostic influence breadth. {profile.currentSeniority ? `Auto-set based on ${profile.currentSeniority} level.` : ''}
+                  </p>
+                </div>
+                <ImpactScopeSelector
+                  currentScope={profile.currentImpactScope}
+                  desiredScopes={profile.desiredImpactScopes}
+                  onChangeCurrent={s => onUpdate({ currentImpactScope: s })}
+                  onChangeDesired={s => onUpdate({ desiredImpactScopes: s })}
+                />
+              </section>
               
               <section className="pt-12 border-t"><h3 className="text-2xl font-black text-gray-900 mb-8 flex items-center"><Clock className="w-6 h-6 mr-2 text-blue-500" /> Work Style Preferences</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -196,15 +354,179 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                 </div>
               </section>
               
-              <section className="pt-12 border-t"><h3 className="text-2xl font-black text-gray-900 mb-6">Education</h3><div className="max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8"><div><label className="block text-xs font-black text-gray-400 uppercase mb-3">Highest Degree</label><select value={profile.education_level || ''} onChange={e => onUpdate({ education_level: e.target.value })} className="w-full p-4 bg-gray-50 border rounded-2xl font-bold">{EDUCATION_LEVELS.map(v => <option key={v} value={v}>{v}</option>)}</select></div><div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-center gap-4"><GraduationCap className="w-10 h-10 text-blue-500"/><p className="text-xs font-bold text-blue-800">Highlight bootcamps or self-taught paths—many Open partners value non-traditional excellence.</p></div></div></section>
+              <section className="pt-12 border-t">
+                <h3 className="text-2xl font-black text-gray-900 mb-6">Education</h3>
+                <div className="max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div>
+                    <label className="block text-xs font-black text-gray-400 uppercase mb-3">Highest Degree</label>
+                    <select value={profile.education_level || ''} onChange={e => onUpdate({ education_level: e.target.value })} className="w-full p-4 bg-gray-50 border rounded-2xl font-bold">
+                      {EDUCATION_LEVELS.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-400 uppercase mb-3">Graduation Year</label>
+                    <input
+                      type="number"
+                      value={profile.education_graduation_year || ''}
+                      onChange={e => onUpdate({ education_graduation_year: parseInt(e.target.value) || undefined })}
+                      placeholder="2020"
+                      min="1950"
+                      max={new Date().getFullYear() + 10}
+                      className="w-full p-4 bg-gray-50 border rounded-2xl font-bold"
+                    />
+                  </div>
+                  <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-center gap-4">
+                    <GraduationCap className="w-10 h-10 text-blue-500"/>
+                    <p className="text-xs font-bold text-blue-800">Highlight bootcamps or self-taught paths—many Open partners value non-traditional excellence.</p>
+                  </div>
+                </div>
+              </section>
             </div>
           )}
 
           {activeTab === 'preferences' && (
             <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500 max-w-4xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gray-50 p-8 rounded-[2.5rem] border"><label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Work Modes</label><div className="flex flex-wrap gap-3">{Object.values(WorkMode).map(m => <button key={m} onClick={() => { const c = profile.preferredWorkMode || []; onUpdate({ preferredWorkMode: c.includes(m) ? c.filter(x => x !== m) : [...c, m] }); }} className={`px-6 py-3 rounded-2xl text-sm font-black transition-all border-2 ${profile.preferredWorkMode?.includes(m) ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'}`}>{m}</button>)}</div><div className="mt-8 pt-8 border-t"><NonNegotiableToggle fieldName="work_mode" isChecked={profile.nonNegotiables?.includes('work_mode') || false} onToggle={() => toggleNonNegotiable('work_mode')} /></div></div>
-                <div className="bg-gray-50 p-8 rounded-[2.5rem] border"><label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Budget Floor</label><div className="flex items-center gap-4 bg-white p-2 rounded-2xl border shadow-inner"><div className="bg-blue-600 text-white p-3 rounded-xl font-black text-lg">{profile.salaryCurrency || 'USD'}</div><input type="number" value={profile.salaryMin || ''} onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) })} className="w-full bg-transparent p-2 text-2xl font-black text-gray-900 outline-none" placeholder="e.g. 120000" /></div><div className="mt-8 pt-8 border-t"><NonNegotiableToggle fieldName="salary_min" isChecked={profile.nonNegotiables?.includes('salary_min') || false} onToggle={() => toggleNonNegotiable('salary_min')} /></div></div>
+              {/* Work Modes */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Work Modes</label>
+                <div className="flex flex-wrap gap-3">
+                  {Object.values(WorkMode).map(m => (
+                    <button key={m} onClick={() => { const c = profile.preferredWorkMode || []; onUpdate({ preferredWorkMode: c.includes(m) ? c.filter(x => x !== m) : [...c, m] }); }} className={`px-6 py-3 rounded-2xl text-sm font-black transition-all border-2 ${profile.preferredWorkMode?.includes(m) ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'}`}>{m}</button>
+                  ))}
+                </div>
+                <div className="mt-8 pt-8 border-t">
+                  <NonNegotiableToggle fieldName="work_mode" isChecked={profile.nonNegotiables?.includes('work_mode') || false} onToggle={() => toggleNonNegotiable('work_mode')} />
+                </div>
+              </div>
+
+              {/* Compensation */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><DollarSign className="w-4 h-4 mr-2" />Compensation</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2">Minimum Salary</label>
+                    <div className="flex items-center gap-2 bg-white p-2 rounded-xl border">
+                      <div className="bg-blue-600 text-white px-3 py-2 rounded-lg font-black text-sm">{profile.salaryCurrency || 'USD'}</div>
+                      <input type="number" value={profile.salaryMin || ''} onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) || undefined })} className="w-full bg-transparent p-2 text-xl font-black text-gray-900 outline-none" placeholder="80000" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2">Target/Max Salary</label>
+                    <div className="flex items-center gap-2 bg-white p-2 rounded-xl border">
+                      <div className="bg-green-600 text-white px-3 py-2 rounded-lg font-black text-sm">{profile.salaryCurrency || 'USD'}</div>
+                      <input type="number" value={profile.salaryMax || ''} onChange={e => onUpdate({ salaryMax: parseInt(e.target.value) || undefined })} className="w-full bg-transparent p-2 text-xl font-black text-gray-900 outline-none" placeholder="120000" />
+                    </div>
+                  </div>
+                </div>
+                {/* Equity Toggle */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl border mt-6">
+                  <div>
+                    <p className="font-bold text-gray-800">Open to Equity</p>
+                    <p className="text-sm text-gray-500">Accept stock options as compensation</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ openToEquity: !profile.openToEquity })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.openToEquity ? 'bg-green-500' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${profile.openToEquity ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                <div className="mt-6 pt-6 border-t">
+                  <NonNegotiableToggle fieldName="salary_min" isChecked={profile.nonNegotiables?.includes('salary_min') || false} onToggle={() => toggleNonNegotiable('salary_min')} />
+                </div>
+              </div>
+
+              {/* Location & Relocation */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><Plane className="w-4 h-4 mr-2" />Location & Relocation</label>
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl border">
+                  <div>
+                    <p className="font-bold text-gray-800">Open to Relocation</p>
+                    <p className="text-sm text-gray-500">Would consider moving for the right role</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ willingToRelocate: !profile.willingToRelocate })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.willingToRelocate ? 'bg-blue-500' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${profile.willingToRelocate ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                <div className="mt-6">
+                  <label className="block text-xs font-bold text-gray-500 mb-2">Preferred Timezone (if different from current)</label>
+                  <select
+                    value={profile.preferredTimezone || ''}
+                    onChange={e => onUpdate({ preferredTimezone: e.target.value || undefined })}
+                    className="w-full p-4 bg-white border rounded-xl font-bold"
+                  >
+                    <option value="">Same as current</option>
+                    {COMMON_TIMEZONES.map(tz => (
+                      <option key={tz.value} value={tz.value}>{tz.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Company Size Preferences */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><Building2 className="w-4 h-4 mr-2" />Preferred Company Size</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {COMPANY_SIZE_OPTIONS.map(size => {
+                    const isSelected = (profile.preferredCompanySize || []).includes(size.value);
+                    return (
+                      <button
+                        key={size.value}
+                        type="button"
+                        onClick={() => {
+                          const current = profile.preferredCompanySize || [];
+                          const updated = isSelected
+                            ? current.filter(s => s !== size.value)
+                            : [...current, size.value];
+                          onUpdate({ preferredCompanySize: updated });
+                        }}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}
+                      >
+                        <p className="font-black text-sm">{size.label}</p>
+                        <p className="text-xs text-gray-500">{size.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Call Availability */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><Phone className="w-4 h-4 mr-2" />Call Availability</label>
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl border">
+                  <div>
+                    <p className="font-bold text-gray-800">Available for Quick Calls</p>
+                    <p className="text-sm text-gray-500">Show recruiters you're ready to chat</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ callReady: !profile.callReady })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.callReady ? 'bg-green-500' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${profile.callReady ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                {profile.callReady && (
+                  <div className="mt-4">
+                    <label className="block text-xs font-bold text-gray-500 mb-2">Scheduling Link</label>
+                    <input
+                      type="url"
+                      value={profile.callLink || ''}
+                      onChange={e => onUpdate({ callLink: e.target.value || undefined })}
+                      placeholder="https://calendly.com/your-link"
+                      className="w-full p-4 bg-white border rounded-xl font-medium"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

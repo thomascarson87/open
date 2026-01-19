@@ -2,10 +2,19 @@
 import React, { useState } from 'react';
 import { TalentSearchCriteria, SeniorityLevel, WorkMode, JobType, JobSkill } from '../types';
 import GroupedMultiSelect from './GroupedMultiSelect';
-import JobSkillRequirementSelector from './JobSkillRequirementSelector';
+import SkillPillEditor from './SkillPillEditor';
+import RoleFilter from './RoleFilter';
 import { CULTURAL_VALUES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST, INDUSTRIES } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
-import { ArrowRight, ArrowLeft, Search, Lock, Unlock, Zap, Info } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Search, Lock, Unlock, Zap, Info, Users } from 'lucide-react';
+
+interface SelectedRole {
+  id: string;
+  name: string;
+  slug: string;
+  family_id: string;
+  family_name: string;
+}
 
 interface Props {
   initialCriteria: TalentSearchCriteria;
@@ -15,6 +24,7 @@ interface Props {
 const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
   const [step, setStep] = useState(1);
   const [criteria, setCriteria] = useState<TalentSearchCriteria>(initialCriteria);
+  const [selectedRoles, setSelectedRoles] = useState<SelectedRole[]>([]);
 
   const toggleDealBreaker = (field: string) => {
       setCriteria(prev => ({
@@ -37,17 +47,6 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
       </button>
   );
 
-  const updateSkill = (index: number, updatedSkill: JobSkill) => {
-    const updated = [...(criteria.requiredSkills || [])];
-    updated[index] = updatedSkill;
-    setCriteria({ ...criteria, requiredSkills: updated });
-  };
-
-  const removeSkill = (index: number) => {
-    const updated = criteria.requiredSkills.filter((_, i) => i !== index);
-    setCriteria({ ...criteria, requiredSkills: updated });
-  };
-
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
        {/* Steps Header */}
@@ -64,24 +63,53 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
            {step === 1 && (
                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                    <h2 className="text-xl font-bold text-gray-900 mb-4">Core Requirements</h2>
-                   
+
+                   {/* Role Filter - High signal, top of form */}
+                   <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                       <div className="flex items-center gap-2 mb-4">
+                           <Users className="w-5 h-5 text-blue-600" />
+                           <h3 className="text-sm font-bold text-blue-900">Role-Based Search</h3>
+                           <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">High Signal</span>
+                       </div>
+                       <RoleFilter
+                           selectedRoles={selectedRoles}
+                           includeRelatedRoles={criteria.includeRelatedRoles || false}
+                           onRolesChange={(roles, skills) => {
+                               setSelectedRoles(roles);
+                               setCriteria(prev => ({
+                                   ...prev,
+                                   roleIds: roles.map(r => r.id),
+                                   requiredSkills: skills
+                               }));
+                           }}
+                           onIncludeRelatedChange={(include) => {
+                               setCriteria(prev => ({
+                                   ...prev,
+                                   includeRelatedRoles: include
+                               }));
+                           }}
+                           defaultSkillLevel={3}
+                       />
+                   </div>
+
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
-                           <label className="block text-sm font-bold text-gray-700 mb-2">Job Title / Role</label>
-                           <input 
+                           <label className="block text-sm font-bold text-gray-700 mb-2">Job Title (Free Text)</label>
+                           <input
                               value={criteria.title || ''}
                               onChange={e => setCriteria({...criteria, title: e.target.value})}
                               placeholder="e.g. Senior Product Manager"
                               className="w-full p-3 border border-gray-200 rounded-xl"
                            />
+                           <p className="text-xs text-gray-400 mt-1">Use for additional title matching beyond role filter</p>
                        </div>
-                       
+
                        <div>
                            <div className="flex justify-between">
                                <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
                                <DealBreakerToggle field="location"/>
                            </div>
-                           <input 
+                           <input
                               value={criteria.location || ''}
                               onChange={e => setCriteria({...criteria, location: e.target.value})}
                               placeholder="City, Country"
@@ -183,25 +211,28 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                     <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3 mb-6">
                         <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                         <p className="text-xs text-blue-800 leading-relaxed">
-                            Set required proficiency levels (1-5) instead of just years. This improves matching by focusing on what candidates can actually <strong>do</strong>. Default is <strong>Level 3 (Applying)</strong>.
+                            {selectedRoles.length > 0
+                                ? <>Skills from selected role template(s) are pre-populated below. Click any skill to adjust proficiency level.</>
+                                : <>Set required proficiency levels (1-5) instead of just years. This improves matching by focusing on what candidates can actually <strong>do</strong>. Default is <strong>Level 3 (Applying)</strong>.</>
+                            }
                         </p>
                     </div>
-                    
-                    <GroupedMultiSelect 
+
+                    <GroupedMultiSelect
                         label="Search and Add Skills"
                         options={SKILLS_LIST}
-                        selected={criteria.requiredSkills.map(s => s.name)}
+                        selected={criteria.requiredSkills?.map(s => s.name) || []}
                         onChange={(names) => {
                             const current = criteria.requiredSkills || [];
                             const filtered = current.filter(s => names.includes(s.name));
                             names.forEach(n => {
                                 if(!filtered.find(s => s.name === n)) {
                                     // Default to Level 3 (Applying)
-                                    filtered.push({ 
-                                        name: n, 
-                                        required_level: 3, 
-                                        minimumYears: undefined, 
-                                        weight: 'required' 
+                                    filtered.push({
+                                        name: n,
+                                        required_level: 3,
+                                        minimumYears: undefined,
+                                        weight: 'required'
                                     });
                                 }
                             });
@@ -209,6 +240,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                         }}
                         grouped={true}
                         searchable={true}
+                        hideSelectedTags={true}
                     />
 
                     {criteria.requiredSkills && criteria.requiredSkills.length > 0 ? (
@@ -217,22 +249,20 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                 <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Configure Proficiency Requirements</h3>
                                 <span className="text-xs font-bold text-gray-400">{criteria.requiredSkills.length} selected</span>
                              </div>
-                             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                {criteria.requiredSkills.map((skill, idx) => (
-                                    <JobSkillRequirementSelector
-                                        key={skill.name}
-                                        skill={skill}
-                                        onChange={(updated) => updateSkill(idx, updated)}
-                                        onRemove={() => removeSkill(idx)}
-                                    />
-                                ))}
-                             </div>
+                             <SkillPillEditor
+                                skills={criteria.requiredSkills}
+                                onChange={(skills) => setCriteria({...criteria, requiredSkills: skills})}
+                             />
                         </div>
                     ) : (
                         <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                              <Zap className="w-10 h-10 text-gray-300 mx-auto mb-3 opacity-50" />
                              <h3 className="text-lg font-bold text-gray-400">No skills added yet</h3>
-                             <p className="text-sm text-gray-400 max-w-xs mx-auto">Select technologies from the list above to set your proficiency requirements.</p>
+                             <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                                {selectedRoles.length > 0
+                                    ? 'Select a role on Step 1 to auto-populate skills, or add skills manually above.'
+                                    : 'Select technologies from the list above to set your proficiency requirements.'}
+                             </p>
                         </div>
                     )}
                </div>

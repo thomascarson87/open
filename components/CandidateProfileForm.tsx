@@ -56,6 +56,7 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   
   // Compensation
   if (profile.salaryMin !== undefined) mapping.salary_min = profile.salaryMin;
+  if (profile.salaryMax !== undefined) mapping.salary_max = profile.salaryMax;
   if (profile.salaryCurrency !== undefined) mapping.salary_currency = profile.salaryCurrency;
   if (profile.salaryExpectation !== undefined) mapping.salary_expectation = profile.salaryExpectation;
   if (profile.openToEquity !== undefined) mapping.open_to_equity = profile.openToEquity;
@@ -73,6 +74,7 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   if (profile.education_level !== undefined) mapping.education_level = profile.education_level;
   if (profile.education_field !== undefined) mapping.education_field = profile.education_field;
   if (profile.education_institution !== undefined) mapping.education_institution = profile.education_institution;
+  if (profile.education_graduation_year !== undefined) mapping.education_graduation_year = profile.education_graduation_year;
   
   // Personality
   if (profile.myers_briggs !== undefined) mapping.myers_briggs = profile.myers_briggs;
@@ -85,10 +87,21 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   
   // Experience
   if (profile.totalYearsExperience !== undefined) mapping.total_years_experience = profile.totalYearsExperience;
-  
+
+  // Role taxonomy fields
+  if (profile.currentSeniority !== undefined) mapping.current_seniority = profile.currentSeniority;
+  if (profile.primaryRoleId !== undefined) mapping.primary_role_id = profile.primaryRoleId;
+  if (profile.primaryRoleName !== undefined) mapping.primary_role_name = profile.primaryRoleName;
+  if (profile.secondaryRoles !== undefined) mapping.secondary_roles = profile.secondaryRoles;
+  if (profile.interestedRoles !== undefined) mapping.interested_roles = profile.interestedRoles;
+
   // Onboarding
   if (profile.onboarding_completed !== undefined) mapping.onboarding_completed = profile.onboarding_completed;
-  
+
+  // Availability
+  if (profile.callReady !== undefined) mapping.call_ready = profile.callReady;
+  if (profile.callLink !== undefined) mapping.call_link = profile.callLink;
+
   // Always update timestamp
   mapping.updated_at = new Date().toISOString();
   

@@ -3,6 +3,47 @@ export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
 
+// Language & Timezone Types
+export type LanguageProficiency = 'native' | 'fluent' | 'professional' | 'conversational' | 'basic';
+
+export interface LanguageRequirement {
+  language: string;
+  minProficiency: LanguageProficiency;
+}
+
+export type TimezoneOverlap = 'full_overlap' | 'overlap_4_plus' | 'overlap_2_plus' | 'async_first';
+
+export type CompanySizePreference = 'SEED' | 'EARLY' | 'MID' | 'LARGE' | 'ENTERPRISE';
+
+export type VisaSponsorshipPolicy = 'sponsors_all' | 'sponsors_some' | 'no_sponsorship' | 'case_by_case';
+
+// Role Taxonomy Types
+export interface JobFamily {
+  id: string;
+  name: string;
+  slug: string;
+  display_order: number;
+}
+
+export interface CanonicalRole {
+  id: string;
+  family_id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  is_emerging: boolean;
+  display_order: number;
+  family_name?: string; // Joined from job_families
+}
+
+export interface RoleSkillTemplate {
+  id: string;
+  role_id: string;
+  skill_name: string;
+  is_core: boolean;
+  display_order: number;
+}
+
 export interface TeamMember {
   id: string;
   user_id?: string;
@@ -224,6 +265,8 @@ export interface CompanyProfile {
     reportingStructure?: string;
   };
   companyLanguages?: string[];
+  defaultTimezone?: string;
+  visaSponsorshipPolicy?: VisaSponsorshipPolicy;
 }
 
 export interface Connection {
@@ -300,6 +343,7 @@ export interface CandidateProfile {
   disc_profile?: any;
   enneagram_type?: string;
   salaryMin: number;
+  salaryMax?: number;
   salaryExpectation?: string;
   salaryCurrency: string;
   openToEquity?: boolean;
@@ -318,6 +362,12 @@ export interface CandidateProfile {
   nonNegotiables: string[];
   ambitions?: string;
   desiredSeniority?: SeniorityLevel[];
+  // Role taxonomy fields
+  currentSeniority?: SeniorityLevel;
+  primaryRoleId?: string;
+  primaryRoleName?: string;
+  secondaryRoles?: { id: string; name: string }[];
+  interestedRoles?: { id: string; name: string; interestLevel: 'exploring' | 'actively_seeking' }[];
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
@@ -335,11 +385,14 @@ export interface CandidateProfile {
   teamCollaborationPreferences?: TeamCollaborationPreferences;
   timezone?: string;
   languages?: LanguageEntry[];
+  callReady?: boolean;
+  callLink?: string;
 }
 
 export interface JobPosting {
   id: string;
   company_id: string;
+  canonical_role_id?: string;
   companyName: string;
   companyLogo?: string;
   title: string;
@@ -385,8 +438,14 @@ export interface JobPosting {
   workStyleDealbreakers?: string[];
   teamRequirements?: Partial<TeamCollaborationPreferences>;
   teamDealbreakers?: string[];
-  requiredLanguages?: { language: string; minProficiency: string }[];
+  requiredLanguages?: LanguageRequirement[];
+  preferredLanguages?: LanguageRequirement[];
   timezoneRequirements?: string;
+  requiredTimezoneOverlap?: TimezoneOverlap;
+  desiredEnneagramTypes?: string[];
+  visaSponsorshipAvailable?: boolean;
+  equityOffered?: boolean;
+  relocationAssistance?: boolean;
 }
 
 export interface MatchDetails {
@@ -412,6 +471,10 @@ export interface MatchBreakdown {
     workStyle?: MatchDetails;
     teamFit?: MatchDetails;
     companySize?: MatchDetails;
+    language?: MatchDetails;
+    timezone?: MatchDetails;
+    visa?: MatchDetails;
+    relocation?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
@@ -422,7 +485,7 @@ export interface TalentSearchCriteria {
   seniority?: SeniorityLevel[];
   location?: string;
   workMode?: WorkMode[];
-  requiredSkills: JobSkill[];  
+  requiredSkills: JobSkill[];
   values?: string[];
   desiredTraits?: string[];
   interestedIndustries?: string[];
@@ -435,6 +498,9 @@ export interface TalentSearchCriteria {
   dealBreakers?: string[];
   workStyleFilters?: Partial<WorkStylePreferences>;
   teamFilters?: Partial<TeamCollaborationPreferences>;
+  // Role-based filtering
+  roleIds?: string[];  // canonical_role_ids to filter by
+  includeRelatedRoles?: boolean;  // Include roles from same family
 }
 
 export interface TalentSearchResult {
