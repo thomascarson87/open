@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TalentSearchResult, CandidateProfile, TalentSearchCriteria } from '../types';
-import CandidateCard from './CandidateCard';
-import { Save, Filter, Download, ArrowLeft, Zap, CheckCircle } from 'lucide-react';
+import EnrichedCandidateCard from './EnrichedCandidateCard';
+import { Save, Filter, Download, ArrowLeft } from 'lucide-react';
 import { talentMatcherService } from '../services/talentMatcherService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabaseClient';
@@ -26,10 +26,10 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
     const sortedResults = [...results].sort((a, b) => {
         if (sortBy === 'match') return b.matchScore - a.matchScore;
         if (sortBy === 'salary_low') {
-             return (parseInt(a.candidate.salaryExpectation) || 0) - (parseInt(b.candidate.salaryExpectation) || 0);
+             return (a.candidate.salaryMin || 0) - (b.candidate.salaryMin || 0);
         }
         if (sortBy === 'salary_high') {
-             return (parseInt(b.candidate.salaryExpectation) || 0) - (parseInt(a.candidate.salaryExpectation) || 0);
+             return (b.candidate.salaryMin || 0) - (a.candidate.salaryMin || 0);
         }
         return 0;
     });
@@ -95,52 +95,19 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sortedResults.map((res) => (
-                    <div key={res.candidate.id} className="relative group bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
-                         <CandidateCard 
-                            candidate={{...res.candidate, matchScore: res.matchScore}} 
-                            onUnlock={onUnlock} 
-                            onSchedule={onSchedule} 
-                            onMessage={onMessage} 
+                    <div key={res.candidate.id} className="relative">
+                         <EnrichedCandidateCard
+                            candidate={{...res.candidate, matchScore: res.matchScore}}
+                            matchResult={res.matchBreakdown}
+                            onUnlock={onUnlock}
+                            onSchedule={onSchedule}
+                            onMessage={onMessage}
                             onViewProfile={onViewProfile}
+                            showMatchBreakdown={true}
                          />
-                         
-                         {/* Precision Skill Level Alignment Overlay */}
-                         <div className="px-6 pb-4 -mt-2">
-                            <div className="border-t border-gray-100 pt-3">
-                                <div className="flex items-center gap-1.5 mb-2">
-                                    <Zap className="w-3 h-3 text-blue-500" />
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Skill Alignment</span>
-                                </div>
-                                <div className="space-y-1.5">
-                                    {(res.candidate.skills || []).slice(0, 3).map((candidateSkill, i) => {
-                                        const requirement = criteria.requiredSkills?.find(
-                                            r => r.name.toLowerCase() === candidateSkill.name.toLowerCase()
-                                        );
-                                        
-                                        if (!requirement) return null;
-                                        
-                                        const levelMatch = candidateSkill.level >= requirement.required_level;
-                                        
-                                        return (
-                                            <div key={i} className="flex items-center justify-between">
-                                                <span className="text-[11px] font-bold text-gray-700 truncate max-w-[120px]">{candidateSkill.name}</span>
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className={`text-[11px] font-black px-1.5 py-0.5 rounded ${levelMatch ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
-                                                        L{candidateSkill.level}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-400">→</span>
-                                                    <span className="text-[11px] font-bold text-gray-500">L{requirement.required_level} req</span>
-                                                    {levelMatch && <CheckCircle className="w-3 h-3 text-green-500" />}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                         </div>
 
                          {res.matchBreakdown.dealBreakers.length > 0 && (
-                             <div className="absolute top-2 right-2 bg-red-50 text-red-700 text-[10px] font-bold px-2 py-1 rounded z-20 border border-red-100 shadow-sm animate-pulse">
+                             <div className="absolute top-2 right-2 bg-red-50 text-red-700 text-[10px] font-bold px-2 py-1 rounded-xl z-20 border border-red-100 shadow-sm animate-pulse">
                                 Dealbreaker: {res.matchBreakdown.dealBreakers[0]}
                              </div>
                          )}

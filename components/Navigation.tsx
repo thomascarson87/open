@@ -1,10 +1,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Role } from '../types';
-import { 
-  Briefcase, LogOut, User, Layout, Bell, MessageSquare, 
-  Calendar, PlusCircle, Users, Building, Search, 
-  ClipboardList, Code, ChevronDown, Video, Settings
+import { useAuth } from '../contexts/AuthContext';
+import {
+  Briefcase, LogOut, User, Layout, Bell, MessageSquare,
+  Calendar, PlusCircle, Users, Building, Search,
+  ClipboardList, Code, ChevronDown, Video, Settings, Target, Clock
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -16,7 +17,14 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentView, onLogout, notificationCount }) => {
+  const { teamRole } = useAuth();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  // Check if user can access HM preferences
+  const canAccessHMPreferences = teamRole === 'hiring_manager' || teamRole === 'admin';
+
+  // Check if user can see pending approvals
+  const canSeePendingApprovals = teamRole === 'hiring_manager' || teamRole === 'finance' || teamRole === 'admin';
   
   // Custom reactive searchParams implementation
   const [searchParams, setSearchParamsState] = useState(() => new URLSearchParams(window.location.search));
@@ -54,6 +62,13 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
 
   if (!role) return null;
 
+  // Build jobs children based on role permissions
+  const jobsChildren = [
+    { id: 'my-jobs', label: 'My Jobs', icon: Briefcase, description: 'Manage your postings' },
+    ...(canSeePendingApprovals ? [{ id: 'pending-approvals', label: 'Pending Approvals', icon: Clock, description: 'Jobs awaiting your review' }] : []),
+    { id: 'ats', label: 'Tracker', icon: ClipboardList, description: 'Applicant pipeline' }
+  ];
+
   const recruiterNav = [
     {
       id: 'find', label: 'Find', icon: Search,
@@ -65,10 +80,7 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
     },
     {
       id: 'jobs-group', label: 'Jobs', icon: Briefcase,
-      children: [
-        { id: 'my-jobs', label: 'My Jobs', icon: Briefcase, description: 'Manage your postings' },
-        { id: 'ats', label: 'Tracker', icon: ClipboardList, description: 'Applicant pipeline' }
-      ]
+      children: jobsChildren
     },
     {
       id: 'interview-group', label: 'Interview', icon: Video,
@@ -155,6 +167,7 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
                   <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-2xl py-2 z-50">
                     <div className="px-4 py-2 border-b border-gray-50 mb-1"><p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Account</p></div>
                     <button onClick={() => handleNavItemClick('profile', 'profile')} className="w-full flex items-center px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"><Settings className="w-4 h-4 mr-3 text-gray-400" />{role === 'recruiter' ? 'Company Settings' : 'My Profile'}</button>
+                    {role === 'recruiter' && canAccessHMPreferences && <button onClick={() => handleNavItemClick('hm-preferences')} className="w-full flex items-center px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"><Target className="w-4 h-4 mr-3 text-blue-500" />My Team Preferences</button>}
                     {role === 'recruiter' && <button onClick={() => handleNavItemClick('profile', 'widget')} className="w-full flex items-center px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"><Code className="w-4 h-4 mr-3 text-purple-500" />Career Widget<span className="ml-auto text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-black">NEW</span></button>}
                     <div className="h-px bg-gray-50 my-1"></div>
                     <button onClick={onLogout} className="w-full flex items-center px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"><LogOut className="w-4 h-4 mr-3" />Sign Out</button>

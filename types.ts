@@ -104,6 +104,109 @@ export interface TeamCollaborationPreferences {
   timezoneOverlap?: 'full_overlap' | 'overlap_4_plus' | 'overlap_2_plus' | 'async_first';
 }
 
+// =============================================================================
+// HIRING MANAGER PREFERENCES TYPES
+// =============================================================================
+
+export type LeadershipStyle = 'hands_off' | 'coaching' | 'collaborative' | 'directive' | 'servant_leader';
+export type FeedbackFrequency = 'continuous' | 'daily' | 'weekly' | 'biweekly' | 'milestone_based';
+export type CommunicationPreference = 'async_first' | 'sync_heavy' | 'balanced' | 'documentation_driven';
+export type MeetingCulture = 'minimal' | 'daily_standup' | 'regular_syncs' | 'as_needed';
+export type ConflictResolution = 'direct_immediate' | 'mediated' | 'consensus_building' | 'escalation_path';
+export type GrowthExpectation = 'specialist_depth' | 'generalist_breadth' | 'leadership_track' | 'flexible';
+export type MentorshipApproach = 'structured_program' | 'informal_adhoc' | 'peer_based' | 'self_directed';
+
+export interface HiringManagerPreferences {
+  id: string;
+  user_id: string;
+  company_id: string;
+
+  // Meta
+  name: string;
+  is_default: boolean;
+
+  // Team Structure
+  team_size?: 'solo' | 'small_2_5' | 'medium_5_15' | 'large_15_plus';
+  reporting_structure?: 'flat' | 'shallow_2_3' | 'hierarchical';
+
+  // Leadership & Management
+  leadership_style?: LeadershipStyle;
+  feedback_frequency?: FeedbackFrequency;
+  communication_preference?: CommunicationPreference;
+  meeting_culture?: MeetingCulture;
+  conflict_resolution?: ConflictResolution;
+
+  // Work Style (mirrors WorkStylePreferences keys)
+  work_intensity?: WorkStylePreferences['workIntensity'];
+  autonomy_level?: WorkStylePreferences['autonomyLevel'];
+  decision_making?: WorkStylePreferences['decisionMaking'];
+  ambiguity_tolerance?: WorkStylePreferences['ambiguityTolerance'];
+  change_frequency?: WorkStylePreferences['changeFrequency'];
+  risk_tolerance?: WorkStylePreferences['riskTolerance'];
+
+  // Team Collaboration (mirrors TeamCollaborationPreferences keys)
+  collaboration_frequency?: TeamCollaborationPreferences['collaborationFrequency'];
+  pair_programming?: TeamCollaborationPreferences['pairProgramming'];
+  cross_functional?: TeamCollaborationPreferences['crossFunctional'];
+
+  // Candidate Attributes
+  required_traits: string[];
+  preferred_traits: string[];
+  impact_scope_min?: number;
+  impact_scope_max?: number;
+
+  // Dealbreakers
+  work_style_dealbreakers: string[];
+  team_dealbreakers: string[];
+  trait_dealbreakers: string[];
+
+  // Growth
+  growth_expectation?: GrowthExpectation;
+  mentorship_approach?: MentorshipApproach;
+
+  created_at: string;
+  updated_at: string;
+}
+
+// Frontend-friendly camelCase version for forms
+export interface HiringManagerPreferencesForm {
+  id?: string;
+  name: string;
+  isDefault: boolean;
+
+  teamSize?: 'solo' | 'small_2_5' | 'medium_5_15' | 'large_15_plus';
+  reportingStructure?: 'flat' | 'shallow_2_3' | 'hierarchical';
+
+  leadershipStyle?: LeadershipStyle;
+  feedbackFrequency?: FeedbackFrequency;
+  communicationPreference?: CommunicationPreference;
+  meetingCulture?: MeetingCulture;
+  conflictResolution?: ConflictResolution;
+
+  workIntensity?: WorkStylePreferences['workIntensity'];
+  autonomyLevel?: WorkStylePreferences['autonomyLevel'];
+  decisionMaking?: WorkStylePreferences['decisionMaking'];
+  ambiguityTolerance?: WorkStylePreferences['ambiguityTolerance'];
+  changeFrequency?: WorkStylePreferences['changeFrequency'];
+  riskTolerance?: WorkStylePreferences['riskTolerance'];
+
+  collaborationFrequency?: TeamCollaborationPreferences['collaborationFrequency'];
+  pairProgramming?: TeamCollaborationPreferences['pairProgramming'];
+  crossFunctional?: TeamCollaborationPreferences['crossFunctional'];
+
+  requiredTraits: string[];
+  preferredTraits: string[];
+  impactScopeMin?: number;
+  impactScopeMax?: number;
+
+  workStyleDealbreakers: string[];
+  teamDealbreakers: string[];
+  traitDealbreakers: string[];
+
+  growthExpectation?: GrowthExpectation;
+  mentorshipApproach?: MentorshipApproach;
+}
+
 export interface LanguageEntry {
   language: string;
   proficiency: 'native' | 'fluent' | 'professional' | 'conversational' | 'basic';
@@ -144,14 +247,34 @@ export interface Experience {
   id: string;
   role: string;
   company: string;
-  duration: string;
+  duration?: string;
   startDate: string;
   endDate: string | null;
   isCurrentRole: boolean;
   type: string;
+  location?: string;
   description?: string;
+  responsibilities?: string[];
   achievements?: string[];
   skillsAcquired?: string[];
+  teamSize?: number;
+  reportingTo?: string;
+  reasonForLeaving?: string;
+  isVerified?: boolean;
+  verifiedBy?: string[];
+}
+
+export interface Education {
+  id: string;
+  institution: string;
+  degree: string;
+  fieldOfStudy: string;
+  specialization?: string;
+  graduationYear: number | null;
+  isOngoing: boolean;
+  grade?: string;
+  activities?: string[];
+  location?: string;
 }
 
 export interface PersonalityAssessments {
@@ -336,6 +459,7 @@ export interface CandidateProfile {
   education_field?: string;
   education_institution?: string;
   education_graduation_year?: number;
+  educationHistory?: Education[];
   values: string[];
   characterTraits: string[];
   personalityAssessments?: PersonalityAssessments;
@@ -387,6 +511,14 @@ export interface CandidateProfile {
   languages?: LanguageEntry[];
   callReady?: boolean;
   callLink?: string;
+  // Management Preferences (for matching with HM preferences)
+  preferredLeadershipStyle?: 'hands_off' | 'coaching' | 'collaborative' | 'directive' | 'servant_leader';
+  preferredFeedbackFrequency?: 'continuous' | 'daily' | 'weekly' | 'biweekly' | 'milestone_based';
+  preferredCommunicationStyle?: 'async_first' | 'sync_heavy' | 'balanced' | 'documentation_driven';
+  preferredMeetingCulture?: 'minimal' | 'daily_standup' | 'regular_syncs' | 'as_needed';
+  preferredConflictResolution?: 'direct_immediate' | 'mediated' | 'consensus_building' | 'escalation_path';
+  preferredMentorshipStyle?: 'structured_program' | 'informal_adhoc' | 'peer_based' | 'self_directed';
+  growthGoals?: 'specialist_depth' | 'generalist_breadth' | 'leadership_track' | 'flexible';
 }
 
 export interface JobPosting {
@@ -475,6 +607,7 @@ export interface MatchBreakdown {
     timezone?: MatchDetails;
     visa?: MatchDetails;
     relocation?: MatchDetails;
+    managementFit?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];

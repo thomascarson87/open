@@ -1,15 +1,20 @@
-import React, { useState, useCallback } from 'react';
-import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill } from '../types';
+import React, { useState, useCallback, useEffect } from 'react';
+import { JobPosting, WorkMode, SeniorityLevel, TeamMember, JobType, JobSkill, MemberRole } from '../types';
 import { generateJobDescription } from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
+import { useJobPermissions } from '../hooks/useJobPermissions';
+import { applyHMPreferencesToJob, hasExistingWorkStyleValues, JobWithHMMetadata } from '../services/hmPreferencesService';
 import {
     ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck,
-    Trash2, Plus, X, Clock, Globe, Shield, DollarSign, Briefcase, GraduationCap, Target, Sparkles, Building2, AlertTriangle
+    Trash2, Plus, X, Clock, Globe, Shield, DollarSign, Briefcase, GraduationCap, Target, Sparkles, Building2, AlertTriangle, Lock, User, FileText, Loader2
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import SkillPillEditor from './SkillPillEditor';
 import ImpactScopeSelector from './ImpactScopeSelector';
 import RoleTitleAutocomplete from './RoleTitleAutocomplete';
+import ReadOnlyField, { ReadOnlySection, AutoPopulatedBadge } from './ReadOnlyField';
+import JobApprovalPanel from './JobApprovalPanel';
 import { CULTURAL_VALUES, PERKS_CATEGORIES, CHARACTER_TRAITS_CATEGORIES, SKILLS_LIST } from '../constants/matchingData';
 import { EDUCATION_LEVELS } from '../constants/educationData';
 import { WORK_INTENSITY_OPTIONS, AUTONOMY_LEVEL_OPTIONS, TEAM_SIZE_PREF_OPTIONS, AMBIGUITY_TOLERANCE_OPTIONS, COLLABORATION_FREQ_OPTIONS, TIMEZONE_OVERLAP_OPTIONS } from '../constants/workStyleData';
@@ -21,21 +26,26 @@ interface Props {
     onPublish: (job: JobPosting) => void;
     onCancel: () => void;
     teamMembers: TeamMember[];
+    teamMembersLoading?: boolean;
     companyProfile?: any;
 }
 
 const STEPS = [
-    { id: 1, title: 'Basics', icon: Briefcase },
-    { id: 2, title: 'Requirements', icon: Zap },
-    { id: 3, title: 'Environment', icon: Globe },
-    { id: 4, title: 'Culture Fit', icon: Heart },
-    { id: 5, title: 'Finalize', icon: CheckCircle }
+    { id: 1, title: 'Basics', icon: FileText },
+    { id: 2, title: 'Requirements', icon: Target },
+    { id: 3, title: 'Team', icon: Users },
+    { id: 4, title: 'Compensation', icon: DollarSign },
+    { id: 5, title: 'Culture', icon: Heart },
+    { id: 6, title: 'Review', icon: CheckCircle }
 ];
 
-const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, companyProfile }) => {
+const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, teamMembersLoading = false, companyProfile }) => {
+    const { user, teamRole } = useAuth();
     const [step, setStep] = useState(1);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [jobData, setJobData] = useState<Partial<JobPosting>>({
+    const [hmPrefsApplied, setHmPrefsApplied] = useState(false);
+    const [hmPrefsSource, setHmPrefsSource] = useState<string | null>(null);
+    const [jobData, setJobData] = useState<JobWithHMMetadata>({
         title: '', description: '', location: '', workMode: WorkMode.Remote, seniority: SeniorityLevel.Senior,
         contractTypes: [JobType.FullTime], requiredSkills: [], values: [], perks: [], desiredTraits: [], requiredTraits: [],
         salaryCurrency: 'USD', salaryMin: undefined, salaryMax: undefined, responsibilities: [], key_deliverables: [],
@@ -45,6 +55,94 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, companyP
         preferredLanguages: [], requiredTimezoneOverlap: undefined,
         visaSponsorshipAvailable: false, equityOffered: false, relocationAssistance: false
     });
+
+    // Get permissions based on team role
+    const permissions = useJobPermissions(jobData, teamRole, user?.id);
+
+    // Auto-populate from HM preferences when HM is assigned
+    useEffect(() => {
+        async function applyHMPrefs() {
+            const hmId = jobData.approvals?.hiringManager?.assignedTo;
+            if (!hmId || hmPrefsApplied) return;
+            if (hasExistingWorkStyleValues(jobData)) return;
+
+            const updatedJob = await applyHMPreferencesToJob(jobData, hmId);
+            if (updatedJob) {
+                setJobData(prev => ({ ...prev, ...updatedJob }));
+                setHmPrefsApplied(true);
+                // Find HM name from team members
+                const hm = teamMembers.find(m => m.id === hmId || m.user_id === hmId);
+                setHmPrefsSource(hm?.name || null);
+            }
+        }
+        applyHMPrefs();
+    }, [jobData.approvals?.hiringManager?.assignedTo, hmPrefsApplied, teamMembers]);
+
+    // Approval handlers
+    const handleApprove = async (role: 'hiringManager' | 'finance') => {
+        const currentApprovals = jobData.approvals || {};
+        const updatedApprovals = {
+            ...currentApprovals,
+            [role]: {
+                ...currentApprovals[role],
+                status: 'approved',
+                date: new Date().toISOString()
+            }
+        };
+
+        // Check if all approvals are complete
+        const allApproved = updatedApprovals.hiringManager?.status === 'approved' &&
+                          updatedApprovals.finance?.status === 'approved';
+
+        setJobData(prev => ({
+            ...prev,
+            approvals: updatedApprovals,
+            status: allApproved ? 'published' : 'pending_approval'
+        }));
+
+        // TODO: Send notification to job creator and other stakeholders
+    };
+
+    const handleRequestChanges = async (role: 'hiringManager' | 'finance', feedback: string) => {
+        const currentApprovals = jobData.approvals || {};
+        const updatedApprovals = {
+            ...currentApprovals,
+            [role]: {
+                ...currentApprovals[role],
+                status: 'rejected',
+                feedback,
+                date: new Date().toISOString()
+            }
+        };
+
+        setJobData(prev => ({
+            ...prev,
+            approvals: updatedApprovals,
+            status: 'draft'
+        }));
+
+        // TODO: Send notification to job creator with feedback
+    };
+
+    const handleAssignApprover = (role: 'hiringManager' | 'finance', userId: string) => {
+        setJobData(prev => ({
+            ...prev,
+            approvals: {
+                ...prev.approvals,
+                [role]: {
+                    status: 'pending',
+                    assignedTo: userId
+                }
+            }
+        }));
+
+        // Reset HM prefs flag if assigning new HM
+        if (role === 'hiringManager') {
+            setHmPrefsApplied(false);
+        }
+
+        // TODO: Send notification to assigned approver
+    };
 
     const handleUpdateSkill = (index: number, updated: JobSkill) => {
         const ns = [...(jobData.requiredSkills || [])]; ns[index] = updated;
@@ -139,11 +237,52 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, companyP
         } catch (e) { console.error(e); } finally { setIsGenerating(false); }
     };
 
+    // Warnings-based validation: allow step progression but show warnings
+    const getStepWarnings = (currentStep: number): string[] => {
+        const warnings: string[] = [];
+
+        if (currentStep === 1) {
+            if (!jobData.title) warnings.push('Job title is recommended');
+            if (!jobData.location) warnings.push('Location is recommended');
+        }
+        if (currentStep === 2) {
+            if ((jobData.requiredSkills?.length || 0) < 1) {
+                warnings.push('At least one skill is recommended');
+            }
+        }
+        if (currentStep === 3) {
+            // Team Preferences - no strict requirements, just suggestions
+            if (!jobData.workStyleRequirements?.workIntensity && !jobData.workStyleRequirements?.autonomyLevel) {
+                warnings.push('Consider setting work style preferences for better candidate matching');
+            }
+        }
+        if (currentStep === 4) {
+            // Compensation - salary warning
+            if (!jobData.salaryMin && !jobData.salaryMax) {
+                warnings.push('Salary range not set - Finance approval will be required');
+            }
+        }
+        // Step 5 (Company Culture) is read-only, no warnings needed
+        // Step 6 (Finalize) has its own publish validation
+
+        return warnings;
+    };
+
+    // Strict validation only for final publish
+    const canPublish = (): boolean => {
+        return !!(
+            jobData.title &&
+            jobData.location &&
+            (jobData.requiredSkills?.length || 0) >= 1 &&
+            (jobData.salaryMin || jobData.salaryMax)
+        );
+    };
+
+    // Allow step navigation even with warnings (except step 1 minimum requirements)
     const validate = () => {
-        if (step === 1) return jobData.title && jobData.location;
-        if (step === 2) return (jobData.requiredSkills?.length || 0) >= 1;
-        if (step === 3) return jobData.salaryMin || jobData.salaryMax;
-        return true;
+        // Only block if absolutely necessary (title is truly required)
+        if (step === 1) return !!jobData.title;
+        return true; // Allow progression with warnings for other steps
     };
 
     const DealbreakerToggle = ({ field, list, onToggle }: any) => (
@@ -211,29 +350,172 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, companyP
             }
             case 3: return (
                 <div className="space-y-8 animate-in slide-in-from-right-4">
-                    <div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">Environment</h2><p className="text-gray-500">Budget, benefits, and logistics.</p></div>
-                    <div className="bg-green-50 p-8 rounded-[2rem] border border-green-100">
-                        <h3 className="text-lg font-black text-green-900 mb-6 flex items-center"><DollarSign className="w-5 h-5 mr-2"/> Salary Range *</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div><label className="block text-[10px] font-black text-green-700 uppercase mb-2">Currency</label><select value={jobData.salaryCurrency} onChange={e => setJobData({...jobData, salaryCurrency: e.target.value})} className="w-full p-4 rounded-xl border border-green-200 font-bold bg-white"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div>
-                            <div><label className="block text-[10px] font-black text-green-700 uppercase mb-2">Minimum</label><input type="number" value={jobData.salaryMin || ''} onChange={e => setJobData({...jobData, salaryMin: parseInt(e.target.value) || undefined})} className="w-full p-4 rounded-xl border border-green-200 font-bold focus:ring-2 focus:ring-green-300 outline-none" placeholder="e.g. 100000" /></div>
-                            <div><label className="block text-[10px] font-black text-green-700 uppercase mb-2">Maximum</label><input type="number" value={jobData.salaryMax || ''} onChange={e => setJobData({...jobData, salaryMax: parseInt(e.target.value) || undefined})} className="w-full p-4 rounded-xl border border-green-200 font-bold focus:ring-2 focus:ring-green-300 outline-none" placeholder="e.g. 150000" /></div>
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-black text-gray-900">Team Preferences</h2>
+                        <p className="text-gray-500">Define the working style and traits for this role</p>
+                    </div>
+
+                    {/* Auto-populated from HM preferences notice */}
+                    {hmPrefsApplied && hmPrefsSource && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <User className="w-5 h-5 text-blue-600" />
+                                <div>
+                                    <p className="font-bold text-blue-900">Auto-populated from {hmPrefsSource}'s team preferences</p>
+                                    <p className="text-sm text-blue-700">Fields below have been pre-filled and can be customized for this role.</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setStep(1)} // Navigate to settings
+                                className="text-xs font-bold text-blue-600 hover:text-blue-800 underline"
+                            >
+                                View My Defaults
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Work Environment Section */}
+                    <div className="bg-purple-50 p-8 rounded-[2rem] border border-purple-100">
+                        <h3 className="text-lg font-black text-purple-900 mb-6 flex items-center">
+                            <Globe className="w-5 h-5 mr-2"/> Work Environment
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-[10px] font-black text-purple-700 uppercase tracking-widest">Work Intensity</label>
+                                    <DealbreakerToggle field="workIntensity" list={jobData.workStyleDealbreakers || []} onToggle={() => { const l = jobData.workStyleDealbreakers || []; setJobData({...jobData, workStyleDealbreakers: l.includes('workIntensity') ? l.filter(x => x !== 'workIntensity') : [...l, 'workIntensity']}); }} />
+                                </div>
+                                <select value={jobData.workStyleRequirements?.workIntensity || ''} onChange={e => setJobData({...jobData, workStyleRequirements: {...jobData.workStyleRequirements, workIntensity: e.target.value as any}})} className="w-full p-4 bg-white border border-purple-200 rounded-xl font-bold">
+                                    <option value="">Inherit Company Default</option>
+                                    {WORK_INTENSITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-[10px] font-black text-purple-700 uppercase tracking-widest">Autonomy Level</label>
+                                    <DealbreakerToggle field="autonomyLevel" list={jobData.workStyleDealbreakers || []} onToggle={() => { const l = jobData.workStyleDealbreakers || []; setJobData({...jobData, workStyleDealbreakers: l.includes('autonomyLevel') ? l.filter(x => x !== 'autonomyLevel') : [...l, 'autonomyLevel']}); }} />
+                                </div>
+                                <select value={jobData.workStyleRequirements?.autonomyLevel || ''} onChange={e => setJobData({...jobData, workStyleRequirements: {...jobData.workStyleRequirements, autonomyLevel: e.target.value as any}})} className="w-full p-4 bg-white border border-purple-200 rounded-xl font-bold">
+                                    <option value="">Inherit Company Default</option>
+                                    {AUTONOMY_LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <label className="block text-[10px] font-black text-purple-700 uppercase tracking-widest">Ambiguity Tolerance</label>
+                                    <DealbreakerToggle field="ambiguityTolerance" list={jobData.workStyleDealbreakers || []} onToggle={() => { const l = jobData.workStyleDealbreakers || []; setJobData({...jobData, workStyleDealbreakers: l.includes('ambiguityTolerance') ? l.filter(x => x !== 'ambiguityTolerance') : [...l, 'ambiguityTolerance']}); }} />
+                                </div>
+                                <select value={jobData.workStyleRequirements?.ambiguityTolerance || ''} onChange={e => setJobData({...jobData, workStyleRequirements: {...jobData.workStyleRequirements, ambiguityTolerance: e.target.value as any}})} className="w-full p-4 bg-white border border-purple-200 rounded-xl font-bold">
+                                    <option value="">Inherit Company Default</option>
+                                    {AMBIGUITY_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Benefits Section */}
+                    {/* Team Collaboration Section */}
+                    <div className="bg-indigo-50 p-8 rounded-[2rem] border border-indigo-100">
+                        <h3 className="text-lg font-black text-indigo-900 mb-6 flex items-center">
+                            <Users className="w-5 h-5 mr-2"/> Team Collaboration
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-indigo-700 uppercase tracking-widest">Team Size Preference</label>
+                                <select value={jobData.teamRequirements?.teamSizePreference || ''} onChange={e => setJobData({...jobData, teamRequirements: {...jobData.teamRequirements, teamSizePreference: e.target.value as any}})} className="w-full p-4 bg-white border border-indigo-200 rounded-xl font-bold">
+                                    <option value="">Any Team Size</option>
+                                    {TEAM_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-indigo-700 uppercase tracking-widest">Collaboration Frequency</label>
+                                <select value={jobData.teamRequirements?.collaborationFrequency || ''} onChange={e => setJobData({...jobData, teamRequirements: {...jobData.teamRequirements, collaborationFrequency: e.target.value as any}})} className="w-full p-4 bg-white border border-indigo-200 rounded-xl font-bold">
+                                    <option value="">Inherit Company Default</option>
+                                    {COLLABORATION_FREQ_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Character Traits Section */}
+                    <div className="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-black text-blue-900 flex items-center">
+                                <Heart className="w-5 h-5 mr-2"/> Character Traits
+                            </h3>
+                            {hmPrefsApplied && hmPrefsSource && (jobData.requiredTraits?.length || jobData.desiredTraits?.length) && (
+                                <AutoPopulatedBadge sourceName={hmPrefsSource} />
+                            )}
+                        </div>
+                        <GroupedMultiSelect
+                            label="Required Character Traits (Strict Matching)"
+                            options={CHARACTER_TRAITS_CATEGORIES}
+                            selected={jobData.requiredTraits || []}
+                            onChange={v => setJobData({...jobData, requiredTraits: v})}
+                            grouped={true}
+                            maxSelections={5}
+                            helpText="These traits are non-negotiable requirements for this role."
+                        />
+                        <div className="mt-6">
+                            <GroupedMultiSelect
+                                label="Preferred Character Traits"
+                                options={CHARACTER_TRAITS_CATEGORIES}
+                                selected={jobData.desiredTraits || []}
+                                onChange={v => setJobData({...jobData, desiredTraits: v})}
+                                grouped={true}
+                                maxSelections={5}
+                                helpText="Nice-to-have traits that improve match quality."
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+            case 4: return (
+                <div className="space-y-8 animate-in slide-in-from-right-4">
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-black text-gray-900">Compensation & Perks</h2>
+                        <p className="text-gray-500">Budget, benefits, and contract details</p>
+                    </div>
+
+                    {/* Salary Section */}
+                    {permissions.canEditCompensation ? (
+                        <div className="bg-green-50 p-8 rounded-[2rem] border border-green-100">
+                            <h3 className="text-lg font-black text-green-900 mb-4 flex items-center"><DollarSign className="w-5 h-5 mr-2"/> Salary Range *</h3>
+                            {/* Show pending approval indicator when HM fills salary */}
+                            {!permissions.canApproveCompensation && (jobData.salaryMin || jobData.salaryMax) && jobData.approvals?.finance?.status !== 'approved' && (
+                                <div className="mb-4 flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-medium">Salary proposal pending finance approval</span>
+                                </div>
+                            )}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label className="block text-[10px] font-black text-green-700 uppercase mb-2">Currency</label><select value={jobData.salaryCurrency} onChange={e => setJobData({...jobData, salaryCurrency: e.target.value})} className="w-full p-4 rounded-xl border border-green-200 font-bold bg-white"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div>
+                                <div><label className="block text-[10px] font-black text-green-700 uppercase mb-2">Minimum</label><input type="number" value={jobData.salaryMin || ''} onChange={e => setJobData({...jobData, salaryMin: parseInt(e.target.value) || undefined})} className="w-full p-4 rounded-xl border border-green-200 font-bold focus:ring-2 focus:ring-green-300 outline-none" placeholder="e.g. 100000" /></div>
+                                <div><label className="block text-[10px] font-black text-green-700 uppercase mb-2">Maximum</label><input type="number" value={jobData.salaryMax || ''} onChange={e => setJobData({...jobData, salaryMax: parseInt(e.target.value) || undefined})} className="w-full p-4 rounded-xl border border-green-200 font-bold focus:ring-2 focus:ring-green-300 outline-none" placeholder="e.g. 150000" /></div>
+                            </div>
+                            <div className="mt-4 flex items-center gap-6">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked={jobData.equityOffered || false} onChange={e => setJobData({...jobData, equityOffered: e.target.checked})} className="w-5 h-5 rounded border-green-300 text-green-600 focus:ring-green-500" />
+                                    <span className="font-bold text-green-800">Equity Offered</span>
+                                </label>
+                            </div>
+                        </div>
+                    ) : (
+                        <ReadOnlySection title="Compensation" source="finance" sourceName="Finance Team">
+                            <div className="bg-green-50 p-6 rounded-xl">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <ReadOnlyField label="Currency" value={jobData.salaryCurrency || 'USD'} source="finance" />
+                                    <ReadOnlyField label="Minimum" value={jobData.salaryMin ? `${jobData.salaryMin.toLocaleString()}` : 'Not set'} source="finance" variant="currency" />
+                                    <ReadOnlyField label="Maximum" value={jobData.salaryMax ? `${jobData.salaryMax.toLocaleString()}` : 'Not set'} source="finance" variant="currency" />
+                                </div>
+                            </div>
+                        </ReadOnlySection>
+                    )}
+
+                    {/* Benefits & Incentives */}
                     <div className="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
                         <h3 className="text-lg font-black text-blue-900 mb-6 flex items-center"><Award className="w-5 h-5 mr-2"/> Benefits & Incentives</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="flex items-center justify-between p-4 bg-white rounded-xl border">
-                                <div>
-                                    <p className="font-bold text-gray-800">Equity Offered</p>
-                                    <p className="text-xs text-gray-500">Stock options available</p>
-                                </div>
-                                <button type="button" onClick={() => setJobData({...jobData, equityOffered: !jobData.equityOffered})} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${jobData.equityOffered ? 'bg-blue-500' : 'bg-gray-200'}`}>
-                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${jobData.equityOffered ? 'translate-x-6' : 'translate-x-1'}`} />
-                                </button>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <div className="flex items-center justify-between p-4 bg-white rounded-xl border">
                                 <div>
                                     <p className="font-bold text-gray-800">Relocation Help</p>
@@ -253,127 +535,286 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, companyP
                                 </button>
                             </div>
                         </div>
+                        <GroupedMultiSelect label="Role Perks" options={PERKS_CATEGORIES} selected={jobData.perks || []} onChange={v => setJobData({...jobData, perks: v})} grouped={true} placeholder="e.g. Unlimited PTO, 4-Day Work Week..." />
                     </div>
 
-                    {/* Language Requirements */}
+                    {/* Contract Details */}
                     <div className="bg-gray-50 p-8 rounded-[2rem] border">
-                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center"><Globe className="w-5 h-5 mr-2"/> Language Requirements</h3>
-                        <div className="space-y-4">
-                            {(jobData.preferredLanguages || []).map((lang, idx) => (
-                                <div key={idx} className="flex gap-3 items-center">
-                                    <select
-                                        value={lang.language}
-                                        onChange={e => {
-                                            const updated = [...(jobData.preferredLanguages || [])];
-                                            updated[idx] = {...updated[idx], language: e.target.value};
-                                            setJobData({...jobData, preferredLanguages: updated});
-                                        }}
-                                        className="flex-1 p-4 bg-white border rounded-xl font-bold"
-                                    >
-                                        <option value="">Select language...</option>
-                                        {COMMON_LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-                                    </select>
-                                    <select
-                                        value={lang.minimumLevel}
-                                        onChange={e => {
-                                            const updated = [...(jobData.preferredLanguages || [])];
-                                            updated[idx] = {...updated[idx], minimumLevel: e.target.value as any};
-                                            setJobData({...jobData, preferredLanguages: updated});
-                                        }}
-                                        className="w-48 p-4 bg-white border rounded-xl font-bold"
-                                    >
-                                        {LANGUAGE_PROFICIENCY_LEVELS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-                                    </select>
-                                    <label className="flex items-center gap-2 px-4">
-                                        <input
-                                            type="checkbox"
-                                            checked={lang.required || false}
-                                            onChange={e => {
-                                                const updated = [...(jobData.preferredLanguages || [])];
-                                                updated[idx] = {...updated[idx], required: e.target.checked};
-                                                setJobData({...jobData, preferredLanguages: updated});
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center"><Briefcase className="w-5 h-5 mr-2"/> Contract Details</h3>
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase mb-3">Contract Types</label>
+                                <div className="flex flex-wrap gap-3">
+                                    {Object.values(JobType).map(type => (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = jobData.contractTypes || [];
+                                                const updated = current.includes(type)
+                                                    ? current.filter(t => t !== type)
+                                                    : [...current, type];
+                                                setJobData({...jobData, contractTypes: updated});
                                             }}
-                                            className="w-4 h-4 rounded border-gray-300 text-blue-600"
-                                        />
-                                        <span className="text-xs font-bold text-gray-500 uppercase">Required</span>
-                                    </label>
-                                    <button
-                                        type="button"
-                                        onClick={() => setJobData({...jobData, preferredLanguages: jobData.preferredLanguages?.filter((_, i) => i !== idx)})}
-                                        className="p-2 text-gray-400 hover:text-red-500"
-                                    >
-                                        <X className="w-5 h-5"/>
-                                    </button>
+                                            className={`px-4 py-2 rounded-xl font-bold text-sm border-2 transition-all ${
+                                                (jobData.contractTypes || []).includes(type)
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                                            }`}
+                                        >
+                                            {type}
+                                        </button>
+                                    ))}
                                 </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={() => setJobData({...jobData, preferredLanguages: [...(jobData.preferredLanguages || []), {language: '', minimumLevel: 'professional', required: false}]})}
-                                className="flex items-center gap-2 text-xs font-black text-blue-600 uppercase tracking-wider hover:text-blue-700"
-                            >
-                                <Plus className="w-4 h-4"/> Add Language Requirement
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Timezone Overlap */}
-                    <div className="bg-gray-50 p-8 rounded-[2rem] border">
-                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center"><Clock className="w-5 h-5 mr-2"/> Timezone Requirements</h3>
-                        <div>
-                            <label className="block text-[10px] font-black text-gray-400 uppercase mb-3">Required Overlap with Team</label>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                {LOGISTICS_TIMEZONE_OVERLAP.map(opt => (
-                                    <button
-                                        key={opt.value}
-                                        type="button"
-                                        onClick={() => setJobData({...jobData, requiredTimezoneOverlap: opt.value as any})}
-                                        className={`p-4 rounded-xl border-2 text-left transition-all ${
-                                            jobData.requiredTimezoneOverlap === opt.value
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                : 'border-gray-200 bg-white hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <p className="font-black text-sm">{opt.label}</p>
-                                        <p className="text-xs text-gray-500">{opt.description}</p>
-                                    </button>
-                                ))}
                             </div>
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t">
-                        <div className="flex items-center justify-between mb-6"><h3 className="text-xl font-black flex items-center"><Clock className="w-5 h-5 mr-2 text-blue-500"/> Role-Specific Work Style</h3><span className="text-[10px] font-bold text-gray-400 uppercase">Overrides Company Defaults</span></div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2"><div className="flex justify-between items-center"><label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Intensity</label><DealbreakerToggle field="workIntensity" list={jobData.workStyleDealbreakers || []} onToggle={() => { const l = jobData.workStyleDealbreakers || []; setJobData({...jobData, workStyleDealbreakers: l.includes('workIntensity') ? l.filter(x => x !== 'workIntensity') : [...l, 'workIntensity']}); }} /></div><select value={jobData.workStyleRequirements?.workIntensity || ''} onChange={e => setJobData({...jobData, workStyleRequirements: {...jobData.workStyleRequirements, workIntensity: e.target.value as any}})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold"><option value="">Inherit Company Default</option>{WORK_INTENSITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
-                            <div className="space-y-2"><div className="flex justify-between items-center"><label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Autonomy</label><DealbreakerToggle field="autonomyLevel" list={jobData.workStyleDealbreakers || []} onToggle={() => { const l = jobData.workStyleDealbreakers || []; setJobData({...jobData, workStyleDealbreakers: l.includes('autonomyLevel') ? l.filter(x => x !== 'autonomyLevel') : [...l, 'autonomyLevel']}); }} /></div><select value={jobData.workStyleRequirements?.autonomyLevel || ''} onChange={e => setJobData({...jobData, workStyleRequirements: {...jobData.workStyleRequirements, autonomyLevel: e.target.value as any}})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold"><option value="">Inherit Company Default</option>{AUTONOMY_LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+                    {/* Language & Timezone Requirements */}
+                    <div className="bg-gray-50 p-8 rounded-[2rem] border">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center"><Globe className="w-5 h-5 mr-2"/> Language & Timezone</h3>
+                        <div className="space-y-6">
+                            {/* Language Requirements */}
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase mb-3">Language Requirements</label>
+                                <div className="space-y-3">
+                                    {(jobData.preferredLanguages || []).map((lang, idx) => (
+                                        <div key={idx} className="flex gap-3 items-center">
+                                            <select value={lang.language} onChange={e => { const updated = [...(jobData.preferredLanguages || [])]; updated[idx] = {...updated[idx], language: e.target.value}; setJobData({...jobData, preferredLanguages: updated}); }} className="flex-1 p-3 bg-white border rounded-xl font-bold">
+                                                <option value="">Select language...</option>
+                                                {COMMON_LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                                            </select>
+                                            <select value={lang.minimumLevel} onChange={e => { const updated = [...(jobData.preferredLanguages || [])]; updated[idx] = {...updated[idx], minimumLevel: e.target.value as any}; setJobData({...jobData, preferredLanguages: updated}); }} className="w-40 p-3 bg-white border rounded-xl font-bold">
+                                                {LANGUAGE_PROFICIENCY_LEVELS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                                            </select>
+                                            <label className="flex items-center gap-2">
+                                                <input type="checkbox" checked={lang.required || false} onChange={e => { const updated = [...(jobData.preferredLanguages || [])]; updated[idx] = {...updated[idx], required: e.target.checked}; setJobData({...jobData, preferredLanguages: updated}); }} className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+                                                <span className="text-xs font-bold text-gray-500 uppercase">Required</span>
+                                            </label>
+                                            <button type="button" onClick={() => setJobData({...jobData, preferredLanguages: jobData.preferredLanguages?.filter((_, i) => i !== idx)})} className="p-2 text-gray-400 hover:text-red-500"><X className="w-4 h-4"/></button>
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={() => setJobData({...jobData, preferredLanguages: [...(jobData.preferredLanguages || []), {language: '', minimumLevel: 'professional', required: false}]})} className="flex items-center gap-2 text-xs font-black text-blue-600 uppercase tracking-wider hover:text-blue-700">
+                                        <Plus className="w-4 h-4"/> Add Language
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Timezone Overlap */}
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase mb-3">Required Timezone Overlap</label>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {LOGISTICS_TIMEZONE_OVERLAP.map(opt => (
+                                        <button key={opt.value} type="button" onClick={() => setJobData({...jobData, requiredTimezoneOverlap: opt.value as any})} className={`p-3 rounded-xl border-2 text-left transition-all ${jobData.requiredTimezoneOverlap === opt.value ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                                            <p className="font-bold text-sm">{opt.label}</p>
+                                            <p className="text-xs text-gray-500">{opt.description}</p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             );
-            case 4: return (
-                <div className="space-y-12 animate-in slide-in-from-right-4">
-                    <div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">Culture Fit</h2><p className="text-gray-500">Values and traits that define success here.</p></div>
-                    <GroupedMultiSelect label="Core Team Values" options={CULTURAL_VALUES} selected={jobData.values || []} onChange={v => setJobData({...jobData, values: v})} maxSelections={5} placeholder="e.g. Remote-First Culture, Documentation-Oriented..." />
-                    <GroupedMultiSelect label="Role Perks" options={PERKS_CATEGORIES} selected={jobData.perks || []} onChange={v => setJobData({...jobData, perks: v})} grouped={true} placeholder="e.g. Unlimited PTO, 4-Day Work Week..." />
+            case 5: return (
+                <div className="space-y-8 animate-in slide-in-from-right-4">
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-black text-gray-900">Company Culture</h2>
+                        <p className="text-gray-500">These values are inherited from your company profile</p>
+                    </div>
+
+                    {/* Notice about company values */}
+                    <div className="bg-gray-100 border border-gray-200 rounded-2xl p-4 flex items-center gap-3">
+                        <Lock className="w-5 h-5 text-gray-500" />
+                        <div className="flex-1">
+                            <p className="font-bold text-gray-700">Company-wide values shown to candidates</p>
+                            <p className="text-sm text-gray-500">To change these, go to Company Settings.</p>
+                        </div>
+                        <button type="button" className="text-xs font-bold text-blue-600 hover:text-blue-800 underline">
+                            Edit Company Profile
+                        </button>
+                    </div>
+
+                    {/* Company Values - Read Only Display */}
+                    <div className="bg-white p-8 rounded-[2rem] border-2 border-gray-100">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center">
+                            <Heart className="w-5 h-5 mr-2 text-red-500"/> Company Values
+                        </h3>
+                        <div className="flex flex-wrap gap-3">
+                            {(companyProfile?.values || ['Innovation', 'Transparency', 'Growth']).map((value: string, idx: number) => (
+                                <span key={idx} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-bold text-sm">
+                                    {value}
+                                </span>
+                            ))}
+                        </div>
+                        {(!companyProfile?.values || companyProfile.values.length === 0) && (
+                            <p className="text-gray-400 text-sm italic">No company values set. Add values in Company Settings.</p>
+                        )}
+                    </div>
+
+                    {/* Company Mission - Read Only */}
+                    {companyProfile?.missionStatement && (
+                        <div className="bg-white p-8 rounded-[2rem] border-2 border-gray-100">
+                            <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center">
+                                <Target className="w-5 h-5 mr-2 text-blue-500"/> Company Mission
+                            </h3>
+                            <p className="text-gray-600 leading-relaxed">{companyProfile.missionStatement}</p>
+                        </div>
+                    )}
+
+                    {/* Work Environment - Read Only */}
+                    <div className="bg-white p-8 rounded-[2rem] border-2 border-gray-100">
+                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center">
+                            <Building2 className="w-5 h-5 mr-2 text-purple-500"/> Company Environment
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Remote Policy</p>
+                                <p className="font-bold text-gray-800">{companyProfile?.remotePolicy || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Company Size</p>
+                                <p className="font-bold text-gray-800">{companyProfile?.companySizeRange || companyProfile?.teamSize || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Growth Stage</p>
+                                <p className="font-bold text-gray-800">{companyProfile?.growthStage || companyProfile?.fundingStage || 'Not specified'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Role-Specific Values - Editable */}
                     <div className="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
-                        <GroupedMultiSelect label="Required Character Traits (Strict Matching)" options={CHARACTER_TRAITS_CATEGORIES} selected={jobData.requiredTraits || []} onChange={v => setJobData({...jobData, requiredTraits: v})} grouped={true} maxSelections={3} helpText="These traits are non-negotiable requirements for this role." />
+                        <h3 className="text-lg font-black text-blue-900 mb-4 flex items-center">
+                            <Zap className="w-5 h-5 mr-2"/> Role-Specific Values
+                            <span className="ml-2 text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Editable</span>
+                        </h3>
+                        <p className="text-sm text-blue-700 mb-4">Add values specific to this role that complement company culture.</p>
+                        <GroupedMultiSelect
+                            label="Additional Role Values"
+                            options={CULTURAL_VALUES}
+                            selected={jobData.values || []}
+                            onChange={v => setJobData({...jobData, values: v})}
+                            maxSelections={5}
+                            placeholder="e.g. Remote-First Culture, Documentation-Oriented..."
+                        />
                     </div>
                 </div>
             );
-            case 5: return (
+            case 6: return (
                 <div className="space-y-8 animate-in slide-in-from-right-4">
                     <div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">Finalize & Publish</h2></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="p-6 bg-white border-2 border-gray-100 rounded-3xl"><h3 className="text-sm font-black text-gray-400 uppercase mb-4 flex items-center"><Briefcase className="w-4 h-4 mr-2"/> Summary</h3><div className="space-y-1"><p className="font-black text-xl">{jobData.title}</p><p className="text-gray-500 font-bold">{jobData.location} · {jobData.workMode}</p></div></div>
                         <div className="p-6 bg-white border-2 border-gray-100 rounded-3xl"><h3 className="text-sm font-black text-gray-400 uppercase mb-4 flex items-center"><DollarSign className="w-4 h-4 mr-2"/> Budget</h3><p className="font-black text-xl text-green-600">{jobData.salaryCurrency} {jobData.salaryMin?.toLocaleString()} - {jobData.salaryMax?.toLocaleString()}</p></div>
                     </div>
-                    <div className="bg-gray-50 p-8 rounded-[2rem] border border-gray-200">
-                        <h3 className="text-sm font-black text-gray-400 uppercase mb-6 flex items-center"><UserCheck className="w-4 h-4 mr-2"/> Approvals</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Hiring Manager</label><select value={jobData.approvals?.hiringManager?.assignedTo} onChange={e => setJobData({...jobData, approvals: {...jobData.approvals, hiringManager: {status: 'pending', assignedTo: e.target.value}}})} className="w-full p-4 rounded-xl border bg-white font-bold"><option value="">Unassigned</option>{teamMembers.filter(m => m.role === 'hiring_manager' || m.role === 'admin').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></div>
-                            <div><label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Finance Approval</label><select value={jobData.approvals?.finance?.assignedTo} onChange={e => setJobData({...jobData, approvals: {...jobData.approvals, finance: {status: 'pending', assignedTo: e.target.value}}})} className="w-full p-4 rounded-xl border bg-white font-bold"><option value="">Unassigned</option>{teamMembers.filter(m => m.role === 'finance' || m.role === 'admin').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></div>
+
+                    {/* HM Preferences Applied Indicator */}
+                    {hmPrefsApplied && hmPrefsSource && (
+                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center gap-3">
+                            <User className="w-5 h-5 text-blue-600" />
+                            <div>
+                                <p className="font-bold text-blue-900">Work style preferences applied from {hmPrefsSource}</p>
+                                <p className="text-sm text-blue-700">Team culture, work environment, and trait requirements have been auto-populated.</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Approval Panel */}
+                    <JobApprovalPanel
+                        job={jobData}
+                        teamRole={teamRole}
+                        currentUserId={user?.id}
+                        teamMembers={teamMembers}
+                        teamMembersLoading={teamMembersLoading}
+                        onApprove={handleApprove}
+                        onRequestChanges={handleRequestChanges}
+                        onAssignApprover={handleAssignApprover}
+                    />
+
+                    {/* Approval Assignment Section */}
+                    {permissions.canAssignApprovers && (
+                        <div className="bg-gray-50 p-8 rounded-[2rem] border border-gray-200">
+                            <h3 className="text-sm font-black text-gray-400 uppercase mb-6 flex items-center"><UserCheck className="w-4 h-4 mr-2"/> Assign Approvers</h3>
+                            {teamMembersLoading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Hiring Manager</label>
+                                        <div className="animate-pulse h-14 bg-gray-200 rounded-xl flex items-center justify-center">
+                                            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Finance Approval</label>
+                                        <div className="animate-pulse h-14 bg-gray-200 rounded-xl flex items-center justify-center">
+                                            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : teamMembers.length === 0 ? (
+                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                                    <p className="text-sm text-amber-700 font-medium">
+                                        No team members found. Add team members in Company Settings to assign approvers.
+                                    </p>
+                                    <p className="text-xs text-amber-600 mt-2">
+                                        Team members with roles (admin, hiring_manager, finance) can be assigned as approvers.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Hiring Manager</label>
+                                        {teamMembers.filter(m => m.role === 'hiring_manager' || m.role === 'admin').length === 0 ? (
+                                            <p className="text-sm text-gray-500 p-4 bg-gray-100 rounded-xl">No hiring managers available. Add team members with the "hiring_manager" or "admin" role.</p>
+                                        ) : (
+                                            <select
+                                                value={jobData.approvals?.hiringManager?.assignedTo || ''}
+                                                onChange={e => handleAssignApprover('hiringManager', e.target.value)}
+                                                className="w-full p-4 rounded-xl border bg-white font-bold"
+                                            >
+                                                <option value="">Select Hiring Manager...</option>
+                                                {teamMembers
+                                                    .filter(m => m.role === 'hiring_manager' || m.role === 'admin')
+                                                    .map(m => (
+                                                        <option key={m.id} value={m.user_id || m.id}>
+                                                            {m.name || m.email} ({m.role})
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">Finance Approval</label>
+                                        {teamMembers.filter(m => m.role === 'finance' || m.role === 'admin').length === 0 ? (
+                                            <p className="text-sm text-gray-500 p-4 bg-gray-100 rounded-xl">No finance approvers available. Add team members with the "finance" or "admin" role.</p>
+                                        ) : (
+                                            <select
+                                                value={jobData.approvals?.finance?.assignedTo || ''}
+                                                onChange={e => handleAssignApprover('finance', e.target.value)}
+                                                className="w-full p-4 rounded-xl border bg-white font-bold"
+                                            >
+                                                <option value="">Select Finance Approver...</option>
+                                                {teamMembers
+                                                    .filter(m => m.role === 'finance' || m.role === 'admin')
+                                                    .map(m => (
+                                                        <option key={m.id} value={m.user_id || m.id}>
+                                                            {m.name || m.email} ({m.role})
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            {/* Debug info in dev mode */}
+                            {process.env.NODE_ENV === 'development' && (
+                                <p className="mt-4 text-xs text-gray-400">
+                                    Debug: {teamMembersLoading ? 'Loading...' : `${teamMembers.length} team members loaded`}
+                                    {teamMembers.length > 0 && ` (HM: ${teamMembers.filter(m => m.role === 'hiring_manager' || m.role === 'admin').length}, Finance: ${teamMembers.filter(m => m.role === 'finance' || m.role === 'admin').length})`}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             );
             default: return null;
@@ -387,11 +828,30 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, companyP
             </div>
             <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden min-h-[600px] flex flex-col">
                 <div className="flex-1 p-10 overflow-y-auto">{renderStep()}</div>
-                <div className="bg-gray-50 p-10 border-t flex justify-between items-center">
-                    <button onClick={() => step > 1 ? setStep(step - 1) : onCancel()} className="flex items-center text-gray-400 font-black uppercase tracking-widest hover:text-gray-900 transition-colors"><ArrowLeft className="w-4 h-4 mr-2"/> Back</button>
-                    <div className="flex gap-4">
-                        <button onClick={onCancel} className="px-6 py-4 text-gray-400 font-black uppercase tracking-widest hover:text-gray-900">Cancel</button>
-                        <button onClick={() => step < 5 ? setStep(step + 1) : onPublish(jobData as any)} disabled={!validate()} className={`flex items-center px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl transition-all active:scale-95 ${validate() ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>{step === 5 ? 'Publish Live' : 'Next Step'} <ArrowRight className="w-4 h-4 ml-2"/></button>
+                <div className="bg-gray-50 p-10 border-t">
+                    {/* Warnings display */}
+                    {getStepWarnings(step).length > 0 && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                            <p className="text-amber-800 text-sm font-bold flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" /> Before continuing:
+                            </p>
+                            <ul className="text-amber-700 text-sm mt-2 space-y-1">
+                                {getStepWarnings(step).map(w => <li key={w}>• {w}</li>)}
+                            </ul>
+                        </div>
+                    )}
+                    <div className="flex justify-between items-center">
+                        <button onClick={() => step > 1 ? setStep(step - 1) : onCancel()} className="flex items-center text-gray-400 font-black uppercase tracking-widest hover:text-gray-900 transition-colors"><ArrowLeft className="w-4 h-4 mr-2"/> Back</button>
+                        <div className="flex gap-4">
+                            <button onClick={onCancel} className="px-6 py-4 text-gray-400 font-black uppercase tracking-widest hover:text-gray-900">Cancel</button>
+                            <button
+                                onClick={() => step < 6 ? setStep(step + 1) : onPublish(jobData as any)}
+                                disabled={step === 6 ? !canPublish() : !validate()}
+                                className={`flex items-center px-10 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl transition-all active:scale-95 ${(step === 6 ? canPublish() : validate()) ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                            >
+                                {step === 6 ? 'Publish Live' : 'Next Step'} <ArrowRight className="w-4 h-4 ml-2"/>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -143,3 +143,100 @@ export function calculateWorkEnvironmentMatch(
 
   return { workStyle, teamFit };
 }
+
+// =============================================================================
+// MANAGEMENT FIT MATCHING
+// =============================================================================
+
+interface ManagementMatchInput {
+  preferredLeadershipStyle?: string;
+  preferredFeedbackFrequency?: string;
+  preferredCommunicationStyle?: string;
+  preferredMeetingCulture?: string;
+  preferredConflictResolution?: string;
+  preferredMentorshipStyle?: string;
+  growthGoals?: string;
+}
+
+interface HMManagementPrefs {
+  leadership_style?: string;
+  feedback_frequency?: string;
+  communication_preference?: string;
+  meeting_culture?: string;
+  conflict_resolution?: string;
+  mentorship_approach?: string;
+  growth_expectation?: string;
+}
+
+export function calculateManagementFitScore(
+  candidatePrefs: ManagementMatchInput,
+  hmPrefs: HMManagementPrefs | null | undefined
+): MatchDetails {
+  // No HM prefs = neutral score
+  if (!hmPrefs) {
+    return { score: 70, reason: 'Manager preferences not specified' };
+  }
+
+  // Define field pairs (candidate field -> HM field)
+  const fieldPairs = [
+    ['preferredLeadershipStyle', 'leadership_style'],
+    ['preferredFeedbackFrequency', 'feedback_frequency'],
+    ['preferredCommunicationStyle', 'communication_preference'],
+    ['preferredMeetingCulture', 'meeting_culture'],
+    ['preferredConflictResolution', 'conflict_resolution'],
+    ['preferredMentorshipStyle', 'mentorship_approach'],
+    ['growthGoals', 'growth_expectation'],
+  ] as const;
+
+  let matchCount = 0;
+  let totalCompared = 0;
+  const mismatches: string[] = [];
+
+  for (const [candField, hmField] of fieldPairs) {
+    const candValue = candidatePrefs[candField as keyof ManagementMatchInput];
+    const hmValue = hmPrefs[hmField as keyof HMManagementPrefs];
+
+    // Only compare if both have values
+    if (candValue && hmValue) {
+      totalCompared++;
+      if (candValue === hmValue) {
+        matchCount++;
+      } else {
+        // Add human-readable mismatch
+        const labels: Record<string, string> = {
+          preferredLeadershipStyle: 'leadership',
+          preferredFeedbackFrequency: 'feedback',
+          preferredCommunicationStyle: 'communication',
+          preferredMeetingCulture: 'meetings',
+          preferredConflictResolution: 'conflict handling',
+          preferredMentorshipStyle: 'mentorship',
+          growthGoals: 'growth path',
+        };
+        mismatches.push(labels[candField] || candField);
+      }
+    }
+  }
+
+  // Calculate score
+  // Base 40, up to 60 bonus points based on match rate
+  let score: number;
+  if (totalCompared === 0) {
+    score = 70; // No data to compare
+  } else {
+    score = Math.round(40 + (60 * matchCount / totalCompared));
+  }
+
+  // Generate reason
+  let reason: string;
+  if (totalCompared === 0) {
+    reason = 'Insufficient preference data';
+  } else if (matchCount === totalCompared) {
+    reason = 'Excellent management style alignment';
+  } else if (mismatches.length <= 2) {
+    reason = `Different preferences: ${mismatches.join(', ')}`;
+  } else {
+    reason = `${mismatches.length} preference differences`;
+  }
+
+  return { score, reason };
+}

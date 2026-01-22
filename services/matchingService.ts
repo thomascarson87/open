@@ -1,5 +1,5 @@
 import { CandidateProfile, JobPosting, MatchBreakdown, JobType, WorkMode, JobSkill, TalentSearchCriteria, MatchDetails, Skill, VerifiedSkillStats, CompanyProfile } from '../types';
-import { calculateWorkStyleMatch, calculateTeamCollabMatch } from './workStyleMatchingService';
+import { calculateWorkStyleMatch, calculateTeamCollabMatch, calculateManagementFitScore } from './workStyleMatchingService';
 
 interface VerificationBoost {
   skillsMultiplier: number;
@@ -280,6 +280,21 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
     job.relocationAssistance
   );
 
+  // Management Fit: match candidate preferences against HM preferences
+  const hmPrefs = (job as any).hiring_manager_preferences || (job as any).hiringManagerPreferences;
+  const managementFitMatch = calculateManagementFitScore(
+    {
+      preferredLeadershipStyle: candidate.preferredLeadershipStyle,
+      preferredFeedbackFrequency: candidate.preferredFeedbackFrequency,
+      preferredCommunicationStyle: candidate.preferredCommunicationStyle,
+      preferredMeetingCulture: candidate.preferredMeetingCulture,
+      preferredConflictResolution: candidate.preferredConflictResolution,
+      preferredMentorshipStyle: candidate.preferredMentorshipStyle,
+      growthGoals: candidate.growthGoals,
+    },
+    hmPrefs
+  );
+
   let salaryScore = 100;
   if (job.salaryMax && candidate.salaryMin && candidate.salaryMin > job.salaryMax) salaryScore = 0;
   
@@ -287,21 +302,22 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
   let seniorityScore = (candidate.desiredSeniority || []).includes(job.seniority) || (candidate.desiredSeniority||[]).length === 0 ? 100 : 50;
   
   const DIMENSION_WEIGHTS = {
-    skills: 0.22,
-    seniority: 0.08,
-    salary: 0.10,
-    industry: 0.06,
+    skills: 0.20,
+    seniority: 0.07,
+    salary: 0.09,
+    industry: 0.05,
     companySize: 0.04,
-    culture: 0.06,
+    culture: 0.05,
     perks: 0.04,
     location: 0.04,
-    workStyle: 0.08,
+    workStyle: 0.07,
     teamFit: 0.06,
     performance: 0.04,
-    language: 0.06,
-    timezone: 0.06,
+    language: 0.05,
+    timezone: 0.05,
     visa: 0.03,
-    relocation: 0.03
+    relocation: 0.03,
+    managementFit: 0.09  // New: manager style alignment
   };
 
   const perfMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
@@ -319,7 +335,8 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
       (languageMatch.score * DIMENSION_WEIGHTS.language) +
       (timezoneMatch.score * DIMENSION_WEIGHTS.timezone) +
       (visaRelocationMatch.score * (DIMENSION_WEIGHTS.visa + DIMENSION_WEIGHTS.relocation)) +
-      (100 * 0.10) // Culture/Perks placeholder
+      (managementFitMatch.score * DIMENSION_WEIGHTS.managementFit) +
+      (100 * (DIMENSION_WEIGHTS.culture + DIMENSION_WEIGHTS.perks)) // Culture/Perks placeholder
   );
 
   const dealBreakers: string[] = [];
@@ -348,7 +365,8 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
           language: languageMatch,
           timezone: timezoneMatch,
           visa: visaRelocationMatch,
-          relocation: visaRelocationMatch
+          relocation: visaRelocationMatch,
+          managementFit: managementFitMatch
       },
       dealBreakers,
       recommendations: []

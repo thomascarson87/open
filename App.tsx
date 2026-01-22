@@ -6,9 +6,9 @@ import Navigation from './components/Navigation';
 import CandidateProfileForm from './components/CandidateProfileForm';
 import CompanyProfile from './components/CompanyProfile';
 import EnrichedJobCard from './components/EnrichedJobCard';
+import EnrichedCandidateCard from './components/EnrichedCandidateCard';
 import JobDetailModal from './components/JobDetailModal';
 import MatchWeightingPanel, { MatchWeights } from './components/MatchWeightingPanel';
-import CandidateCard from './components/CandidateCard';
 import CandidateDetails from './components/CandidateDetails';
 import CandidateDetailsLocked from './components/CandidateDetailsLocked';
 import RecruiterATS from './components/RecruiterATS';
@@ -26,7 +26,9 @@ import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
 import VerificationForm from './components/VerificationForm';
 import CandidateProfileTabs from './components/CandidateProfileTabs';
-import DevPanel from './components/DevPanel';
+import DevModeSwitcher from './components/dev/DevModeSwitcher';
+import HiringManagerPreferences from './pages/HiringManagerPreferences';
+import PendingApprovals from './pages/PendingApprovals';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
 import { Loader2, Briefcase } from 'lucide-react';
 import { messageService } from './services/messageService';
@@ -162,7 +164,15 @@ const mapCandidateFromDB = (data: any): CandidateProfile => {
         preferredTimezone: data.preferred_timezone,
         preferredCompanySize: data.preferred_company_size || [],
         willingToRelocate: data.willing_to_relocate,
-        openToEquity: data.open_to_equity
+        openToEquity: data.open_to_equity,
+        // Management Preferences
+        preferredLeadershipStyle: data.preferred_leadership_style,
+        preferredFeedbackFrequency: data.preferred_feedback_frequency,
+        preferredCommunicationStyle: data.preferred_communication_style,
+        preferredMeetingCulture: data.preferred_meeting_culture,
+        preferredConflictResolution: data.preferred_conflict_resolution,
+        preferredMentorshipStyle: data.preferred_mentorship_style,
+        growthGoals: data.growth_goals
     };
 };
 
@@ -233,7 +243,7 @@ function calculateWeightedScore(baseMatch: any, weights: MatchWeights): number {
 }
 
 function MainApp() {
-    const { user, signOut } = useAuth();
+    const { user, signOut, companyId: authCompanyId, teamRole } = useAuth();
     const [userRole, setUserRole] = useState<Role>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
     const [currentView, setCurrentView] = useState('dashboard');
@@ -277,6 +287,7 @@ function MainApp() {
     const [candidatesList, setCandidatesList] = useState<CandidateProfile[]>([]);
     const [connections, setConnections] = useState<Connection[]>([]);
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+    const [teamMembersLoading, setTeamMembersLoading] = useState(true);
     const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
     const [companyProfile, setCompanyProfile] = useState<CompanyProfileType | null>(null);
     const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
@@ -329,15 +340,34 @@ function MainApp() {
     const loadRoleData = async (role: Role) => {
         try {
             if (role === 'candidate') {
+                setTeamMembersLoading(false); // Not applicable for candidates
                 const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
                 if (cand) setCandidateProfile(mapCandidateFromDB(cand));
             } else {
-                const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', user?.id).maybeSingle();
+                // Use authCompanyId from context (handles dev mode), fallback to user.id
+                const effectiveCompanyId = authCompanyId || user?.id;
+                console.log('[App] Loading role data for company:', effectiveCompanyId);
+
+                const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', effectiveCompanyId).maybeSingle();
                 if (comp) setCompanyProfile(mapCompanyFromDB(comp));
-                const { data: team } = await supabase.from('team_members').select('*').eq('company_id', user?.id);
+
+                // Fetch team members for the company
+                setTeamMembersLoading(true);
+                const { data: team, error: teamError } = await supabase
+                    .from('team_members')
+                    .select('*')
+                    .eq('company_id', effectiveCompanyId);
+
+                console.log('[App] Team members fetch result:', { team, teamError, companyId: effectiveCompanyId });
                 if (team) setTeamMembers(team);
+                setTeamMembersLoading(false);
             }
-        } catch (e) { console.error(e); } finally { setIsLoadingProfile(false); }
+        } catch (e) {
+            console.error(e);
+            setTeamMembersLoading(false);
+        } finally {
+            setIsLoadingProfile(false);
+        }
     };
 
     const handleTeamMemberUpdate = () => {
@@ -395,7 +425,15 @@ function MainApp() {
                 salary_max: profile.salaryMax, education_graduation_year: profile.education_graduation_year,
                 call_ready: profile.callReady, call_link: profile.callLink, preferred_timezone: profile.preferredTimezone,
                 preferred_company_size: profile.preferredCompanySize || [], willing_to_relocate: profile.willingToRelocate,
-                open_to_equity: profile.openToEquity
+                open_to_equity: profile.openToEquity,
+                // Management Preferences
+                preferred_leadership_style: profile.preferredLeadershipStyle,
+                preferred_feedback_frequency: profile.preferredFeedbackFrequency,
+                preferred_communication_style: profile.preferredCommunicationStyle,
+                preferred_meeting_culture: profile.preferredMeetingCulture,
+                preferred_conflict_resolution: profile.preferredConflictResolution,
+                preferred_mentorship_style: profile.preferredMentorshipStyle,
+                growth_goals: profile.growthGoals
             }).eq('id', user.id);
             if (error) throw error;
             setCandidateProfile(profile);
@@ -539,7 +577,7 @@ function MainApp() {
                     return <ApplicationHub />;
                 }
                 return <Schedule />;
-            case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} companyProfile={companyProfile} />;
+            case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} teamMembersLoading={teamMembersLoading} companyProfile={companyProfile} />;
             case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={(id) => setCandidatesList(prev => prev.map(c => c.id === id ? {...c, isUnlocked: true} : c))} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
             case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={(id) => setSelectedCandidate({...selectedCandidate, isUnlocked: true})} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} />);
             case 'my-jobs': return <RecruiterMyJobs />;
@@ -551,6 +589,8 @@ function MainApp() {
             case 'applications':
                 return <ApplicationHub />;
             case 'notifications': return <Notifications notifications={notifications} />;
+            case 'hm-preferences': return <HiringManagerPreferences />;
+            case 'pending-approvals': return <PendingApprovals />;
             default: 
                 if (userRole === 'candidate') {
                     return (
@@ -618,7 +658,23 @@ function MainApp() {
                         </div>
                     );
                 }
-                return <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{candidatesList.map(c => <CandidateCard key={c.id} candidate={c} onUnlock={(id) => setSelectedCandidate({...c, isUnlocked: true})} onMessage={navigateToMessage} onSchedule={() => {}} onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} />)}</div>;
+                return (
+                    <div className="max-w-[1400px] mx-auto px-4 py-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {candidatesList.map(c => (
+                                <EnrichedCandidateCard
+                                    key={c.id}
+                                    candidate={c}
+                                    onViewProfile={(candidate) => { setSelectedCandidate(candidate); setCurrentView('candidate-details'); }}
+                                    onUnlock={(id) => setCandidatesList(prev => prev.map(cand => cand.id === id ? {...cand, isUnlocked: true} : cand))}
+                                    onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }}
+                                    onMessage={navigateToMessage}
+                                    showMatchBreakdown={false}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                );
         }
     };
 
@@ -680,7 +736,7 @@ export default function App() {
     return (
         <AuthProvider>
             {renderRoute()}
-            <DevPanel />
+            <DevModeSwitcher />
         </AuthProvider>
     );
 }

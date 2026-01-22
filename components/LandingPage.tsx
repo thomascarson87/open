@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { User, Briefcase, ArrowRight, CheckCircle, MapPin, DollarSign, Clock, Layout, Menu, X } from 'lucide-react';
+import { User, Briefcase, ArrowRight, CheckCircle, Menu, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import ForCompaniesInfo from './landing/ForCompaniesInfo';
 import ForTalentInfo from './landing/ForTalentInfo';
+import EnrichedCandidateCard from './EnrichedCandidateCard';
+import EnrichedJobCard from './EnrichedJobCard';
+import { CandidateProfile, JobPosting } from '../types';
 
 interface Props {
     onSelectRole: (role: 'candidate' | 'recruiter') => void;
@@ -144,52 +147,46 @@ const LandingHomeContent: React.FC<Props & { setFeedType: (t: 'jobs' | 'talent')
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-8 duration-500">
                         {feedType === 'jobs' ? (
-                            jobs.length > 0 ? jobs.map(job => (
-                                <div 
-                                    key={job.id} 
-                                    onClick={() => handleCardClick('job')}
-                                    className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition-all duration-300 cursor-pointer group flex flex-col h-full"
-                                >
-                                    <div className="mb-4">
-                                        <div className="h-4 w-24 bg-gray-100 rounded blur-[2px] mb-2 select-none opacity-60">Company Inc</div>
-                                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{job.title}</h3>
-                                    </div>
-                                    
-                                    <div className="space-y-3 mb-6 flex-grow">
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                                            {job.location}
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
-                                            {job.salary_range || (job.salary_min ? `$${(job.salary_min/1000).toFixed(0)}k+` : 'Competitive')}
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                                            {job.work_mode || 'Remote'}
-                                        </div>
-                                    </div>
+                            jobs.length > 0 ? jobs.map((job: any) => {
+                                // Transform raw DB job to JobPosting shape for the card
+                                const mappedJob: JobPosting = {
+                                    id: job.id,
+                                    company_id: job.company_id || '',
+                                    companyName: job.company_name || 'Company',
+                                    companyLogo: job.company_logo,
+                                    title: job.title || '',
+                                    description: job.description || '',
+                                    location: job.location || 'Remote',
+                                    salaryRange: job.salary_range || '',
+                                    salaryMin: job.salary_min,
+                                    salaryMax: job.salary_max,
+                                    salaryCurrency: job.salary_currency || 'USD',
+                                    seniority: job.seniority || 'Mid Level',
+                                    contractTypes: job.contract_types || [],
+                                    workMode: job.work_mode || 'Remote',
+                                    requiredSkills: (job.required_skills || []).map((s: any) => ({
+                                        name: typeof s === 'string' ? s : s.name,
+                                        required_level: s.required_level || 3,
+                                        weight: s.weight || 'preferred'
+                                    })),
+                                    values: job.values_list || [],
+                                    perks: job.perks || [],
+                                    desiredTraits: job.desired_traits || [],
+                                    requiredTraits: job.required_traits || [],
+                                    postedDate: job.posted_date || job.created_at || new Date().toISOString(),
+                                    status: job.status || 'published'
+                                };
 
-                                    <div className="space-y-3">
-                                        <div className="flex flex-wrap gap-2">
-                                            {(job.required_skills || []).slice(0, 3).map((skill: any, i: number) => (
-                                                <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
-                                                    {typeof skill === 'string' ? skill : skill.name}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {job.values_list && job.values_list.length > 0 && (
-                                            <div className="text-xs text-gray-500 pt-2 border-t border-gray-50">
-                                                <span className="font-medium text-gray-700">Values:</span> {job.values_list.slice(0, 2).join(', ')}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-6 pt-4 border-t border-gray-100 text-sm font-bold text-blue-600 flex items-center group-hover:translate-x-1 transition-transform">
-                                        View Role <ArrowRight className="w-4 h-4 ml-2" />
-                                    </div>
-                                </div>
-                            )) : (
+                                return (
+                                    <EnrichedJobCard
+                                        key={job.id}
+                                        job={mappedJob}
+                                        onApply={() => handleCardClick('job')}
+                                        onViewDetails={() => handleCardClick('job')}
+                                        isPreview={true}
+                                    />
+                                );
+                            }) : (
                                 <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
                                     <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                                     <h3 className="text-lg font-bold text-gray-900">No open roles yet</h3>
@@ -197,57 +194,49 @@ const LandingHomeContent: React.FC<Props & { setFeedType: (t: 'jobs' | 'talent')
                                 </div>
                             )
                         ) : (
-                            candidates.length > 0 ? candidates.map(candidate => (
-                                <div 
-                                    key={candidate.id} 
-                                    onClick={() => handleCardClick('candidate')}
-                                    className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-gray-300 transition-all duration-300 cursor-pointer group flex flex-col h-full"
-                                >
-                                    <div className="mb-4 flex items-start justify-between">
-                                        <div>
-                                            <div className="h-5 w-32 bg-gray-200 rounded blur-[3px] mb-2 select-none opacity-60">Candidate Name</div>
-                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">{candidate.headline}</h3>
-                                        </div>
-                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm">
-                                            {candidate.matchScore ? candidate.matchScore + '%' : '95%'}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="space-y-3 mb-6 flex-grow">
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                                            {candidate.location}
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
-                                            {candidate.salary_expectation ? `$${candidate.salary_expectation}+` : 'Open'}
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <Layout className="w-4 h-4 mr-2 text-gray-400" />
-                                            {(candidate.preferred_work_mode || []).join(', ') || 'Remote'}
-                                        </div>
-                                    </div>
+                            candidates.length > 0 ? candidates.map(candidate => {
+                                // Transform raw DB candidate to CandidateProfile shape for the card
+                                const candidateProfile: CandidateProfile = {
+                                    id: candidate.id,
+                                    user_id: candidate.user_id || '',
+                                    name: candidate.name || 'Hidden Name',
+                                    headline: candidate.headline || '',
+                                    email: candidate.email || '',
+                                    location: candidate.location || 'Remote',
+                                    bio: candidate.bio || '',
+                                    status: candidate.status || 'open_to_offers',
+                                    skills: candidate.skills || [],
+                                    values: candidate.values_list || [],
+                                    characterTraits: candidate.character_traits || [],
+                                    salaryMin: candidate.salary_min || 0,
+                                    salaryMax: candidate.salary_max,
+                                    salaryCurrency: candidate.salary_currency || 'USD',
+                                    preferredWorkMode: candidate.preferred_work_mode || [],
+                                    desiredPerks: candidate.desired_perks || [],
+                                    interestedIndustries: candidate.interested_industries || [],
+                                    desiredImpactScopes: candidate.desired_impact_scopes || [],
+                                    contractTypes: candidate.contract_types || [],
+                                    noticePeriod: candidate.notice_period || '',
+                                    nonNegotiables: candidate.non_negotiables || [],
+                                    onboarding_completed: candidate.onboarding_completed || false,
+                                    created_at: candidate.created_at || '',
+                                    updated_at: candidate.updated_at || '',
+                                    isUnlocked: false, // Always locked on landing page
+                                    matchScore: candidate.matchScore || 85 // Default score for preview
+                                };
 
-                                    <div className="space-y-3">
-                                        <div className="flex flex-wrap gap-2">
-                                            {(candidate.skills || []).slice(0, 3).map((skill: any, i: number) => (
-                                                <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold border border-gray-200">
-                                                    {typeof skill === 'string' ? skill : skill.name}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {candidate.values_list && candidate.values_list.length > 0 && (
-                                            <div className="text-xs text-gray-500 pt-2 border-t border-gray-50">
-                                                <span className="font-medium text-gray-700">Values:</span> {candidate.values_list.slice(0, 2).join(', ')}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-6 pt-4 border-t border-gray-100 text-sm font-bold text-blue-600 flex items-center group-hover:translate-x-1 transition-transform">
-                                        View Profile <ArrowRight className="w-4 h-4 ml-2" />
-                                    </div>
-                                </div>
-                            )) : (
+                                return (
+                                    <EnrichedCandidateCard
+                                        key={candidate.id}
+                                        candidate={candidateProfile}
+                                        onViewProfile={() => handleCardClick('candidate')}
+                                        onUnlock={() => handleCardClick('candidate')}
+                                        onSchedule={() => handleCardClick('candidate')}
+                                        onMessage={() => handleCardClick('candidate')}
+                                        showMatchBreakdown={false}
+                                    />
+                                );
+                            }) : (
                                 <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
                                     <User className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                                     <h3 className="text-lg font-bold text-gray-900">No candidates visible</h3>

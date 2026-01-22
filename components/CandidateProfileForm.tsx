@@ -102,6 +102,15 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   if (profile.callReady !== undefined) mapping.call_ready = profile.callReady;
   if (profile.callLink !== undefined) mapping.call_link = profile.callLink;
 
+  // Management Preferences
+  if (profile.preferredLeadershipStyle !== undefined) mapping.preferred_leadership_style = profile.preferredLeadershipStyle;
+  if (profile.preferredFeedbackFrequency !== undefined) mapping.preferred_feedback_frequency = profile.preferredFeedbackFrequency;
+  if (profile.preferredCommunicationStyle !== undefined) mapping.preferred_communication_style = profile.preferredCommunicationStyle;
+  if (profile.preferredMeetingCulture !== undefined) mapping.preferred_meeting_culture = profile.preferredMeetingCulture;
+  if (profile.preferredConflictResolution !== undefined) mapping.preferred_conflict_resolution = profile.preferredConflictResolution;
+  if (profile.preferredMentorshipStyle !== undefined) mapping.preferred_mentorship_style = profile.preferredMentorshipStyle;
+  if (profile.growthGoals !== undefined) mapping.growth_goals = profile.growthGoals;
+
   // Always update timestamp
   mapping.updated_at = new Date().toISOString();
   

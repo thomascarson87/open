@@ -2,18 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { JobPosting } from '../types';
-import { 
-  Briefcase, 
-  Users, 
-  TrendingUp, 
-  MoreVertical, 
-  Edit, 
-  Archive, 
+import { ApprovalBadge } from './JobApprovalPanel';
+import { canUserApproveJob } from '../services/approvalService';
+import {
+  Briefcase,
+  Users,
+  TrendingUp,
+  MoreVertical,
+  Edit,
+  Archive,
   Eye,
   BarChart3,
   Plus,
   Search,
-  Trash2
+  Trash2,
+  Clock,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 // Extended type for internal use
@@ -23,10 +28,10 @@ interface JobWithStats extends JobPosting {
   recentApplications: number; // Last 7 days
 }
 
-type JobStatusFilter = 'all' | 'published' | 'pending_approval' | 'draft' | 'closed';
+type JobStatusFilter = 'all' | 'published' | 'pending_approval' | 'pending_my_approval' | 'draft' | 'closed';
 
 const RecruiterMyJobs: React.FC = () => {
-  const { user } = useAuth();
+  const { user, teamRole } = useAuth();
   const [jobs, setJobs] = useState<JobWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<JobStatusFilter>('all');
@@ -158,12 +163,26 @@ const RecruiterMyJobs: React.FC = () => {
     loadJobs();
   };
 
+  // Check if job is pending current user's approval
+  const isPendingMyApproval = (job: JobWithStats): boolean => {
+    if (!user?.id || !teamRole) return false;
+    const { canApprove } = canUserApproveJob(job, user.id, teamRole);
+    return canApprove;
+  };
+
   // Filter and sort jobs
   const filteredJobs = jobs
-    .filter(job => 
-      searchQuery === '' || 
-      job.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter(job => {
+      // Search filter
+      if (searchQuery !== '' && !job.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      // Status filter - special handling for pending_my_approval
+      if (statusFilter === 'pending_my_approval') {
+        return isPendingMyApproval(job);
+      }
+      return true;
+    })
     .sort((a, b) => {
       if (sortBy === 'date') {
         return new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime();
@@ -253,17 +272,18 @@ const RecruiterMyJobs: React.FC = () => {
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         {/* Status Filter Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {['all', 'published', 'pending_approval', 'draft', 'closed'].map(status => (
+          {['all', 'published', 'pending_my_approval', 'pending_approval', 'draft', 'closed'].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status as JobStatusFilter)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                 statusFilter === status
                   ? 'bg-gray-900 text-white shadow-md'
                   : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {status === 'all' ? 'All' : getStatusLabel(status)}
+              {status === 'pending_my_approval' && <Clock className="w-3.5 h-3.5" />}
+              {status === 'all' ? 'All' : status === 'pending_my_approval' ? 'My Approvals' : getStatusLabel(status)}
             </button>
           ))}
         </div>
@@ -319,8 +339,11 @@ const RecruiterMyJobs: React.FC = () => {
               key={job.id}
               className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-6 group relative"
             >
-              {/* Status Badge */}
-              <div className="absolute top-4 right-4">
+              {/* Status & Approval Badges */}
+              <div className="absolute top-4 right-4 flex items-center gap-2">
+                {job.status === 'pending_approval' && (
+                  <ApprovalBadge job={job} />
+                )}
                 <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(job.status)}`}>
                   {getStatusLabel(job.status)}
                 </span>
@@ -372,25 +395,37 @@ const RecruiterMyJobs: React.FC = () => {
                   
                   {/* Dropdown Menu */}
                   <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-200 hidden group-hover/menu:block z-10 p-1">
-                    <button 
+                    {isPendingMyApproval(job) && (
+                      <button
+                        onClick={() => window.location.href = '/?view=pending-approvals'}
+                        className="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 rounded-lg flex items-center"
+                      >
+                        <Clock className="w-4 h-4 mr-2" /> Review & Approve
+                      </button>
+                    )}
+                    <button
                       onClick={() => handleArchiveJob(job.id)}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center"
                     >
                       <Archive className="w-4 h-4 mr-2" /> Archive
                     </button>
-                    <button 
+                    <button
                       onClick={() => {}}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center"
                     >
                       <BarChart3 className="w-4 h-4 mr-2" /> Analytics
                     </button>
-                    <div className="h-px bg-gray-100 my-1"></div>
-                    <button 
-                      onClick={() => handleDeleteJob(job.id)}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" /> Delete
-                    </button>
+                    {teamRole === 'admin' && (
+                      <>
+                        <div className="h-px bg-gray-100 my-1"></div>
+                        <button
+                          onClick={() => handleDeleteJob(job.id)}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

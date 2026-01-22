@@ -6,20 +6,22 @@ import SkillIcon from './SkillIcon';
 
 interface Props {
   job: JobPosting;
-  companyProfile: CompanyProfile;
-  matchResult: MatchBreakdown;
-  weightedScore: number;
+  companyProfile?: CompanyProfile | null;
+  matchResult?: MatchBreakdown;
+  weightedScore?: number;
   onApply: (jobId: string) => void;
   onViewDetails: (job: JobPosting) => void;
+  isPreview?: boolean;
 }
 
-const EnrichedJobCard: React.FC<Props> = ({ 
-  job, 
-  companyProfile, 
-  matchResult, 
-  weightedScore, 
-  onApply, 
-  onViewDetails 
+const EnrichedJobCard: React.FC<Props> = ({
+  job,
+  companyProfile,
+  matchResult,
+  weightedScore = 0,
+  onApply,
+  onViewDetails,
+  isPreview = false
 }) => {
   const getMatchColorClass = (score: number) => {
     if (score >= 80) return 'text-green-600';
@@ -59,38 +61,41 @@ const EnrichedJobCard: React.FC<Props> = ({
       className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full group"
     >
       {/* Header: Match Score & Actions */}
-      <div className="px-6 pt-6 pb-4 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`text-2xl font-black flex items-center gap-1.5 ${getMatchColorClass(weightedScore)}`}>
-            <Zap className="w-6 h-6 fill-current" /> {weightedScore}% Match
-          </div>
-          {weightedScore !== matchResult.overallScore && (
-            <div className="bg-gray-50 px-2 py-0.5 rounded text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-              Adjusted Feed
+      {!isPreview && matchResult && (
+        <div className="px-6 pt-6 pb-4 flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`text-2xl font-black flex items-center gap-1.5 ${getMatchColorClass(weightedScore)}`}>
+              <Zap className="w-6 h-6 fill-current" /> {weightedScore}% Match
             </div>
-          )}
+            {weightedScore !== matchResult.overallScore && (
+              <div className="bg-gray-50 px-2 py-0.5 rounded text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                Adjusted Feed
+              </div>
+            )}
+          </div>
+          <div className="flex gap-1">
+            <button onClick={(e) => { e.stopPropagation(); }} className="p-2 text-gray-300 hover:text-pink-500 hover:bg-pink-50 rounded-xl transition-colors">
+              <Heart className="w-5 h-5" />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); }} className="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-        <div className="flex gap-1">
-          <button onClick={(e) => { e.stopPropagation(); }} className="p-2 text-gray-300 hover:text-pink-500 hover:bg-pink-50 rounded-xl transition-colors">
-            <Heart className="w-5 h-5" />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); }} className="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      )}
+      {isPreview && <div className="pt-6" />}
 
       {/* Job Info */}
       <div className="px-6 mb-4">
         <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-600 transition-colors mb-2 line-clamp-1">
           {job.title}
         </h3>
-        
+
         <div className="flex items-center gap-3">
-          {(companyProfile.logoUrl && companyProfile.logoUrl.trim()) ? (
+          {(companyProfile?.logoUrl && companyProfile.logoUrl.trim()) ? (
             <>
-              <img 
-                src={companyProfile.logoUrl} 
+              <img
+                src={companyProfile.logoUrl}
                 alt={companyProfile.companyName}
                 className="w-10 h-10 rounded-xl object-cover border border-gray-100 shadow-sm"
                 onError={(e) => {
@@ -108,15 +113,19 @@ const EnrichedJobCard: React.FC<Props> = ({
               <Building2 className="w-5 h-5 text-gray-400" />
             </div>
           )}
-          
+
           <div className="min-w-0">
-            <div className="font-bold text-gray-900 truncate leading-tight">
-              {companyProfile.companyName}
-            </div>
+            {isPreview ? (
+              <div className="h-5 w-32 bg-gray-200 rounded blur-[3px] select-none opacity-60 mb-1">Company</div>
+            ) : (
+              <div className="font-bold text-gray-900 truncate leading-tight">
+                {companyProfile?.companyName || job.companyName || 'Company'}
+              </div>
+            )}
             <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-wider">
-              <span>{companyProfile.fundingStage || 'Early Stage'}</span>
+              <span>{companyProfile?.fundingStage || 'Early Stage'}</span>
               <span className="opacity-30">•</span>
-              <span>{companyProfile.teamSize ? `${companyProfile.teamSize} people` : companyProfile.companySizeRange}</span>
+              <span>{companyProfile?.teamSize ? `${companyProfile.teamSize} people` : companyProfile?.companySizeRange || 'Growing Team'}</span>
             </div>
           </div>
         </div>
@@ -146,73 +155,104 @@ const EnrichedJobCard: React.FC<Props> = ({
         </p>
       </div>
 
-      {/* Match Breakdown Grid */}
-      <div className="px-6 mb-6">
-        <div className="bg-gray-50/80 rounded-[1.5rem] p-4 border border-gray-100">
-          <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Match Breakdown</div>
-          <div className="grid grid-cols-4 gap-2">
-            {/* Skills */}
-            <div className="space-y-1.5 text-center">
-              <div className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Skills</div>
-              <div className="text-sm font-black text-gray-900">{matchResult.details.skills.score}%</div>
-              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-600" style={{ width: `${matchResult.details.skills.score}%` }} />
+      {/* Match Breakdown Grid - Hidden in Preview Mode */}
+      {!isPreview && matchResult && (
+        <div className="px-6 mb-6">
+          <div className="bg-gray-50/80 rounded-[1.5rem] p-4 border border-gray-100">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Match Breakdown</div>
+            <div className="grid grid-cols-4 gap-2">
+              {/* Skills */}
+              <div className="space-y-1.5 text-center">
+                <div className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Skills</div>
+                <div className="text-sm font-black text-gray-900">{matchResult.details.skills.score}%</div>
+                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600" style={{ width: `${matchResult.details.skills.score}%` }} />
+                </div>
+              </div>
+              {/* Salary */}
+              <div className="space-y-1.5 text-center">
+                <div className="text-[9px] font-black text-green-600 uppercase tracking-widest">Salary</div>
+                <div className="text-sm font-black text-gray-900">{matchResult.details.salary.score}%</div>
+                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-600" style={{ width: `${matchResult.details.salary.score}%` }} />
+                </div>
+              </div>
+              {/* Values */}
+              <div className="space-y-1.5 text-center">
+                <div className="text-[9px] font-black text-purple-600 uppercase tracking-widest">Values</div>
+                <div className="text-sm font-black text-gray-900">{matchResult.details.culture.score}%</div>
+                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-purple-600" style={{ width: `${matchResult.details.culture.score}%` }} />
+                </div>
+              </div>
+              {/* Culture */}
+              <div className="space-y-1.5 text-center">
+                <div className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Culture</div>
+                <div className="text-sm font-black text-gray-900">{matchResult.details.traits.score}%</div>
+                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-orange-600" style={{ width: `${matchResult.details.traits.score}%` }} />
+                </div>
               </div>
             </div>
-            {/* Salary */}
-            <div className="space-y-1.5 text-center">
-              <div className="text-[9px] font-black text-green-600 uppercase tracking-widest">Salary</div>
-              <div className="text-sm font-black text-gray-900">{matchResult.details.salary.score}%</div>
-              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-green-600" style={{ width: `${matchResult.details.salary.score}%` }} />
-              </div>
-            </div>
-            {/* Values */}
-            <div className="space-y-1.5 text-center">
-              <div className="text-[9px] font-black text-purple-600 uppercase tracking-widest">Values</div>
-              <div className="text-sm font-black text-gray-900">{matchResult.details.culture.score}%</div>
-              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-600" style={{ width: `${matchResult.details.culture.score}%` }} />
-              </div>
-            </div>
-            {/* Culture */}
-            <div className="space-y-1.5 text-center">
-              <div className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Culture</div>
-              <div className="text-sm font-black text-gray-900">{matchResult.details.traits.score}%</div>
-              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-600" style={{ width: `${matchResult.details.traits.score}%` }} />
-              </div>
+
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {job.requiredSkills.slice(0, 3).map(skill => (
+                <div key={skill.name} className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-gray-100 shadow-sm">
+                  <SkillIcon skillName={skill.name} size={12} showFallback={false} />
+                  <span className="text-[10px] font-bold text-gray-700">{skill.name}</span>
+                </div>
+              ))}
+              {job.requiredSkills.length > 3 && (
+                <div className="text-[9px] font-black text-gray-400 px-1 pt-1">+{job.requiredSkills.length - 3} more</div>
+              )}
             </div>
           </div>
-          
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {job.requiredSkills.slice(0, 3).map(skill => (
-              <div key={skill.name} className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-gray-100 shadow-sm">
+        </div>
+      )}
+
+      {/* Skills section for Preview Mode */}
+      {isPreview && (
+        <div className="px-6 mb-6">
+          <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Required Skills</div>
+          <div className="flex flex-wrap gap-1.5">
+            {job.requiredSkills.slice(0, 4).map(skill => (
+              <div key={skill.name} className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
                 <SkillIcon skillName={skill.name} size={12} showFallback={false} />
                 <span className="text-[10px] font-bold text-gray-700">{skill.name}</span>
               </div>
             ))}
-            {job.requiredSkills.length > 3 && (
-              <div className="text-[9px] font-black text-gray-400 px-1 pt-1">+{job.requiredSkills.length - 3} more</div>
+            {job.requiredSkills.length > 4 && (
+              <div className="text-[9px] font-black text-gray-400 px-1 pt-1">+{job.requiredSkills.length - 4} more</div>
             )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Footer Actions */}
       <div className="px-6 pb-6 mt-auto flex gap-3">
-        <button 
-          onClick={(e) => { e.stopPropagation(); onApply(job.id); }}
-          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform active:scale-95 flex items-center justify-center gap-2"
-        >
-          Apply Now
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onViewDetails(job); }}
-          className="px-4 py-3 bg-gray-50 text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-100 transition-colors"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        {isPreview ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onViewDetails(job); }}
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform active:scale-95 flex items-center justify-center gap-2"
+          >
+            View Role <ChevronRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); onApply(job.id); }}
+              className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform active:scale-95 flex items-center justify-center gap-2"
+            >
+              Apply Now
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onViewDetails(job); }}
+              className="px-4 py-3 bg-gray-50 text-gray-900 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-100 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
