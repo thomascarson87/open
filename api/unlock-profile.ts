@@ -116,11 +116,11 @@ export default async function handler(
       } satisfies ErrorResponse);
     }
 
-    // 4. Get user's profile with company_id and role
+    // 4. Get user profile — profiles.id IS the user ID (FK to auth.users)
     const { data: profile, error: profileError } = await supabaseServer
       .from('profiles')
-      .select('id, role, company_id')
-      .eq('user_id', user.id)
+      .select('id, role, email')
+      .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
@@ -144,7 +144,7 @@ export default async function handler(
       await logAuditEvent({
         action: 'unlock_profile_attempt',
         userId: user.id,
-        companyId: profile.company_id,
+        companyId: null,
         candidateId,
         metadata: { error: 'Not a recruiter', role: profile.role },
         success: false,
@@ -156,46 +156,30 @@ export default async function handler(
       } satisfies ErrorResponse);
     }
 
-    const companyId = profile.company_id;
-
-    if (!companyId) {
-      await logAuditEvent({
-        action: 'unlock_profile_attempt',
-        userId: user.id,
-        companyId: null,
-        candidateId,
-        metadata: { error: 'No company association' },
-        success: false,
-      });
-      return res.status(403).json({
-        success: false,
-        error: 'User is not associated with a company.',
-        code: 'UNAUTHORIZED',
-      } satisfies ErrorResponse);
-    }
-
-    // 6. Get current credit balance from company_profiles
+    // 6. Get company profile — for recruiters, company_profiles.id = profiles.id
     const { data: company, error: companyError } = await supabaseServer
       .from('company_profiles')
       .select('id, credits')
-      .eq('id', companyId)
+      .eq('id', profile.id)
       .single();
 
     if (companyError || !company) {
       await logAuditEvent({
         action: 'unlock_profile_attempt',
         userId: user.id,
-        companyId,
+        companyId: null,
         candidateId,
-        metadata: { error: 'Company not found' },
+        metadata: { error: 'Company profile not found for this recruiter' },
         success: false,
       });
-      return res.status(500).json({
+      return res.status(403).json({
         success: false,
-        error: 'Failed to retrieve company information.',
-        code: 'INVALID_REQUEST',
+        error: 'No company profile found for this user.',
+        code: 'UNAUTHORIZED',
       } satisfies ErrorResponse);
     }
+
+    const companyId = company.id;
 
     // 7. Check if candidate already unlocked
     const { data: existingUnlock, error: unlockCheckError } = await supabaseServer
