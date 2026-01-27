@@ -1,41 +1,59 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CandidateProfile } from '../types';
-import { Lock, MapPin, Briefcase, ChevronRight } from 'lucide-react';
-import { notificationService } from '../services/notificationService';
-import { supabase } from '../services/supabaseClient';
-import { useAuth } from '../contexts/AuthContext';
+import { Lock, MapPin, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+
+type UnlockErrorCode = 'INSUFFICIENT_CREDITS' | 'ALREADY_UNLOCKED' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'INVALID_REQUEST';
+
+interface UnlockError {
+  message: string;
+  code: UnlockErrorCode;
+}
 
 interface Props {
   candidate: CandidateProfile;
-  onUnlock: (id: string) => void;
+  onUnlock: (id: string) => Promise<{ success: boolean; error?: UnlockError }>;
   onBack: () => void;
 }
 
 const CandidateDetailsLocked: React.FC<Props> = ({ candidate, onUnlock, onBack }) => {
-  const { user } = useAuth();
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [error, setError] = useState<UnlockError | null>(null);
 
   const handleUnlock = async () => {
-      onUnlock(candidate.id);
-      
-      try {
-          // Get company name
-          const { data: teamMember } = await supabase.from('team_members').select('company_id').eq('user_id', user!.id).maybeSingle();
-          const companyId = teamMember?.company_id || user!.id;
-          const { data: company } = await supabase.from('company_profiles').select('company_name').eq('id', companyId).single();
-          
-          if (company) {
-             await notificationService.createNotification(
-                 candidate.id,
-                 'profile_viewed',
-                 'Profile Unlocked',
-                 `${company.company_name} has unlocked your profile!`,
-                 '/dashboard'
-             );
-          }
-      } catch (e) {
-          console.error("Error notifying candidate", e);
+    setIsUnlocking(true);
+    setError(null);
+
+    try {
+      const result = await onUnlock(candidate.id);
+
+      if (!result.success && result.error) {
+        setError(result.error);
       }
+      // On success, parent will re-render with unlocked profile
+    } catch (e) {
+      setError({
+        message: 'An unexpected error occurred. Please try again.',
+        code: 'INVALID_REQUEST'
+      });
+    } finally {
+      setIsUnlocking(false);
+    }
+  };
+
+  const getErrorMessage = () => {
+    if (!error) return null;
+
+    switch (error.code) {
+      case 'INSUFFICIENT_CREDITS':
+        return 'Insufficient credits. Purchase more credits to unlock this profile.';
+      case 'NOT_FOUND':
+        return 'Candidate profile not found.';
+      case 'UNAUTHORIZED':
+        return 'You are not authorized to unlock profiles. Please log in again.';
+      default:
+        return error.message;
+    }
   };
 
   return (
@@ -68,13 +86,33 @@ const CandidateDetailsLocked: React.FC<Props> = ({ candidate, onUnlock, onBack }
              </div>
           </div>
 
-          <div className="flex flex-col items-center">
-             <button 
+          <div className="flex flex-col items-center gap-2">
+             <button
                 onClick={handleUnlock}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-transform hover:-translate-y-0.5 flex items-center"
+                disabled={isUnlocking}
+                className={`${
+                  isUnlocking
+                    ? 'bg-blue-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5'
+                } text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center min-w-[160px] justify-center`}
              >
-                <Lock className="w-4 h-4 mr-2" /> Unlock (1 Credit)
+                {isUnlocking ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Unlocking...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" /> Unlock (1 Credit)
+                  </>
+                )}
              </button>
+
+             {error && (
+               <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl max-w-xs">
+                 <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                 <p className="text-sm text-red-700">{getErrorMessage()}</p>
+               </div>
+             )}
           </div>
         </div>
       </div>

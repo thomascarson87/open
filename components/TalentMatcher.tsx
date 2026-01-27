@@ -11,7 +11,7 @@ import { Loader2 } from 'lucide-react';
 
 interface Props {
     onViewProfile: (candidate: CandidateProfile) => void;
-    onUnlock: (id: string) => void;
+    onUnlock: (id: string) => void | Promise<{ success: boolean; error?: { message: string; code: string } }>;
     onSchedule: (id: string) => void;
     onMessage: (id: string) => void;
 }

@@ -31,6 +31,31 @@ import HiringManagerPreferences from './pages/HiringManagerPreferences';
 import PendingApprovals from './pages/PendingApprovals';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
 import { Loader2, Briefcase } from 'lucide-react';
+import { notificationService } from './services/notificationService';
+
+// API response types for unlock-profile endpoint
+type UnlockErrorCode = 'INSUFFICIENT_CREDITS' | 'ALREADY_UNLOCKED' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'INVALID_REQUEST';
+
+interface UnlockSuccessResponse {
+  success: true;
+  candidate: CandidateProfile;
+  creditsRemaining: number;
+  unlock: {
+    id: string;
+    candidateId: string;
+    companyId: string;
+    unlockedAt: string;
+    cost: number;
+  };
+}
+
+interface UnlockErrorResponse {
+  success: false;
+  error: string;
+  code: UnlockErrorCode;
+}
+
+type UnlockApiResponse = UnlockSuccessResponse | UnlockErrorResponse;
 import { messageService } from './services/messageService';
 import { fetchEnrichedJobs, EnrichedJob } from './services/jobDataService';
 import { calculateMatch } from './services/matchingService';
@@ -243,7 +268,7 @@ function calculateWeightedScore(baseMatch: any, weights: MatchWeights): number {
 }
 
 function MainApp() {
-    const { user, signOut, companyId: authCompanyId, teamRole } = useAuth();
+    const { user, signOut, companyId: authCompanyId, teamRole, isDevMode, devProfileRole } = useAuth();
     const [userRole, setUserRole] = useState<Role>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
     const [currentView, setCurrentView] = useState('dashboard');
@@ -297,7 +322,7 @@ function MainApp() {
             fetchUserProfile();
             fetchNotifications();
         }
-    }, [user]);
+    }, [user, devProfileRole]);
 
     useEffect(() => {
         if (userRole) {
@@ -307,7 +332,15 @@ function MainApp() {
 
     const fetchUserProfile = async () => {
         try {
-            const { data, error } = await supabase.from('profiles').select('*').eq('id', user?.id).maybeSingle(); 
+            // In dev mode, use the devProfileRole from AuthContext directly
+            // since mock accounts may not have a profiles row in the database
+            if (isDevMode && devProfileRole) {
+                setUserRole(devProfileRole as Role);
+                loadRoleData(devProfileRole as Role);
+                return;
+            }
+
+            const { data, error } = await supabase.from('profiles').select('*').eq('id', user?.id).maybeSingle();
             if (data && data.role) {
                 setUserRole(data.role as Role);
                 loadRoleData(data.role as Role);
@@ -346,7 +379,6 @@ function MainApp() {
             } else {
                 // Use authCompanyId from context (handles dev mode), fallback to user.id
                 const effectiveCompanyId = authCompanyId || user?.id;
-                console.log('[App] Loading role data for company:', effectiveCompanyId);
 
                 const { data: comp } = await supabase.from('company_profiles').select('*').eq('id', effectiveCompanyId).maybeSingle();
                 if (comp) setCompanyProfile(mapCompanyFromDB(comp));
@@ -358,7 +390,6 @@ function MainApp() {
                     .select('*')
                     .eq('company_id', effectiveCompanyId);
 
-                console.log('[App] Team members fetch result:', { team, teamError, companyId: effectiveCompanyId });
                 if (team) setTeamMembers(team);
                 setTeamMembersLoading(false);
             }
@@ -515,12 +546,99 @@ function MainApp() {
         }
     };
 
-    const handleApply = async (jobId: string) => { 
+    const handleApply = async (jobId: string) => {
         if (userRole !== 'candidate') return;
         try {
             await supabase.from('applications').insert({ job_id: jobId, candidate_id: user?.id, company_id: enrichedJobs.find(j => j.job.id === jobId)?.job.company_id });
             alert("Applied successfully!");
         } catch (e) { console.error(e); }
+    };
+
+    const handleUnlockCandidate = async (candidateId: string): Promise<{ success: boolean; error?: { message: string; code: UnlockErrorCode } }> => {
+        try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session?.access_token) {
+                return {
+                    success: false,
+                    error: {
+                        message: 'Please log in again to unlock profiles.',
+                        code: 'UNAUTHORIZED'
+                    }
+                };
+            }
+
+            const response = await fetch('/api/unlock-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ candidateId })
+            });
+
+            const data: UnlockApiResponse = await response.json();
+
+            if (data.success) {
+                const unlockedCandidate = mapCandidateFromDB({ ...data.candidate, is_unlocked: true });
+                setCandidatesList(prev =>
+                    prev.map(c => c.id === candidateId ? unlockedCandidate : c)
+                );
+
+                if (selectedCandidate?.id === candidateId) {
+                    setSelectedCandidate(unlockedCandidate);
+                }
+
+                if (companyProfile) {
+                    setCompanyProfile({
+                        ...companyProfile,
+                        credits: data.creditsRemaining
+                    });
+                }
+
+                try {
+                    await notificationService.createNotification(
+                        candidateId,
+                        'profile_viewed',
+                        'Profile Unlocked',
+                        `${companyProfile?.companyName || 'A company'} has unlocked your profile!`,
+                        '/dashboard'
+                    );
+                } catch (notifError) {
+                    console.error('Failed to send unlock notification:', notifError);
+                }
+
+                return { success: true };
+            }
+
+            if (data.code === 'ALREADY_UNLOCKED') {
+                setCandidatesList(prev =>
+                    prev.map(c => c.id === candidateId ? { ...c, isUnlocked: true } : c)
+                );
+                if (selectedCandidate?.id === candidateId) {
+                    setSelectedCandidate({ ...selectedCandidate, isUnlocked: true });
+                }
+                return { success: true };
+            }
+
+            return {
+                success: false,
+                error: {
+                    message: data.error,
+                    code: data.code
+                }
+            };
+
+        } catch (error) {
+            console.error('Unlock profile error:', error);
+            return {
+                success: false,
+                error: {
+                    message: 'Network error. Please check your connection and try again.',
+                    code: 'INVALID_REQUEST'
+                }
+            };
+        }
     };
 
     const navigateToMessage = async (candidateId: string) => {
@@ -578,8 +696,8 @@ function MainApp() {
                 }
                 return <Schedule />;
             case 'create-job': return <CreateJob onPublish={handlePublishJob} onCancel={() => setCurrentView('dashboard')} teamMembers={teamMembers} teamMembersLoading={teamMembersLoading} companyProfile={companyProfile} />;
-            case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={(id) => setCandidatesList(prev => prev.map(c => c.id === id ? {...c, isUnlocked: true} : c))} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
-            case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={(id) => setSelectedCandidate({...selectedCandidate, isUnlocked: true})} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} />);
+            case 'talent-matcher': return <TalentMatcher onViewProfile={(c) => { setSelectedCandidate(c); setCurrentView('candidate-details'); }} onUnlock={handleUnlockCandidate} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} onMessage={navigateToMessage} />;
+            case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={handleUnlockCandidate} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} />);
             case 'my-jobs': return <RecruiterMyJobs />;
             case 'network': return <Network connections={connections} />;
             case 'ats': 
@@ -666,7 +784,7 @@ function MainApp() {
                                     key={c.id}
                                     candidate={c}
                                     onViewProfile={(candidate) => { setSelectedCandidate(candidate); setCurrentView('candidate-details'); }}
-                                    onUnlock={(id) => setCandidatesList(prev => prev.map(cand => cand.id === id ? {...cand, isUnlocked: true} : cand))}
+                                    onUnlock={handleUnlockCandidate}
                                     onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }}
                                     onMessage={navigateToMessage}
                                     showMatchBreakdown={false}

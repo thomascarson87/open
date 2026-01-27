@@ -9,7 +9,7 @@ interface EnrichedCandidateCardProps {
   candidate: CandidateProfile;
   matchResult?: MatchBreakdown;
   onViewProfile: (candidate: CandidateProfile) => void;
-  onUnlock: (id: string) => void;
+  onUnlock: (id: string) => void | Promise<{ success: boolean; error?: { message: string; code: string } }>;
   onSchedule: (id: string) => void;
   onMessage: (id: string) => void;
   onDismiss?: (id: string) => void;
