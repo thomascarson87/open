@@ -1,7 +1,32 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '@/services/supabaseClient';
-import { supabaseServer } from '@/services/supabaseServer';
-import type { CandidateProfile } from '@/types';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
+
+// --- Supabase clients (inline to avoid path alias issues in Vercel serverless) ---
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+if (!supabaseUrl) {
+  throw new Error('Missing Supabase URL. Set NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL.');
+}
+
+if (!supabaseServiceRoleKey) {
+  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable.');
+}
+
+// Public client — used only to verify auth tokens
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Service role client — bypasses RLS, used for all database operations
+const supabaseServer = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
+// --- Types ---
 
 type ErrorCode =
   | 'INSUFFICIENT_CREDITS'
@@ -20,7 +45,7 @@ interface UnlockRecord {
 
 interface SuccessResponse {
   success: true;
-  candidate: CandidateProfile;
+  candidate: Record<string, unknown>;
   creditsRemaining: number;
   unlock: UnlockRecord;
 }
@@ -33,9 +58,11 @@ interface ErrorResponse {
 
 type ApiResponse = SuccessResponse | ErrorResponse;
 
+// --- Handler ---
+
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<ApiResponse>
+  req: VercelRequest,
+  res: VercelResponse
 ) {
   // 1. Verify request method is POST
   if (req.method !== 'POST') {
@@ -43,7 +70,7 @@ export default async function handler(
       success: false,
       error: 'Method not allowed. Use POST.',
       code: 'INVALID_REQUEST',
-    });
+    } satisfies ErrorResponse);
   }
 
   // 2. Parse candidateId from request body
@@ -54,7 +81,7 @@ export default async function handler(
       success: false,
       error: 'Missing or invalid candidateId in request body.',
       code: 'INVALID_REQUEST',
-    });
+    } satisfies ErrorResponse);
   }
 
   // Validate UUID format
@@ -64,7 +91,7 @@ export default async function handler(
       success: false,
       error: 'candidateId must be a valid UUID.',
       code: 'INVALID_REQUEST',
-    });
+    } satisfies ErrorResponse);
   }
 
   try {
@@ -75,7 +102,7 @@ export default async function handler(
         success: false,
         error: 'Missing or invalid authorization header.',
         code: 'UNAUTHORIZED',
-      });
+      } satisfies ErrorResponse);
     }
 
     const token = authHeader.replace('Bearer ', '');
@@ -86,7 +113,7 @@ export default async function handler(
         success: false,
         error: 'Invalid or expired authentication token.',
         code: 'UNAUTHORIZED',
-      });
+      } satisfies ErrorResponse);
     }
 
     // 4. Get user's profile with company_id and role
@@ -109,7 +136,7 @@ export default async function handler(
         success: false,
         error: 'User profile not found.',
         code: 'UNAUTHORIZED',
-      });
+      } satisfies ErrorResponse);
     }
 
     // 5. Check if user role is 'recruiter'
@@ -126,7 +153,7 @@ export default async function handler(
         success: false,
         error: 'Only recruiters can unlock candidate profiles.',
         code: 'UNAUTHORIZED',
-      });
+      } satisfies ErrorResponse);
     }
 
     const companyId = profile.company_id;
@@ -144,7 +171,7 @@ export default async function handler(
         success: false,
         error: 'User is not associated with a company.',
         code: 'UNAUTHORIZED',
-      });
+      } satisfies ErrorResponse);
     }
 
     // 6. Get current credit balance from company_profiles
@@ -166,8 +193,8 @@ export default async function handler(
       return res.status(500).json({
         success: false,
         error: 'Failed to retrieve company information.',
-        code: 'UNAUTHORIZED',
-      });
+        code: 'INVALID_REQUEST',
+      } satisfies ErrorResponse);
     }
 
     // 7. Check if candidate already unlocked
@@ -183,7 +210,7 @@ export default async function handler(
         success: false,
         error: 'Failed to check unlock status.',
         code: 'INVALID_REQUEST',
-      });
+      } satisfies ErrorResponse);
     }
 
     // 8. If already unlocked: return success with existing data (no charge)
@@ -195,7 +222,7 @@ export default async function handler(
           success: false,
           error: 'Candidate profile not found.',
           code: 'NOT_FOUND',
-        });
+        } satisfies ErrorResponse);
       }
 
       return res.status(200).json({
@@ -209,7 +236,7 @@ export default async function handler(
           unlockedAt: existingUnlock.created_at,
           cost: existingUnlock.cost_credits ?? 0,
         },
-      });
+      } satisfies SuccessResponse);
     }
 
     // 9. If credits < 1: return INSUFFICIENT_CREDITS error
@@ -227,7 +254,7 @@ export default async function handler(
         success: false,
         error: `Insufficient credits. You have ${currentCredits} credits, but 1 is required.`,
         code: 'INSUFFICIENT_CREDITS',
-      });
+      } satisfies ErrorResponse);
     }
 
     // Verify candidate exists before proceeding
@@ -245,7 +272,7 @@ export default async function handler(
         success: false,
         error: 'Candidate profile not found.',
         code: 'NOT_FOUND',
-      });
+      } satisfies ErrorResponse);
     }
 
     // 10. Perform unlock operations using supabaseServer
@@ -254,7 +281,7 @@ export default async function handler(
       .from('company_profiles')
       .update({ credits: currentCredits - 1 })
       .eq('id', companyId)
-      .gte('credits', 1) // Only update if credits >= 1 (race condition protection)
+      .gte('credits', 1)
       .select('credits')
       .single();
 
@@ -271,7 +298,7 @@ export default async function handler(
         success: false,
         error: 'Failed to deduct credits. Please try again.',
         code: 'INSUFFICIENT_CREDITS',
-      });
+      } satisfies ErrorResponse);
     }
 
     // Insert unlock record
@@ -306,7 +333,7 @@ export default async function handler(
         success: false,
         error: 'Failed to create unlock record. Credits have been refunded.',
         code: 'INVALID_REQUEST',
-      });
+      } satisfies ErrorResponse);
     }
 
     // Log successful unlock
@@ -335,7 +362,7 @@ export default async function handler(
         unlockedAt: unlockRecord.created_at,
         cost: unlockRecord.cost_credits ?? 1,
       },
-    });
+    } satisfies SuccessResponse);
 
   } catch (error) {
     console.error('Unlock profile error:', error);
@@ -343,14 +370,13 @@ export default async function handler(
       success: false,
       error: error instanceof Error ? error.message : 'An unexpected error occurred.',
       code: 'INVALID_REQUEST',
-    });
+    } satisfies ErrorResponse);
   }
 }
 
-/**
- * Fetches the full candidate profile with all fields
- */
-async function fetchFullCandidateProfile(candidateId: string): Promise<CandidateProfile | null> {
+// --- Helper functions ---
+
+async function fetchFullCandidateProfile(candidateId: string): Promise<Record<string, unknown> | null> {
   const { data, error } = await supabaseServer
     .from('candidate_profiles')
     .select('*')
@@ -361,7 +387,6 @@ async function fetchFullCandidateProfile(candidateId: string): Promise<Candidate
     return null;
   }
 
-  // Transform snake_case DB fields to camelCase as needed
   return {
     ...data,
     avatarUrls: data.avatar_urls,
@@ -406,12 +431,9 @@ async function fetchFullCandidateProfile(candidateId: string): Promise<Candidate
     preferredConflictResolution: data.preferred_conflict_resolution,
     preferredMentorshipStyle: data.preferred_mentorship_style,
     growthGoals: data.growth_goals,
-  } as CandidateProfile;
+  };
 }
 
-/**
- * Logs an audit event to the api_audit_logs table
- */
 async function logAuditEvent(params: {
   action: string;
   userId: string;
@@ -433,7 +455,6 @@ async function logAuditEvent(params: {
         created_at: new Date().toISOString(),
       });
   } catch (error) {
-    // Don't throw on audit log failure - just log to console
     console.error('Failed to write audit log:', error);
   }
 }
