@@ -24,7 +24,7 @@ class ATSService {
     // Get current status
     const { data: application } = await supabase
       .from('applications')
-      .select('status, conversation_id, candidate_id')
+      .select('status, candidate_id')
       .eq('id', applicationId)
       .single();
 
@@ -67,26 +67,19 @@ class ATSService {
 
     // Send system message in chat if conversation exists
     if (sendChatNotification) {
-      // Find conversation if not provided in app record (backwards compatibility)
-      let conversationId = application.conversation_id;
-      
-      if (!conversationId) {
-          const { data: conv } = await supabase
-            .from('conversations')
-            .select('id')
-            .eq('application_id', applicationId) // Assuming you have this link, or logic to find it
-            .maybeSingle();
-            
-          // If we can't find a direct link, we might skip the message or try to find by participants
-          // For now, assume conversation_id is linked or we skip.
-      }
+      // Fetch conversation separately (conversations.application_id references applications)
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('application_id', applicationId)
+        .maybeSingle();
 
-      if (conversationId) {
+      if (conv?.id) {
         const statusInfo = this.getStatusDisplayInfo(newStatus);
         const message = `Application status updated: ${statusInfo.label}`;
-        
+
         await messageService.sendSystemMessage(
-          conversationId,
+          conv.id,
           message
         );
       }
