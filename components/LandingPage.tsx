@@ -17,14 +17,14 @@ const LandingHomeContent: React.FC<Props & { setFeedType: (t: 'jobs' | 'talent')
         {/* Hero */}
         <div className="text-center max-w-4xl mx-auto mb-20 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-100">
-                The future of technical hiring
+                Precision Chiming for Technical Hiring
             </div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tight text-gray-900 leading-[1.1]">
                 Hiring, <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Aligned.</span>
             </h1>
             <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                Stop filtering through noise. Open connects high-intent technical talent with companies that match their values, skills, and expectations.
+                Precision alignment for people, not profiles. chime connects technical talent with companies where they'll actually thrive — by skills, values, and the way teams work.
             </p>
         </div>
 
@@ -42,7 +42,7 @@ const LandingHomeContent: React.FC<Props & { setFeedType: (t: 'jobs' | 'talent')
                     <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-600 rounded-2xl flex items-center justify-center mb-6 transition-colors duration-300">
                         <User className="w-7 h-7 text-gray-900 group-hover:text-white transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">I'm Talent</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">I'm Looking</h3>
                     <p className="text-gray-500 mb-8">
                         I'm looking for a role where my skills, values, and compensation expectations are met.
                     </p>
@@ -104,7 +104,7 @@ const LandingHomeContent: React.FC<Props & { setFeedType: (t: 'jobs' | 'talent')
         <div className="w-full max-w-7xl px-2 sm:px-4">
             <div className="flex flex-col items-center mb-12">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">Market Pulse</h2>
-                <p className="text-gray-500 text-center mb-8">Real opportunities and talent live on Open right now.</p>
+                <p className="text-gray-500 text-center mb-8">Real opportunities and talent live on chime right now.</p>
                 
                 {/* Toggle */}
                 <div className="relative bg-gray-100 p-1 rounded-full flex w-64 h-12 shadow-inner">
@@ -117,13 +117,13 @@ const LandingHomeContent: React.FC<Props & { setFeedType: (t: 'jobs' | 'talent')
                         onClick={() => setFeedType('jobs')}
                         className={`flex-1 relative z-10 text-sm font-bold transition-colors ${feedType === 'jobs' ? 'text-gray-900' : 'text-gray-500'}`}
                     >
-                        Open Roles
+                        Browse Roles
                     </button>
                     <button 
                         onClick={() => setFeedType('talent')}
                         className={`flex-1 relative z-10 text-sm font-bold transition-colors ${feedType === 'talent' ? 'text-gray-900' : 'text-gray-500'}`}
                     >
-                        Talent
+                        Browse Candidates
                     </button>
                 </div>
             </div>
@@ -322,8 +322,8 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
                     className="flex items-center space-x-2 cursor-pointer group" 
                     onClick={() => { setShowInfoPage(false); setMobileMenuOpen(false); window.scrollTo(0,0); }}
                 >
-                    <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">O</div>
-                    <span className="text-xl font-bold tracking-tight">Open</span>
+                    <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">c</div>
+                    <span className="text-xl font-bold tracking-tight">chime</span>
                 </div>
 
                 {/* Desktop Nav */}
@@ -451,7 +451,7 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
             <footer className="py-12 bg-white border-t border-gray-100 text-center text-sm text-gray-400">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
                     <div className="mb-4 md:mb-0">
-                        &copy; {new Date().getFullYear()} Open Recruitment Platform. All rights reserved.
+                        &copy; 2025 chime. All rights reserved.
                     </div>
                     <div className="flex space-x-6">
                         <a href="#" className="hover:text-gray-900">Privacy</a>

@@ -51,12 +51,12 @@ const DemoProfile = () => (
 const DemoMatches = () => (
     <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
         <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Precision Matches</h4>
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Chimes</h4>
             <span className="text-xs font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">47 Roles Found</span>
         </div>
         {[
-            { company: 'Acme Tech', role: 'Staff UI Engineer', score: 94, tags: ['Remote ✓', '$160k+'] },
-            { company: 'Brightly', role: 'Frontend Lead', score: 88, tags: ['Remote ✓', '$155k+'] },
+            { company: 'Acme Tech', role: 'Staff UI Engineer', score: 94, tags: ['Remote', '$160k+'] },
+            { company: 'Brightly', role: 'Frontend Lead', score: 88, tags: ['Remote', '$155k+'] },
             { company: 'GlobalScale', role: 'Senior React Dev', score: 72, tags: ['Hybrid', '$170k+'], warning: 'Does not meet work mode non-negotiable' }
         ].map((m, i) => (
             <div key={i} className={`bg-white p-4 rounded-xl border transition-all ${m.score >= 90 ? 'border-purple-200 shadow-md ring-1 ring-purple-100' : 'border-gray-100 shadow-sm'}`}>
@@ -67,7 +67,7 @@ const DemoMatches = () => (
                     </div>
                     <div className="text-right">
                         <div className={`text-lg font-black ${m.score >= 90 ? 'text-purple-600' : 'text-gray-600'}`}>{m.score}%</div>
-                        <div className="text-[9px] font-bold text-gray-400 uppercase">Match</div>
+                        <div className="text-[9px] font-bold text-gray-400 uppercase">Chime</div>
                     </div>
                 </div>
                 <div className="flex gap-2 mb-2">
@@ -84,28 +84,28 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
     const [activeDemo, setActiveDemo] = useState('profile');
 
     const frustrations = [
-        { title: 'Application Black Holes', desc: 'You spend 45 minutes on a custom cover letter. Never hear back. Just... silence.' },
-        { title: 'Keyword Bingo', desc: '"Must have 10 years experience in a 5-year-old framework." Your actual skills? Irrelevant if the bot hates your resume.' },
-        { title: 'Recruiter Spam', desc: '"I have an AMAZING opportunity!" It\'s a 3-month contract in a city you don\'t live in for half your salary.' },
-        { title: 'Culture Roulette', desc: 'The job post said "fast-paced." You wanted "sustainable pace." They actually meant "burnout central."' },
-        { title: 'Salary Guessing Games', desc: 'Five interview rounds before they mention the salary. It\'s 30% below your minimum. Great.' },
-        { title: 'The Ghosting', desc: 'Three interviews, a technical assessment, "we\'ll be in touch!" That was six weeks ago.' }
+        { title: 'The Black Hole', desc: 'You apply. You customize the cover letter. You never hear back.' },
+        { title: 'Keyword Roulette', desc: '"10 years experience in a 5-year-old framework." Your actual skills don\'t matter if the ATS rejects your resume.' },
+        { title: 'Recruiter Spam', desc: '"Amazing opportunity!" — a 3-month contract in a city you don\'t live in for half your rate.' },
+        { title: 'Culture Surprise', desc: 'The job said "fast-paced." They meant "unsustainable." You find out after you start.' },
+        { title: 'Salary Games', desc: 'Five rounds of interviews before they mention compensation. It\'s 30% below your floor.' },
+        { title: 'The Ghost', desc: 'Three interviews, a take-home, "we\'ll be in touch." That was six weeks ago.' }
     ];
 
     const benefits = [
-        { num: '01', title: 'Matched, Not Searched', desc: 'See every job that fits the second you sign up. No searching required.', detail: '8-dimensional matching across skills, values, culture, and more.' },
-        { num: '02', title: 'You Set the Rules', desc: 'Non-negotiables are non-negotiable. If remote is a must, you only see remote.', detail: 'Salary floor, work mode, company size — you decide.' },
-        { num: '03', title: 'Skills That Matter', desc: 'We measure what you can actually DO, not just how long you\'ve done it.', detail: '5 proficiency levels that show your growth trajectory.' },
-        { num: '04', title: 'Verified Trust', desc: 'Actual colleagues vouch for your skills. Not social "endorsements."', detail: 'Companies trust verified data, getting you 3x more unlocks.' },
-        { num: '05', title: 'Direct Conversations', desc: 'When a company matches you, you chat directly. No recruiters playing telephone.', detail: 'Integrated scheduling and tracking.' },
-        { num: '06', title: 'Find Your Vibe', desc: 'Match on work style and team cadence. Find the team you actually fit with.', detail: 'Work intensity, autonomy, and collaboration style alignment.' }
+        { num: '01', title: 'Chimed, Not Searched', desc: 'See every role that fits the moment you sign up. No applications required.', detail: 'Aligned on skills, values, team dynamics, and more.' },
+        { num: '02', title: 'You Set the Rules', desc: 'Non-negotiables are non-negotiable. Remote-only? You only see remote.', detail: 'Salary floor, work mode, company size — you decide.' },
+        { num: '03', title: 'Team Fit, Not Just Company Fit', desc: 'Know how teams actually work before you join. Intensity, cadence, communication style.', detail: 'Avoid culture surprise after you start.' },
+        { num: '04', title: 'Skills Over Tenure', desc: 'We measure what you can do, not how long you\'ve done it.', detail: '5 proficiency levels that show growth trajectory, not just years.' },
+        { num: '05', title: 'Verified Credibility', desc: 'Colleagues vouch for your skills. Not LinkedIn-style endorsements — real verification.', detail: 'Verified profiles get prioritized by companies.' },
+        { num: '06', title: 'Direct Conversations', desc: 'When a company unlocks you, you chat directly. No recruiters in between.', detail: 'Integrated scheduling and messaging.' }
     ];
 
     const steps = [
-        { num: '1', title: 'Create Your Profile', desc: 'Add your skills, set your preferences, mark your non-negotiables.', time: '10 min' },
-        { num: '2', title: 'See Your Matches', desc: 'Instantly see every job that fits your criteria. No applications needed.', time: 'Instant' },
-        { num: '3', title: 'Get Verified', desc: 'Invite colleagues to confirm your skills. Verified profiles get 3x more unlocks.', time: 'Optional' },
-        { num: '4', title: 'Jobs Come to You', desc: 'When a company unlocks you, you chat directly. You\'re always in control.', time: 'Ongoing' }
+        { num: '1', title: 'Build Your Profile', desc: 'Add skills with proficiency levels. Set salary, location, and work mode preferences. Define how you like to work.', time: '~10 min' },
+        { num: '2', title: 'See What Chimes', desc: 'Instantly view every role that fits your criteria — company, team, and role level.', time: 'Instant' },
+        { num: '3', title: 'Get Verified', desc: 'Invite past colleagues to verify your skills. Verified profiles get more attention.', time: 'Optional' },
+        { num: '4', title: 'Companies Come to You', desc: 'When a company unlocks your profile, you\'re notified. Chat directly. You\'re always in control.', time: 'Ongoing' }
     ];
 
     const tabs = [
@@ -127,26 +127,25 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
             {/* Hero Section */}
             <section className="text-center animate-in fade-in slide-in-from-bottom-6 duration-700">
                 <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-purple-50 text-purple-700 text-xs font-black uppercase tracking-widest border border-purple-100 mb-8">
-                    Free Forever • No Recruiter Spam
+                    Free Forever · No Spam · You Control Visibility
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black tracking-tight text-gray-900 leading-[1.1] mb-8">
-                    Job Hunting Shouldn't<br />
+                    Find Roles That<br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
-                        Feel Like a Full-Time Job
+                        Chime With You
                     </span>
                 </h1>
                 <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed mb-12">
-                    Forget black-hole applications and endless scrolling. 
-                    Open matches you with roles that actually fit — your skills, your values, your terms.
+                    chime aligns you with companies based on skills, values, and how teams actually work — not keyword games. Companies come to you, already knowing you're a fit.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button 
+                    <button
                         onClick={onGetStarted}
                         className="bg-purple-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-purple-700 transition-all hover:shadow-2xl active:scale-95 shadow-purple-200/50"
                     >
-                        Create Your Free Profile
+                        Build Your Profile
                     </button>
-                    <button 
+                    <button
                         onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                         className="bg-white border border-gray-200 text-gray-700 px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-50 transition-all active:scale-95"
                     >
@@ -158,7 +157,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
             {/* Sound Familiar Section */}
             <section className="space-y-12 bg-white rounded-[3rem] p-12 md:p-16 border border-gray-100 shadow-sm">
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Sound Familiar?</h2>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">The Job Search You Know</h2>
                     <p className="text-gray-500 font-medium leading-relaxed">Traditional job hunting is broken. We've been there too.</p>
                 </div>
                 
@@ -181,7 +180,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
             <section id="features" className="space-y-16">
                 <div className="text-center max-w-2xl mx-auto">
                     <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest mb-4">
-                        The Open Way
+                        The chime Way
                     </div>
                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Job Hunting That Respects Your Time</h2>
                 </div>
@@ -337,14 +336,14 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
                     {activeTab === 'matching' && (
                         <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
                             <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">The Moment You<br />Go Live, Jobs Fit</h3>
+                                <h3 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">The Moment You<br />Go Live, Roles Chime</h3>
                                 <p className="text-gray-600 text-lg font-medium leading-relaxed">
-                                    No more "wondering" if you're qualified. We match roles to YOU. 
-                                    See exactly why a job is a 90% match and where the 10% gap is.
+                                    No more "wondering" if you're qualified. We align roles to YOU.
+                                    See exactly why a job is a 90% chime and where the 10% gap is.
                                 </p>
                                 <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
                                     <p className="text-sm font-black text-purple-900 leading-relaxed italic">
-                                        "Matches update in real-time as you refine your profile. Data always enriches, never resets."
+                                        "Chimes update in real-time as you refine your profile. Data always enriches, never resets."
                                     </p>
                                 </div>
                             </div>
@@ -354,7 +353,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
                                         <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center font-black">A</div>
                                         <div className="text-center">
                                             <div className="text-2xl font-black text-purple-600 leading-none">94%</div>
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Match Score</div>
+                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Chime Score</div>
                                         </div>
                                     </div>
                                     <div className="space-y-3">
@@ -375,7 +374,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
             {/* How It Works Section */}
             <section className="space-y-16">
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Getting Started Takes 10 Minutes</h2>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Four Steps to Finding Your Chime</h2>
                     <p className="text-gray-500 font-medium">No resume games. No keyword stuffing. Just the facts.</p>
                 </div>
                 
@@ -400,7 +399,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
             {/* Interactive Demo Section */}
             <section id="demo" className="space-y-12">
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Experience Open Platform</h2>
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Experience chime</h2>
                     <p className="text-gray-500 font-medium">Take a test drive of the interface built for technical talent.</p>
                 </div>
                 
@@ -415,7 +414,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
                         <div className="flex-1 flex justify-center">
                             <div className="bg-white rounded-full px-6 py-2 text-xs font-bold text-gray-400 flex items-center border border-gray-200 shadow-sm">
                                 <ShieldCheck className="w-3.5 h-3.5 mr-2 text-purple-500" />
-                                app.openplatform.com/dashboard
+                                app.chime.works/dashboard
                             </div>
                         </div>
                     </div>
@@ -471,7 +470,7 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
                             onClick={onGetStarted}
                             className="bg-white text-purple-600 font-black px-8 py-3 rounded-xl text-sm hover:bg-purple-50 transition-all transform hover:scale-105 active:scale-95 shadow-xl"
                         >
-                            Start Matching Free
+                            Start Chiming Free
                         </button>
                     </div>
                 </div>
@@ -504,17 +503,16 @@ const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
                 <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-900/30 rounded-full blur-3xl" />
                 
                 <div className="relative z-10 max-w-3xl mx-auto px-6 space-y-10">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">Your Next Role is<br />Already Waiting</h2>
+                    <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">Find Your Chime</h2>
                     <p className="text-purple-100 text-xl font-medium leading-relaxed">
-                        10 minutes to set up. Instant matches. Zero spam. <br className="hidden md:block" />
-                        What do you have to lose?
+                        10 minutes to set up. Instant alignment. Zero spam.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button 
+                        <button
                             onClick={onGetStarted}
                             className="bg-white text-purple-600 px-12 py-5 rounded-[2rem] font-black text-xl hover:shadow-2xl transition-all active:scale-95 w-full sm:w-auto transform hover:scale-105"
                         >
-                            Create Your Profile →
+                            Build Your Profile
                         </button>
                     </div>
                     <div className="flex flex-wrap justify-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-purple-100/60">

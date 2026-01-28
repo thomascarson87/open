@@ -666,9 +666,9 @@ function MainApp() {
 
     if (!userRole) return (
         <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-gray-50 text-center">
-            <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-white text-3xl font-black mb-8 shadow-xl">O</div>
-            <h2 className="text-3xl font-black mb-2 tracking-tight">Welcome to Open</h2>
-            <p className="text-gray-500 mb-8 max-w-xs">Precision matchmaking for the next generation of technical talent.</p>
+            <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-white text-3xl font-black mb-8 shadow-xl">c</div>
+            <h2 className="text-3xl font-black mb-2 tracking-tight">Welcome to chime</h2>
+            <p className="text-gray-500 mb-8 max-w-xs">Precision alignment for technical talent and the teams that need them.</p>
             <div className="flex gap-4">
                 <button onClick={() => handleCreateProfile('candidate')} className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform">I'm Talent</button>
                 <button onClick={() => handleCreateProfile('recruiter')} className="bg-gray-900 text-white px-8 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform">I'm Hiring</button>

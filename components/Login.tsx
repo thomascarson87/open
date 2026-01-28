@@ -60,8 +60,8 @@ const Login: React.FC<Props> = ({ selectedRole, onBack }) => {
              </button>
          )}
          <div className="flex items-center space-x-2 mx-auto">
-            <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg">O</div>
-            <span className="text-xl font-bold tracking-tight">Open</span>
+            <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg">c</div>
+            <span className="text-xl font-bold tracking-tight">chime</span>
          </div>
       </header>
 

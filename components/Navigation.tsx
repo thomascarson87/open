@@ -116,8 +116,8 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-8">
               <div className="flex-shrink-0 flex items-center cursor-pointer group" onClick={() => handleNavItemClick('dashboard')}>
-                <div className="h-8 w-8 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold text-lg mr-2 group-hover:bg-black transition-colors">O</div>
-                <span className="text-xl font-bold tracking-tight text-gray-900">Open</span>
+                <div className="h-8 w-8 bg-gray-900 rounded-lg flex items-center justify-center text-white font-bold text-lg mr-2 group-hover:bg-black transition-colors">c</div>
+                <span className="text-xl font-bold tracking-tight text-gray-900">chime</span>
               </div>
               
               <div className="hidden md:flex md:space-x-1" ref={navRef}>

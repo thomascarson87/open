@@ -529,8 +529,8 @@
                 <p style="color: #4b5563; margin-bottom: 32px;">We've sent a confirmation to <strong>${escapeHtml(email)}</strong>.</p>
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 24px; border-radius: 12px; text-align: left;">
                     <h3 style="color: #166534; margin: 0 0 8px 0; font-size: 18px;">Boost your chances 🚀</h3>
-                    <p style="color: #15803d; font-size: 14px; margin-bottom: 16px;">Complete your profile on Open Platform to see match scores and get discovered by other companies.</p>
-                    <a href="https://open-sable.vercel.app/?view=login&email=${encodeURIComponent(email)}" target="_blank" class="op-btn-primary" style="display: block; text-align: center; text-decoration: none;">Complete Profile</a>
+                    <p style="color: #15803d; font-size: 14px; margin-bottom: 16px;">Complete your profile on chime to see chime scores and get discovered by other companies.</p>
+                    <a href="https://chime.works/?view=login&email=${encodeURIComponent(email)}" target="_blank" class="op-btn-primary" style="display: block; text-align: center; text-decoration: none;">Complete Profile</a>
                 </div>
             </div>
         `;
@@ -542,7 +542,7 @@
     async function init() {
         const script = document.currentScript;
         const companyId = script?.getAttribute('data-company-id');
-        if (!companyId) return console.error('Open Widget: data-company-id missing');
+        if (!companyId) return console.error('chime Widget: data-company-id missing');
         state.companyId = companyId;
 
         // Load profile from local storage
@@ -561,7 +561,7 @@
 
             renderWidget();
         } catch (e) {
-            console.error('Open Widget Init Error:', e);
+            console.error('chime Widget Init Error:', e);
         }
     }
 

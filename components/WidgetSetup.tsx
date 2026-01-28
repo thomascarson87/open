@@ -252,9 +252,9 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const widgetCode = `<!-- Open Platform Widget -->
-<div id="open-careers-widget"></div>
-<script src="${window.location.origin}/widget/open-widget.js"
+  const widgetCode = `<!-- chime Careers Widget -->
+<div id="chime-careers-widget"></div>
+<script src="https://chime.works/widget.js"
         data-company-id="${companyId}"
         defer></script>`;
 
@@ -326,7 +326,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Career Page Widget</h1>
         <p className="text-gray-500 mt-2 max-w-2xl">
-          Embed your Open Platform jobs directly on your company website.
+          Embed your chime jobs directly on your company website.
           Customize the appearance to match your brand.
         </p>
       </div>
@@ -987,7 +987,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                     color: config.text_muted_color
                   }}
                 >
-                  Powered by <span style={{ fontWeight: 'bold' }}>Open Platform</span>
+                  Powered by <span style={{ fontWeight: 'bold' }}>chime</span>
                 </div>
               )}
             </div>
