@@ -10,12 +10,14 @@ interface Props {
 }
 
 const ATSBoard: React.FC<Props> = ({ applications, jobs, candidates }) => {
-  // Mapping new detailed statuses to board columns for recruiters
+  // Mapping database statuses to board columns for recruiters
   const columns: { id: string, title: string, statuses: ApplicationStatus[] }[] = [
     { id: 'applied', title: 'New Applicants', statuses: ['applied'] },
-    { id: 'screening', title: 'In Screening', statuses: ['screening'] },
-    { id: 'interview', title: 'Interviewing', statuses: ['hr_interview', 'technical_test', 'manager_interview', 'exec_interview'] },
-    { id: 'offer', title: 'Offer Stage', statuses: ['offer', 'contracting', 'hired'] },
+    { id: 'reviewing', title: 'In Review', statuses: ['reviewing'] },
+    { id: 'screening', title: 'Phone Screen', statuses: ['phone_screen_scheduled', 'phone_screen_completed'] },
+    { id: 'interview', title: 'Interviewing', statuses: ['technical_scheduled', 'technical_completed', 'final_round_scheduled', 'final_round_completed'] },
+    { id: 'offer', title: 'Offer Stage', statuses: ['offer_extended', 'offer_accepted', 'hired'] },
+    { id: 'closed', title: 'Closed', statuses: ['rejected', 'withdrawn'] },
   ];
 
   const getJobTitle = (id: string) => jobs.find(j => j.id === id)?.title || 'Unknown Job';
