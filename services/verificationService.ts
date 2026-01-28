@@ -58,7 +58,7 @@ class VerificationService {
     if (error) throw error;
 
     // Simulate sending email
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://chime.works';
     console.log('--- EMAIL SIMULATION ---');
     console.log(`To: ${data.referee_email}`);
     console.log(`Subject: Verify ${data.referee_name}'s professional background`);
