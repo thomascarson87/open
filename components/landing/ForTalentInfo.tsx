@@ -1,532 +1,1037 @@
 import React, { useState } from 'react';
-import { CheckCircle, X, ArrowRight, ArrowLeft, Lock, Users, ShieldCheck } from 'lucide-react';
-import { SKILLS_LIST, SKILL_LEVEL_METADATA } from '../../constants/matchingData';
+import { ArrowRight, ArrowLeft, Check, FileText, Shield, Compass, LayoutDashboard, MessageSquare, Eye, TrendingUp, ChevronDown, User, EyeOff, Target, BadgeCheck, Lock, Unlock, Calendar, Paperclip, Send } from 'lucide-react';
 
 interface Props {
     onGetStarted: () => void;
     onBack: () => void;
 }
 
-const DemoProfile = () => (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 animate-in fade-in duration-500">
-        <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-black shadow-lg">Y</div>
-            <div>
-                <h4 className="font-black text-gray-900 text-xl">You</h4>
-                <p className="text-purple-600 font-bold text-sm">Senior Frontend Engineer</p>
-            </div>
-        </div>
-        
-        <div className="space-y-4">
-            <div>
-                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Verified Skills</div>
-                <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-[11px] font-black border border-purple-100 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> React L4
-                    </span>
-                    <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-[11px] font-black border border-purple-100 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> TypeScript L3
-                    </span>
-                    <span className="px-2 py-1 bg-gray-50 text-gray-500 rounded-lg text-[11px] font-black border border-gray-100">Node.js L3</span>
-                </div>
-            </div>
-            
-            <div className="pt-4 border-t border-gray-50">
-                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Non-Negotiables</div>
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-bold text-gray-700 bg-red-50/50 p-2 rounded-lg border border-red-100/50">
-                        <span>Remote Work Only</span>
-                        <Lock className="w-3 h-3 text-red-500" />
-                    </div>
-                    <div className="flex items-center justify-between text-xs font-bold text-gray-700 bg-red-50/50 p-2 rounded-lg border border-red-100/50">
-                        <span>$140,000+ Min Salary</span>
-                        <Lock className="w-3 h-3 text-red-500" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+// Chime Verified Badge Component with premium styling
+const ChimeVerifiedBadge: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' }) => (
+    <span className={`inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 via-teal-500 to-blue-600 bg-[length:200%_100%] animate-shimmer text-white rounded-full font-semibold ${
+        size === 'sm' ? 'px-2.5 py-0.5 text-xs' : 'px-3 py-1 text-sm'
+    }`}>
+        <Shield className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />
+        Chime Verified
+    </span>
 );
 
-const DemoMatches = () => (
-    <div className="space-y-4 animate-in slide-in-from-right-4 duration-500">
-        <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Your Chimes</h4>
-            <span className="text-xs font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">47 Roles Found</span>
-        </div>
-        {[
-            { company: 'Acme Tech', role: 'Staff UI Engineer', score: 94, tags: ['Remote', '$160k+'] },
-            { company: 'Brightly', role: 'Frontend Lead', score: 88, tags: ['Remote', '$155k+'] },
-            { company: 'GlobalScale', role: 'Senior React Dev', score: 72, tags: ['Hybrid', '$170k+'], warning: 'Does not meet work mode non-negotiable' }
-        ].map((m, i) => (
-            <div key={i} className={`bg-white p-4 rounded-xl border transition-all ${m.score >= 90 ? 'border-purple-200 shadow-md ring-1 ring-purple-100' : 'border-gray-100 shadow-sm'}`}>
-                <div className="flex justify-between items-start mb-2">
-                    <div>
-                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{m.company}</div>
-                        <div className="font-bold text-sm text-gray-900">{m.role}</div>
-                    </div>
-                    <div className="text-right">
-                        <div className={`text-lg font-black ${m.score >= 90 ? 'text-purple-600' : 'text-gray-600'}`}>{m.score}%</div>
-                        <div className="text-[9px] font-bold text-gray-400 uppercase">Chime</div>
-                    </div>
-                </div>
-                <div className="flex gap-2 mb-2">
-                    {m.tags.map(t => <span key={t} className="text-[9px] font-black bg-gray-50 text-gray-500 px-1.5 py-0.5 rounded-full">{t}</span>)}
-                </div>
-                {m.warning && <div className="text-[9px] font-bold text-red-500 flex items-center gap-1 bg-red-50 p-1.5 rounded-lg border border-red-100"><X className="w-2.5 h-2.5" /> {m.warning}</div>}
-            </div>
-        ))}
-    </div>
-);
+// Demo tabs configuration
+const candidateDemoTabs = [
+    { id: 'profile', label: 'Living Profile', icon: User },
+    { id: 'stealth', label: 'Stealth Mode', icon: EyeOff },
+    { id: 'matching', label: 'Match Intelligence', icon: Target },
+    { id: 'messaging', label: 'Direct Access', icon: MessageSquare },
+    { id: 'verification', label: 'Get Verified', icon: BadgeCheck }
+] as const;
+
+type CandidateDemoTabId = typeof candidateDemoTabs[number]['id'];
 
 const ForTalentInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
-    const [activeTab, setActiveTab] = useState('preferences');
-    const [activeDemo, setActiveDemo] = useState('profile');
+    const [stealthMode, setStealthMode] = useState(true);
+    const [mobileTableIndex, setMobileTableIndex] = useState(0);
+    const [activeTab, setActiveTab] = useState<CandidateDemoTabId>('profile');
+    const [profileView, setProfileView] = useState<'resume' | 'chime'>('chime');
+    const [demoStealthMode, setDemoStealthMode] = useState(true);
+    const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
-    const frustrations = [
-        { title: 'The Black Hole', desc: 'You apply. You customize the cover letter. You never hear back.' },
-        { title: 'Keyword Roulette', desc: '"10 years experience in a 5-year-old framework." Your actual skills don\'t matter if the ATS rejects your resume.' },
-        { title: 'Recruiter Spam', desc: '"Amazing opportunity!" — a 3-month contract in a city you don\'t live in for half your rate.' },
-        { title: 'Culture Surprise', desc: 'The job said "fast-paced." They meant "unsustainable." You find out after you start.' },
-        { title: 'Salary Games', desc: 'Five rounds of interviews before they mention compensation. It\'s 30% below your floor.' },
-        { title: 'The Ghost', desc: 'Three interviews, a take-home, "we\'ll be in touch." That was six weeks ago.' }
+    const comparisonData = [
+        {
+            feature: 'Privacy',
+            oldWay: 'Your boss can see you\'re "Open to Work"',
+            chimeWay: 'Total stealth until you engage'
+        },
+        {
+            feature: 'Quality',
+            oldWay: 'Self-reported skills (unreliable)',
+            chimeWay: 'Peer-verified authority'
+        },
+        {
+            feature: 'Communication',
+            oldWay: 'Third-party recruiters / Spam',
+            chimeWay: 'Direct Hiring Manager access'
+        },
+        {
+            feature: 'Matching',
+            oldWay: 'Based on keywords',
+            chimeWay: 'Based on "Ways of Working" & Ambition'
+        },
+        {
+            feature: 'Application',
+            oldWay: 'Black hole / No feedback',
+            chimeWay: 'Transparent tracking & status'
+        }
     ];
 
-    const benefits = [
-        { num: '01', title: 'Chimed, Not Searched', desc: 'See every role that fits the moment you sign up. No applications required.', detail: 'Aligned on skills, values, team dynamics, and more.' },
-        { num: '02', title: 'You Set the Rules', desc: 'Non-negotiables are non-negotiable. Remote-only? You only see remote.', detail: 'Salary floor, work mode, company size — you decide.' },
-        { num: '03', title: 'Team Fit, Not Just Company Fit', desc: 'Know how teams actually work before you join. Intensity, cadence, communication style.', detail: 'Avoid culture surprise after you start.' },
-        { num: '04', title: 'Skills Over Tenure', desc: 'We measure what you can do, not how long you\'ve done it.', detail: '5 proficiency levels that show growth trajectory, not just years.' },
-        { num: '05', title: 'Verified Credibility', desc: 'Colleagues vouch for your skills. Not LinkedIn-style endorsements — real verification.', detail: 'Verified profiles get prioritized by companies.' },
-        { num: '06', title: 'Direct Conversations', desc: 'When a company unlocks you, you chat directly. No recruiters in between.', detail: 'Integrated scheduling and messaging.' }
-    ];
-
-    const steps = [
-        { num: '1', title: 'Build Your Profile', desc: 'Add skills with proficiency levels. Set salary, location, and work mode preferences. Define how you like to work.', time: '~10 min' },
-        { num: '2', title: 'See What Chimes', desc: 'Instantly view every role that fits your criteria — company, team, and role level.', time: 'Instant' },
-        { num: '3', title: 'Get Verified', desc: 'Invite past colleagues to verify your skills. Verified profiles get more attention.', time: 'Optional' },
-        { num: '4', title: 'Companies Come to You', desc: 'When a company unlocks your profile, you\'re notified. Chat directly. You\'re always in control.', time: 'Ongoing' }
-    ];
-
-    const tabs = [
-        { id: 'preferences', title: 'Your Rules' },
-        { id: 'skills', title: 'Actual Proficiency' },
-        { id: 'verification', title: 'Real Proof' },
-        { id: 'matching', title: 'Jobs That Fit' }
-    ];
-
-    const demoTabs = [
-        { id: 'profile', label: 'Your Profile' },
-        { id: 'matches', label: 'Your Matches' },
-        { id: 'verify', label: 'Verification' }
+    const toolsetFeatures = [
+        {
+            icon: LayoutDashboard,
+            title: 'The Unified Command Center',
+            desc: 'A clean, minimal dashboard to track every "Chime." No more messy spreadsheets or lost emails.'
+        },
+        {
+            icon: MessageSquare,
+            title: 'Direct-to-Manager Messaging',
+            desc: 'Cut out the middleman. When you "Chime" with a company, you are placed in a direct thread with the Hiring Manager. No ghosting, no gatekeepers.'
+        },
+        {
+            icon: Eye,
+            title: 'Anonymous Discovery',
+            desc: 'You remain a "Signal" until you decide to reveal your "Identity." Browse the market without your current employer ever knowing you\'re looking.'
+        },
+        {
+            icon: TrendingUp,
+            title: 'Transparent Tracking',
+            desc: 'See exactly where you stand in every application. No black holes. No wondering. Full visibility.'
+        }
     ];
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 py-10 space-y-24">
-            
-            {/* Hero Section */}
-            <section className="text-center animate-in fade-in slide-in-from-bottom-6 duration-700">
-                <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-purple-50 text-purple-700 text-xs font-black uppercase tracking-widest border border-purple-100 mb-8">
-                    Free Forever · No Spam · You Control Visibility
+        <div className="w-full max-w-6xl mx-auto px-4 py-12 space-y-24">
+
+            {/* Add shimmer animation for verified badge */}
+            <style>{`
+                @keyframes shimmer {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+                .animate-shimmer {
+                    animation: shimmer 3s ease-in-out infinite;
+                }
+            `}</style>
+
+            {/* HERO SECTION */}
+            <section className="text-center max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
+                {/* Pill Badge */}
+                <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-8">
+                    For Talent
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-gray-900 leading-[1.1] mb-8">
-                    Find Roles That<br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
-                        Chime With You
-                    </span>
+
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-gray-900 leading-[1.05] mb-8">
+                    Your Career, In<br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">High Definition</span>
                 </h1>
-                <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed mb-12">
-                    chime aligns you with companies based on skills, values, and how teams actually work — not keyword games. Companies come to you, already knowing you're a fit.
+
+                <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed mb-12">
+                    Stop fitting your life into a 2-page PDF. Chime maps your skills, values, and professional ambitions
+                    to the teams where you'll actually thrive. Precision matches, private by default, and verified by peers.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+                {/* Dual CTAs */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <button
                         onClick={onGetStarted}
-                        className="bg-purple-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-purple-700 transition-all hover:shadow-2xl active:scale-95 shadow-purple-200/50"
+                        className="w-full sm:w-auto bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-gray-800 hover:shadow-lg transition-all group flex items-center justify-center"
                     >
-                        Build Your Profile
+                        Build Your Verified Profile
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </button>
                     <button
-                        onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="bg-white border border-gray-200 text-gray-700 px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-50 transition-all active:scale-95"
+                        onClick={() => document.getElementById('pillars')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="w-full sm:w-auto bg-white border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold text-base hover:border-gray-300 hover:shadow-md transition-all"
                     >
-                        See How It Works
+                        See How the Match Works
                     </button>
                 </div>
             </section>
 
-            {/* Sound Familiar Section */}
-            <section className="space-y-12 bg-white rounded-[3rem] p-12 md:p-16 border border-gray-100 shadow-sm">
+            {/* THREE PILLARS OF CAREER PRECISION */}
+            <section id="pillars" className="space-y-16">
+                {/* Section Header */}
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">The Job Search You Know</h2>
-                    <p className="text-gray-500 font-medium leading-relaxed">Traditional job hunting is broken. We've been there too.</p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {frustrations.map((f, i) => (
-                        <div key={i} className="bg-gray-50 rounded-2xl p-6 border-l-4 border-l-gray-300 border border-gray-100/50 hover:bg-white hover:shadow-md hover:border-l-purple-400 transition-all group">
-                            <h3 className="font-black text-gray-900 mb-2">{f.title}</h3>
-                            <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-                        </div>
-                    ))}
-                </div>
-                
-                <div className="text-center pt-8 border-t border-gray-50">
-                    <p className="text-xl font-black text-gray-900 mb-2">There's a better way to find your next role.</p>
-                    <p className="text-gray-500 font-medium italic">What if companies came to you, already knowing you're a good fit?</p>
-                </div>
-            </section>
-
-            {/* Benefits Grid */}
-            <section id="features" className="space-y-16">
-                <div className="text-center max-w-2xl mx-auto">
-                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest mb-4">
-                        The chime Way
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-6">
+                        The Candidate Advantage
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Job Hunting That Respects Your Time</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Three Pillars of Career Precision
+                    </h2>
+                    <p className="text-gray-500 text-lg">You are more than your tech stack.</p>
                 </div>
-                
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {benefits.map((b, i) => (
-                        <div key={i} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:border-purple-200 hover:shadow-xl transition-all relative group overflow-hidden">
-                            <div className="absolute top-0 right-0 p-16 bg-purple-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="relative z-10">
-                                <div className="text-3xl font-black text-purple-200 mb-4 group-hover:text-purple-400 transition-colors">
-                                    {b.num}
-                                </div>
-                                <h3 className="font-black text-gray-900 mb-3 text-lg leading-tight">{b.title}</h3>
-                                <p className="text-gray-500 text-sm leading-relaxed mb-4">{b.desc}</p>
-                                <div className="text-purple-600 text-[11px] font-black uppercase tracking-widest flex items-center">
-                                    {b.detail}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
 
-            {/* Feature Deep-Dives (Tabs) */}
-            <section className="bg-white rounded-[3rem] border border-gray-200 overflow-hidden shadow-sm">
-                <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar bg-gray-50/50">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id)}
-                            className={`px-10 py-6 font-black text-[10px] uppercase tracking-[0.2em] transition-all border-b-4 whitespace-nowrap ${
-                                activeTab === t.id
-                                    ? 'border-purple-600 text-purple-600 bg-purple-50/30'
-                                    : 'border-transparent text-gray-400 hover:text-gray-900 hover:bg-white'
-                            }`}
-                        >
-                            {t.title}
-                        </button>
-                    ))}
-                </div>
-                <div className="p-10 md:p-20">
-                    {activeTab === 'preferences' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">Your Rules,<br />Your Way</h3>
-                                <p className="text-gray-600 text-lg font-medium leading-relaxed">
-                                    Not everything is equally important. Mark what's a dealbreaker and what's flexible. 
-                                    Companies only see you if they meet YOUR non-negotiables.
-                                </p>
-                                <ul className="space-y-4">
-                                    {['Remote work requirement', 'Strict salary floors', 'Preferred company size', 'Work-life balance focus'].map(pt => (
-                                        <li key={pt} className="flex items-center gap-3 text-gray-900 font-bold">
-                                            <div className="w-5 h-5 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
-                                                <CheckCircle className="w-3.5 h-3.5" />
-                                            </div>
-                                            {pt}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="bg-gray-50 rounded-[2.5rem] p-8 border-2 border-gray-100 shadow-inner">
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-lg border-l-4 border-l-red-500 mb-4">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Work Mode</div>
-                                        <div className="bg-red-50 text-red-600 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> Dealbreaker</div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <div className="flex-1 p-3 rounded-xl border-2 border-purple-600 bg-purple-50 text-purple-700 text-center text-xs font-black">Remote Only</div>
-                                        <div className="flex-1 p-3 rounded-xl border-2 border-gray-100 text-gray-300 text-center text-xs font-black grayscale opacity-50">Hybrid</div>
-                                    </div>
-                                </div>
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-lg border-l-4 border-l-purple-500 opacity-60 grayscale scale-95 origin-top translate-y-2">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Salary Floor</div>
-                                    <div className="h-1.5 w-full bg-gray-100 rounded-full relative"><div className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 bg-purple-600 rounded-full shadow-lg" /></div>
-                                </div>
-                            </div>
+                {/* Three Pillars Grid */}
+                <div className="grid md:grid-cols-3 gap-8">
+                    {/* Pillar 1: The Living Granular CV */}
+                    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-6">
+                            <FileText className="w-6 h-6 text-gray-500" />
                         </div>
-                    )}
-                    {activeTab === 'skills' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">Show What You<br />Can Actually Do</h3>
-                                <p className="text-gray-600 text-lg font-medium leading-relaxed">
-                                    Years of experience is a lazy metric. We measure real proficiency across 5 levels. 
-                                    Are you actively learning something new? Great — we show that growth.
-                                </p>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {Object.values(SKILL_LEVEL_METADATA).slice(0, 4).map((lvl: any) => (
-                                        <div key={lvl.label} className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                            <div className="text-2xl mb-2">{lvl.icon}</div>
-                                            <div className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{lvl.label}</div>
-                                            <div className="text-xs font-bold text-gray-700 leading-tight line-clamp-1">{lvl.descriptor}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl border-t-8 border-t-purple-600">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <span className="font-black text-xl">React Mastery</span>
-                                        <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-black">Level 4: Mastering</span>
-                                    </div>
-                                    <div className="flex gap-2 mb-6">
-                                        {[1, 2, 3, 4, 5].map(i => <div key={i} className={`h-2 flex-1 rounded-full ${i <= 4 ? 'bg-purple-600' : 'bg-gray-100'}`} />)}
-                                    </div>
-                                    <p className="text-gray-500 text-sm italic font-medium leading-relaxed">"Handles ambiguous problems creatively. Establishes team conventions and best practices."</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'verification' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">Real References,<br />Real Trust</h3>
-                                <p className="text-gray-600 text-lg font-medium leading-relaxed">
-                                    Colleagues confirm specific skills you've witnessed in action. 
-                                    Verified profiles are unlocked 3x more often by hiring teams.
-                                </p>
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-4 p-4 bg-purple-50 rounded-2xl border border-purple-100">
-                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-purple-600 shadow-sm"><Users className="w-5 h-5" /></div>
-                                        <div>
-                                            <div className="text-[10px] font-black text-purple-800 uppercase tracking-widest">Colleague Verified</div>
-                                            <div className="text-xs text-purple-600 font-bold">"Exceptional problem solver under pressure"</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-gray-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
-                                <div className="absolute top-0 right-0 p-32 bg-purple-600 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/2" />
-                                <div className="relative z-10 space-y-8">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-green-400 border border-white/5"><ShieldCheck className="w-6 h-6" /></div>
-                                        <div>
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Verification Status</div>
-                                            <div className="text-lg font-black">Trusted Professional</div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                                            <span className="text-xs font-bold text-gray-400 uppercase">Communication</span>
-                                            <span className="font-black text-green-400">9.2 / 10</span>
-                                        </div>
-                                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                                            <span className="text-xs font-bold text-gray-400 uppercase">Technical Ability</span>
-                                            <span className="font-black text-green-400">Verified L4</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'matching' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight leading-tight">The Moment You<br />Go Live, Roles Chime</h3>
-                                <p className="text-gray-600 text-lg font-medium leading-relaxed">
-                                    No more "wondering" if you're qualified. We align roles to YOU.
-                                    See exactly why a job is a 90% chime and where the 10% gap is.
-                                </p>
-                                <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
-                                    <p className="text-sm font-black text-purple-900 leading-relaxed italic">
-                                        "Chimes update in real-time as you refine your profile. Data always enriches, never resets."
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="bg-white p-6 rounded-[2rem] border-2 border-purple-100 shadow-2xl scale-105">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center font-black">A</div>
-                                        <div className="text-center">
-                                            <div className="text-2xl font-black text-purple-600 leading-none">94%</div>
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Chime Score</div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {['Skills: 98%', 'Values: 92%', 'Culture: 91%'].map(m => (
-                                            <div key={m} className="flex items-center gap-2 text-xs font-bold text-gray-700">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> {m}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <button className="w-full mt-6 py-3 rounded-xl bg-purple-600 text-white font-black text-xs uppercase tracking-widest shadow-lg">Talk Direct</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* How It Works Section */}
-            <section className="space-y-16">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Four Steps to Finding Your Chime</h2>
-                    <p className="text-gray-500 font-medium">No resume games. No keyword stuffing. Just the facts.</p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {steps.map((s, i) => (
-                        <div key={i} className="flex items-start gap-6 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:scale-[1.02] group">
-                            <div className="w-14 h-14 bg-purple-600 rounded-2xl flex items-center justify-center text-white font-black text-xl flex-shrink-0 shadow-lg shadow-purple-200 group-hover:rotate-6 transition-transform">
-                                {s.num}
-                            </div>
-                            <div className="flex-1 space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <h3 className="font-black text-gray-900 text-lg leading-tight">{s.title}</h3>
-                                    <span className="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">{s.time}</span>
-                                </div>
-                                <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Interactive Demo Section */}
-            <section id="demo" className="space-y-12">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Experience chime</h2>
-                    <p className="text-gray-500 font-medium">Take a test drive of the interface built for technical talent.</p>
-                </div>
-                
-                <div className="bg-white rounded-[3rem] border border-gray-200 shadow-2xl overflow-hidden animate-in zoom-in duration-700">
-                    {/* Browser Chrome */}
-                    <div className="bg-gray-50 px-6 py-4 flex items-center gap-4 border-b border-gray-200">
-                        <div className="flex gap-2">
-                            <div className="w-3 h-3 rounded-full bg-gray-200" />
-                            <div className="w-3 h-3 rounded-full bg-gray-200" />
-                            <div className="w-3 h-3 rounded-full bg-gray-200" />
-                        </div>
-                        <div className="flex-1 flex justify-center">
-                            <div className="bg-white rounded-full px-6 py-2 text-xs font-bold text-gray-400 flex items-center border border-gray-200 shadow-sm">
-                                <ShieldCheck className="w-3.5 h-3.5 mr-2 text-purple-500" />
-                                app.chime.works/dashboard
-                            </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            The "<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Living</span>" Granular CV
+                        </h3>
+                        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-gray-900">The Anatomy of a Profile:</span> Move beyond bullet points.
+                                Build a profile that captures your architectural preferences, your ideal team velocity, and your growth trajectory.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">Supported & Scalable:</span> Every claim you make—from
+                                "Scale-up Leadership" to "Rust Concurrency"—can be supported by real-world evidence and direct links to your best work.
+                            </p>
                         </div>
                     </div>
-                    
-                    {/* Demo Interface */}
-                    <div className="flex flex-col md:flex-row h-[600px]">
-                        {/* Sidebar Demo */}
-                        <div className="w-full md:w-64 bg-gray-50 border-r border-gray-100 p-6 space-y-2 hidden md:block">
-                            <div className="h-4 w-24 bg-gray-200 rounded mb-8 animate-pulse" />
-                            {demoTabs.map(tab => (
+
+                    {/* Pillar 2: Peer-Verified Authority */}
+                    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-6">
+                            <Shield className="w-6 h-6 text-gray-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Peer-Verified</span> Authority
+                        </h3>
+                        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-gray-900">Proof Over Promises:</span> Use our Verify Functionality to gain the{' '}
+                                <ChimeVerifiedBadge size="sm" /> badge. High-signal talent shouldn't have to prove themselves in every interview;
+                                let your peers and past collaborators vouch for your quality through our precision verification layer.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">The Result:</span> Recruiters stop asking "Can you do this?"
+                                and start asking "When can you start?"
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Pillar 3: The Algorithm of Ambition */}
+                    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-6">
+                            <Compass className="w-6 h-6 text-gray-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            The Algorithm of <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Ambition</span>
+                        </h3>
+                        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-gray-900">Total Alignment:</span> Our matching engine doesn't just look for a
+                                "React Developer." It looks for a "React Developer who thrives in async-first, flat-hierarchy, sustainability-focused startups."
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">Inside Intelligence:</span> Get real insights into how a hiring manager
+                                actually works before you even speak to them. See their team's communication style and decision-making framework.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* INTERACTIVE PRODUCT SHOWCASE */}
+            <section className="space-y-12">
+                {/* Section Header */}
+                <div className="text-center max-w-2xl mx-auto">
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-6">
+                        Experience The Difference
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Your Career Command Center
+                    </h2>
+                    <p className="text-gray-500 text-lg">
+                        See how Chime puts you in control of your career trajectory.
+                    </p>
+                </div>
+
+                {/* Tab Navigation - Desktop */}
+                <div className="hidden md:flex justify-center gap-2 bg-gray-100 p-1.5 rounded-xl max-w-4xl mx-auto">
+                    {candidateDemoTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                    activeTab === tab.id
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {tab.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Tab Navigation - Mobile Dropdown */}
+                <div className="md:hidden relative">
+                    <button
+                        onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
+                        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900"
+                    >
+                        <span className="flex items-center gap-2">
+                            {(() => {
+                                const currentTab = candidateDemoTabs.find(t => t.id === activeTab);
+                                const Icon = currentTab?.icon || User;
+                                return (
+                                    <>
+                                        <Icon className="w-4 h-4 text-blue-600" />
+                                        {currentTab?.label}
+                                    </>
+                                );
+                            })()}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {mobileDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                            {candidateDemoTabs.map((tab) => {
+                                const Icon = tab.icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            setMobileDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                                            activeTab === tab.id
+                                                ? 'bg-blue-50 text-blue-600'
+                                                : 'text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Demo Content Area */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+                    {/* TAB 1: Living Profile */}
+                    {activeTab === 'profile' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Your Living Profile</h3>
+                                    <p className="text-gray-500 text-sm">12+ data dimensions vs. 2 pages of bullets.</p>
+                                </div>
+                                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setProfileView('resume')}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                                            profileView === 'resume' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                                        }`}
+                                    >
+                                        <FileText className="w-4 h-4" /> Resume
+                                    </button>
+                                    <button
+                                        onClick={() => setProfileView('chime')}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                                            profileView === 'chime' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600'
+                                        }`}
+                                    >
+                                        <Target className="w-4 h-4" /> Chime Profile
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Split Screen Comparison */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* Traditional Resume View */}
+                                <div className={`transition-all duration-300 ${profileView === 'resume' ? 'opacity-100' : 'opacity-40'}`}>
+                                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 h-full">
+                                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Traditional Resume</div>
+                                        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-4">
+                                            <div className="border-b border-gray-100 pb-3">
+                                                <div className="font-bold text-gray-900">Alex Rivera</div>
+                                                <div className="text-sm text-gray-500">Senior Frontend Engineer</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Experience</div>
+                                                <div className="text-sm text-gray-600">5+ years React development...</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Skills</div>
+                                                <div className="text-sm text-gray-600">React, TypeScript, Node.js...</div>
+                                            </div>
+                                            <div className="text-center py-4 border-t border-gray-100">
+                                                <span className="text-xs text-gray-400">...and that's it.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Chime Profile View */}
+                                <div className={`transition-all duration-300 ${profileView === 'chime' ? 'opacity-100 scale-[1.02]' : 'opacity-60'}`}>
+                                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200 h-full">
+                                        <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-4">Chime Profile</div>
+                                        <div className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm space-y-4">
+                                            <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold">A</div>
+                                                <div>
+                                                    <div className="font-bold text-gray-900 flex items-center gap-2">
+                                                        Alex Rivera
+                                                        <ChimeVerifiedBadge size="sm" />
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">Senior Frontend Engineer</div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Skills with Proficiency</div>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">React L4</span>
+                                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">TypeScript L4</span>
+                                                    <span className="px-2 py-1 bg-teal-100 text-teal-700 rounded text-xs font-medium">Node.js L3</span>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Working Style</div>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">Async-First</span>
+                                                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">High Autonomy</span>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Core Values</div>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Work-Life Balance</span>
+                                                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Continuous Learning</span>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Growth Trajectory</div>
+                                                <div className="text-sm text-gray-600">IC → Tech Lead in 2-3 years</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 2: Stealth Mode */}
+                    {activeTab === 'stealth' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div className="text-center">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Stealth Mode</h3>
+                                <p className="text-gray-500 text-sm max-w-xl mx-auto">
+                                    Browse jobs, build matches, and explore opportunities—all while your current employer has zero visibility.
+                                </p>
+                            </div>
+
+                            {/* Toggle Control */}
+                            <div className="flex justify-center">
                                 <button
-                                    key={tab.id}
-                                    onClick={() => setActiveDemo(tab.id)}
-                                    className={`w-full flex items-center px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                                        activeDemo === tab.id ? 'bg-white shadow-sm text-purple-600' : 'text-gray-400 hover:text-gray-900'
+                                    onClick={() => setDemoStealthMode(!demoStealthMode)}
+                                    className={`relative w-20 h-10 rounded-full transition-all duration-300 ${
+                                        demoStealthMode
+                                            ? 'bg-blue-600 shadow-lg shadow-blue-500/50'
+                                            : 'bg-gray-300'
                                     }`}
                                 >
-                                    {tab.label}
+                                    <div className={`absolute top-1 w-8 h-8 bg-white rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
+                                        demoStealthMode ? 'left-[44px]' : 'left-1'
+                                    }`}>
+                                        {demoStealthMode ? (
+                                            <EyeOff className="w-4 h-4 text-blue-600" />
+                                        ) : (
+                                            <Eye className="w-4 h-4 text-gray-400" />
+                                        )}
+                                    </div>
                                 </button>
-                            ))}
-                        </div>
-                        
-                        {/* Demo Main Content Area */}
-                        <div className="flex-1 p-8 md:p-12 overflow-y-auto bg-white custom-scrollbar">
-                            {activeDemo === 'profile' && <DemoProfile />}
-                            {activeDemo === 'matches' && <DemoMatches />}
-                            {activeDemo === 'verify' && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Verification Flow</h4>
-                                    <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
-                                        <p className="text-purple-900 font-bold mb-4">Request from Sarah (Manager):</p>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3 text-xs font-bold text-purple-700 bg-white p-3 rounded-xl border-l-4 border-l-purple-400 border border-purple-100">
-                                                <CheckCircle className="w-4 h-4 text-purple-600" /> Proficiency verified: Mastered React
+                            </div>
+
+                            {/* Side by Side Comparison */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* Stealth Mode ON */}
+                                <div className={`transition-all duration-500 ${demoStealthMode ? 'opacity-100 scale-100' : 'opacity-50 scale-95'}`}>
+                                    <div className="bg-gray-900 rounded-xl p-6 border border-gray-700 relative overflow-hidden">
+                                        {demoStealthMode && (
+                                            <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />
+                                        )}
+                                        <div className="relative z-10">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-semibold rounded flex items-center gap-1">
+                                                    <Lock className="w-3 h-3" /> Stealth Mode Active
+                                                </span>
+                                                <span className="text-blue-400 font-bold">92%</span>
                                             </div>
-                                            <div className="flex items-center gap-3 text-xs font-bold text-purple-700 bg-white p-3 rounded-xl border-l-4 border-l-purple-400 border border-purple-100">
-                                                <CheckCircle className="w-4 h-4 text-purple-600" /> Collaboration score: 9.5 / 10
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+                                                    <User className="w-6 h-6 text-gray-500" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-white font-mono">Signal-7</div>
+                                                    <div className="text-sm text-gray-400">Company: Stealth</div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    <span className="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">React L4</span>
+                                                    <span className="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">TypeScript L4</span>
+                                                </div>
+                                                <div className="text-xs text-gray-500">Skills visible • Identity hidden</div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-center pt-4">
-                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Added instantly to your live profile</span>
+                                </div>
+
+                                {/* Stealth Mode OFF */}
+                                <div className={`transition-all duration-500 ${!demoStealthMode ? 'opacity-100 scale-100' : 'opacity-50 scale-95'}`}>
+                                    <div className="bg-white rounded-xl p-6 border border-gray-200">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded flex items-center gap-1">
+                                                <Unlock className="w-3 h-3" /> Profile Public
+                                            </span>
+                                            <span className="text-blue-600 font-bold">92%</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold">
+                                                A
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-gray-900">Alex Rivera</div>
+                                                <div className="text-sm text-gray-500">TechCorp Inc.</div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex flex-wrap gap-1.5">
+                                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">React L4</span>
+                                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">TypeScript L4</span>
+                                            </div>
+                                            <div className="text-xs text-gray-500">Full profile visible</div>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+
+                            <div className="text-center text-sm text-gray-500">
+                                You decide when to reveal your identity. Companies see your signal, not your name.
+                            </div>
                         </div>
-                    </div>
-                    
-                    {/* Demo Footer */}
-                    <div className="bg-purple-600 px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <span className="text-purple-100 text-sm font-bold uppercase tracking-widest">Setup in 10 minutes</span>
-                        <button
-                            onClick={onGetStarted}
-                            className="bg-white text-purple-600 font-black px-8 py-3 rounded-xl text-sm hover:bg-purple-50 transition-all transform hover:scale-105 active:scale-95 shadow-xl"
-                        >
-                            Start Chiming Free
-                        </button>
+                    )}
+
+                    {/* TAB 3: Match Intelligence */}
+                    {activeTab === 'matching' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Match Intelligence</h3>
+                                <p className="text-gray-500 text-sm">See exactly why a role is a 90% match and where the gaps are.</p>
+                            </div>
+
+                            {/* Match Visualization */}
+                            <div className="grid md:grid-cols-3 gap-6 items-start">
+                                {/* Your Profile */}
+                                <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
+                                    <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-4">Your Profile</div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-1">Technical Stack</div>
+                                            <div className="flex flex-wrap gap-1">
+                                                <span className="px-2 py-0.5 bg-white border border-blue-200 rounded text-xs text-blue-700">React</span>
+                                                <span className="px-2 py-0.5 bg-white border border-blue-200 rounded text-xs text-blue-700">TypeScript</span>
+                                                <span className="px-2 py-0.5 bg-white border border-blue-200 rounded text-xs text-blue-700">Node.js</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-1">Working Style</div>
+                                            <span className="px-2 py-0.5 bg-white border border-blue-200 rounded text-xs text-blue-700">Async-First</span>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-1">Growth Goal</div>
+                                            <span className="text-xs text-gray-700">IC → Tech Lead (2-3 yrs)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Match Score */}
+                                <div className="flex flex-col items-center justify-center py-6">
+                                    <div className="relative">
+                                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center">
+                                            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
+                                                <span className="text-2xl font-black text-gray-900">90%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 text-sm font-medium text-gray-500">Overall Match</div>
+                                </div>
+
+                                {/* Job Opportunity */}
+                                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Job Opportunity</div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-1">Required Stack</div>
+                                            <div className="flex flex-wrap gap-1">
+                                                <span className="px-2 py-0.5 bg-green-100 border border-green-200 rounded text-xs text-green-700">React</span>
+                                                <span className="px-2 py-0.5 bg-green-100 border border-green-200 rounded text-xs text-green-700">TypeScript</span>
+                                                <span className="px-2 py-0.5 bg-white border border-gray-200 rounded text-xs text-gray-500">Python</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-1">Team Style</div>
+                                            <span className="px-2 py-0.5 bg-green-100 border border-green-200 rounded text-xs text-green-700">Async-First</span>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-1">Growth Path</div>
+                                            <span className="text-xs text-gray-700">Tech Lead (1-2 yrs)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Detailed Breakdown */}
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                                <div className="text-sm font-semibold text-gray-700 mb-4">Match Breakdown</div>
+                                <div className="space-y-3">
+                                    {[
+                                        { label: 'Technical Stack', score: 94, status: 'match', detail: 'React, TypeScript, Node.js' },
+                                        { label: 'Working Style', score: 88, status: 'match', detail: 'Async-first communication' },
+                                        { label: 'Core Values', score: 96, status: 'match', detail: 'Work-life balance, Continuous learning' },
+                                        { label: 'Growth Alignment', score: 82, status: 'partial', detail: 'Timeline slight mismatch: You prefer 2-3 yrs, role suggests 1-2 yrs' }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center gap-4">
+                                            <div className="w-32 text-sm text-gray-600">{item.label}</div>
+                                            <div className="flex-1">
+                                                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full ${item.status === 'match' ? 'bg-blue-500' : 'bg-amber-400'}`}
+                                                        style={{ width: `${item.score}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className={`w-12 text-right text-sm font-semibold ${item.status === 'match' ? 'text-blue-600' : 'text-amber-600'}`}>
+                                                {item.score}%
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 4: Direct Access Messaging */}
+                    {activeTab === 'messaging' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Direct Access</h3>
+                                <p className="text-gray-500 text-sm">No recruiter gatekeepers. Just direct, technical conversations with hiring managers.</p>
+                            </div>
+
+                            {/* Chat Interface */}
+                            <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden max-w-2xl mx-auto">
+                                {/* Chat Header */}
+                                <div className="bg-white px-4 py-3 border-b border-gray-200 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">SC</div>
+                                    <div>
+                                        <div className="font-semibold text-gray-900 text-sm">Sarah Chen</div>
+                                        <div className="text-xs text-gray-500">Hiring Manager @ TechCorp</div>
+                                    </div>
+                                    <div className="ml-auto">
+                                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">92% Match</span>
+                                    </div>
+                                </div>
+
+                                {/* Messages */}
+                                <div className="p-4 space-y-4 bg-gray-50 max-h-80 overflow-y-auto">
+                                    {/* Message from Hiring Manager */}
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">SC</div>
+                                        <div className="bg-white rounded-lg rounded-tl-none p-3 border border-gray-200 max-w-[80%]">
+                                            <p className="text-sm text-gray-700">Hi Signal-7! Your profile shows a 92% match for our Senior Engineer role. I'd love to discuss our async-first culture and growth trajectory. Are you open to a brief call this week?</p>
+                                            <div className="text-xs text-gray-400 mt-1">2:34 PM</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Message from Candidate */}
+                                    <div className="flex gap-3 justify-end">
+                                        <div className="bg-blue-600 text-white rounded-lg rounded-tr-none p-3 max-w-[80%]">
+                                            <p className="text-sm">Thanks Sarah! I'm interested. Before we schedule, can you share more about the team's tech debt management philosophy and on-call rotation?</p>
+                                            <div className="text-xs text-blue-200 mt-1">2:41 PM</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Response with attachment */}
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">SC</div>
+                                        <div className="space-y-2 max-w-[80%]">
+                                            <div className="bg-white rounded-lg rounded-tl-none p-3 border border-gray-200">
+                                                <p className="text-sm text-gray-700">Great questions. We dedicate 20% of each sprint to tech debt and rotate on-call weekly across a team of 8. I've attached our engineering principles doc.</p>
+                                            </div>
+                                            <div className="bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-2">
+                                                <Paperclip className="w-4 h-4 text-gray-400" />
+                                                <span className="text-sm text-blue-600 font-medium">engineering-principles.pdf</span>
+                                            </div>
+                                            <div className="text-xs text-gray-400">2:45 PM</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Final message with calendar */}
+                                    <div className="flex gap-3 justify-end">
+                                        <div className="space-y-2 max-w-[80%]">
+                                            <div className="bg-blue-600 text-white rounded-lg rounded-tr-none p-3">
+                                                <p className="text-sm">This aligns well with my values. Let's schedule a call.</p>
+                                            </div>
+                                            <div className="bg-blue-500 text-white rounded-lg p-3 flex items-center gap-2">
+                                                <Calendar className="w-4 h-4" />
+                                                <span className="text-sm font-medium">calendar.chime.works/signal-7</span>
+                                            </div>
+                                            <div className="text-xs text-gray-400 text-right">2:48 PM</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Input Area */}
+                                <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Type a message..."
+                                        className="flex-1 px-3 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        disabled
+                                    />
+                                    <button className="p-2 bg-blue-600 rounded-lg text-white">
+                                        <Send className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 5: Verification */}
+                    {activeTab === 'verification' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Get Verified</h3>
+                                <p className="text-gray-500 text-sm">Let your peers vouch for your skills. Verified profiles get unlocked 3x more often.</p>
+                            </div>
+
+                            {/* Verification Flow */}
+                            <div className="space-y-4">
+                                {/* Step 1 */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span className="text-sm font-bold text-blue-600">1</span>
+                                    </div>
+                                    <div className="flex-1 bg-white rounded-xl p-4 border border-gray-200">
+                                        <div className="font-semibold text-gray-900 mb-2">Submit Verification Request</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                                                Skill: React (Mastering Level)
+                                            </span>
+                                            <span className="px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600">
+                                                Verifier: Sarah Chen (Tech Lead)
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <div className="w-px h-6 bg-gray-300" />
+                                </div>
+
+                                {/* Step 2 */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span className="text-sm font-bold text-blue-600">2</span>
+                                    </div>
+                                    <div className="flex-1 bg-white rounded-xl p-4 border border-gray-200">
+                                        <div className="font-semibold text-gray-900 mb-2">Verifier Receives Request</div>
+                                        <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 italic">
+                                            "Alex Rivera has requested you verify their React expertise. Please confirm their proficiency level and provide brief context."
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <div className="w-px h-6 bg-gray-300" />
+                                </div>
+
+                                {/* Step 3 */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                        <Check className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div className="flex-1 bg-green-50 rounded-xl p-4 border border-green-200">
+                                        <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                            Verification Confirmed
+                                            <Check className="w-4 h-4 text-green-600" />
+                                        </div>
+                                        <div className="text-sm text-gray-600 mb-2">
+                                            Verified by Sarah Chen (Tech Lead @ Previous Co)
+                                        </div>
+                                        <div className="bg-white rounded-lg p-3 text-sm text-gray-600 italic border border-green-200">
+                                            "Worked with Alex for 2 years. Led our migration to React 18. Exceptional understanding of performance optimization."
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <div className="w-px h-6 bg-gray-300" />
+                                </div>
+
+                                {/* Step 4 - Badge Earned */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center">
+                                        <BadgeCheck className="w-4 h-4 text-white" />
+                                    </div>
+                                    <div className="flex-1 bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl p-4 border border-blue-200">
+                                        <div className="font-semibold text-gray-900 mb-3">Badge Earned</div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-600">Before:</span>
+                                                <span className="px-2 py-1 bg-white border border-gray-200 rounded text-sm text-gray-700">React (Mastering)</span>
+                                            </div>
+                                            <ArrowRight className="w-4 h-4 text-gray-400" />
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-600">After:</span>
+                                                <span className="px-2 py-1 bg-white border border-blue-200 rounded text-sm text-blue-700 flex items-center gap-1">
+                                                    React (Mastering) <Check className="w-3 h-3 text-blue-600" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4">
+                                            <ChimeVerifiedBadge />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Dashboard Preview Callout */}
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex-1">
+                            <h4 className="font-bold text-gray-900 mb-2">The Unified Command Center</h4>
+                            <p className="text-gray-500 text-sm mb-4">Track every opportunity in one place. No spreadsheets. No chaos.</p>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {[
+                                    { label: 'Active Matches', value: '5', color: 'blue' },
+                                    { label: 'Messages', value: '3', color: 'green' },
+                                    { label: 'In Progress', value: '2', color: 'purple' },
+                                    { label: 'Profile', value: '87%', color: 'teal' }
+                                ].map((stat, i) => (
+                                    <div key={i} className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                        <div className={`text-xl font-bold text-${stat.color}-600`}>{stat.value}</div>
+                                        <div className="text-xs text-gray-500">{stat.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* Social Proof */}
-            <section className="py-12 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
-                <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-10">
-                    {[
-                        { value: '12,000+', label: 'Candidates' },
-                        { value: '500+', label: 'Companies' },
-                        { value: '94%', label: 'Match Accuracy' },
-                        { value: '3x', label: 'Faster Time-to-Role' },
-                    ].map((stat, i) => (
-                        <React.Fragment key={stat.label}>
-                            <div className="text-center">
-                                <div className="text-4xl font-black text-gray-900 mb-1">{stat.value}</div>
-                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</div>
+            {/* THE CANDIDATE TOOLSET */}
+            <section className="space-y-12">
+                {/* Section Header */}
+                <div className="text-center max-w-2xl mx-auto">
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-6">
+                        Your Command Center
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Built for How You Actually Job Search
+                    </h2>
+                </div>
+
+                {/* 2x2 Feature Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                    {toolsetFeatures.map((feature, i) => {
+                        const Icon = feature.icon;
+                        return (
+                            <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                        <Icon className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
+                                        <p className="text-gray-500 text-sm leading-relaxed">{feature.desc}</p>
+                                    </div>
+                                </div>
                             </div>
-                            {i < 3 && <div className="h-10 w-px bg-gray-100 hidden md:block" />}
-                        </React.Fragment>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* COMPARATIVE VALUE TABLE */}
+            <section className="space-y-12">
+                {/* Section Header */}
+                <div className="text-center max-w-2xl mx-auto">
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-6">
+                        Why Talent Chooses Chime
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Stop Settling for Noise
+                    </h2>
+                </div>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-hidden rounded-xl border border-gray-200">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="bg-gray-50">
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Feature</th>
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">The Old Way (LinkedIn/Boards)</th>
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-blue-700 uppercase tracking-wider bg-blue-50/50">The Chime Way</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {comparisonData.map((row, i) => (
+                                <tr key={i} className="bg-white">
+                                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">{row.feature}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">{row.oldWay}</td>
+                                    <td className="px-6 py-4 text-sm font-semibold text-blue-700 bg-blue-50/30">
+                                        <span className="flex items-center gap-2">
+                                            <Check className="w-4 h-4 text-blue-600" />
+                                            {row.chimeWay}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-4">
+                    {comparisonData.map((row, i) => (
+                        <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">
+                            <div className="text-sm font-bold text-gray-900 mb-4">{row.feature}</div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-start gap-4">
+                                    <span className="text-xs text-gray-400 uppercase flex-shrink-0">Old Way</span>
+                                    <span className="text-sm text-gray-500 text-right">{row.oldWay}</span>
+                                </div>
+                                <div className="flex justify-between items-start gap-4 pt-2 border-t border-gray-100">
+                                    <span className="text-xs text-blue-600 uppercase font-semibold flex-shrink-0">Chime</span>
+                                    <span className="text-sm font-semibold text-blue-700 flex items-center gap-1 text-right">
+                                        <Check className="w-4 h-4 flex-shrink-0" />
+                                        {row.chimeWay}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     ))}
                 </div>
             </section>
 
-            {/* Final CTA Section */}
-            <section className="py-24 bg-gradient-to-br from-purple-600 to-pink-500 rounded-[4rem] text-white text-center relative overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 bg-white/5 opacity-20" />
-                <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-900/30 rounded-full blur-3xl" />
-                
-                <div className="relative z-10 max-w-3xl mx-auto px-6 space-y-10">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">Find Your Chime</h2>
-                    <p className="text-purple-100 text-xl font-medium leading-relaxed">
-                        10 minutes to set up. Instant alignment. Zero spam.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button
-                            onClick={onGetStarted}
-                            className="bg-white text-purple-600 px-12 py-5 rounded-[2rem] font-black text-xl hover:shadow-2xl transition-all active:scale-95 w-full sm:w-auto transform hover:scale-105"
-                        >
-                            Build Your Profile
-                        </button>
+            {/* STEALTH MODE FEATURE CALLOUT */}
+            <section className="space-y-8">
+                {/* Section Header */}
+                <div className="text-center max-w-2xl mx-auto">
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-6">
+                        Privacy First
                     </div>
-                    <div className="flex flex-wrap justify-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-purple-100/60">
-                        <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> No Credit Card</span>
-                        <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Free Forever</span>
-                        <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Delete Anytime</span>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Job Search Without the Anxiety
+                    </h2>
+                </div>
+
+                {/* Stealth Mode Visual */}
+                <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 relative overflow-hidden">
+                    {/* Subtle background glow */}
+                    <div className={`absolute inset-0 transition-opacity duration-700 ${stealthMode ? 'opacity-100' : 'opacity-0'}`}>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px]" />
+                    </div>
+
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
+                        {/* Toggle Visual */}
+                        <div className="flex-shrink-0">
+                            <div className="flex flex-col items-center gap-6">
+                                {/* Toggle Switch */}
+                                <button
+                                    onClick={() => setStealthMode(!stealthMode)}
+                                    className={`relative w-24 h-12 rounded-full transition-all duration-300 ${
+                                        stealthMode
+                                            ? 'bg-blue-600 shadow-lg shadow-blue-500/50'
+                                            : 'bg-gray-600'
+                                    }`}
+                                >
+                                    <div className={`absolute top-1 w-10 h-10 bg-white rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
+                                        stealthMode ? 'left-[52px]' : 'left-1'
+                                    }`}>
+                                        <Eye className={`w-5 h-5 transition-colors ${stealthMode ? 'text-blue-600' : 'text-gray-400'}`} />
+                                    </div>
+                                </button>
+
+                                {/* Status Text */}
+                                <div className="text-center">
+                                    <div className={`text-sm font-semibold transition-colors ${stealthMode ? 'text-blue-400' : 'text-gray-400'}`}>
+                                        {stealthMode ? 'Stealth Mode Active' : 'Full Profile Visible'}
+                                    </div>
+                                    {stealthMode && (
+                                        <div className="mt-2 px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                                            <span className="text-blue-300 font-mono text-sm">Signal-7</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Copy */}
+                        <div className="flex-1 text-center lg:text-left">
+                            <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                                Browse opportunities, build your profile, and explore matches—all while remaining completely anonymous.
+                                Your current employer will never know you're looking. You control when to reveal your identity.
+                            </p>
+                            <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                    <Check className="w-4 h-4 text-blue-400" />
+                                    Invisible to current employer
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                    <Check className="w-4 h-4 text-blue-400" />
+                                    Reveal on your terms
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                    <Check className="w-4 h-4 text-blue-400" />
+                                    Companies see your signal, not your name
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
-            
-            <div className="text-center pb-12">
-                <button 
+
+            {/* CLOSING CTA SECTION */}
+            <section className="py-16">
+                <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-2xl p-12 md:p-16 text-center relative overflow-hidden">
+                    {/* Subtle background effect */}
+                    <div className="absolute inset-0 opacity-30">
+                        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+                        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+                    </div>
+
+                    <div className="relative z-10 max-w-2xl mx-auto">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                            Ready to Find Your Perfect Resonance?
+                        </h2>
+                        <p className="text-gray-400 text-lg mb-10">
+                            Join 1,000+ engineers who've stopped settling for "close enough."
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <button
+                                onClick={onGetStarted}
+                                className="w-full sm:w-auto bg-white text-gray-900 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl"
+                            >
+                                Build Your Profile Free
+                            </button>
+                        </div>
+                        <p className="mt-6 text-gray-500 text-sm">
+                            <button
+                                onClick={() => document.getElementById('pillars')?.scrollIntoView({ behavior: 'smooth' })}
+                                className="hover:text-gray-300 transition-colors underline underline-offset-2"
+                            >
+                                See how matching works
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Back Link */}
+            <div className="text-center pb-8">
+                <button
                     onClick={onBack}
-                    className="text-gray-400 font-bold hover:text-gray-900 transition-colors flex items-center justify-center mx-auto text-sm"
+                    className="text-gray-400 font-medium hover:text-gray-600 transition-colors flex items-center justify-center mx-auto text-sm"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" /> Return to Main Landing
                 </button>

@@ -1,708 +1,976 @@
 import React, { useState } from 'react';
-import {
-    Search, ArrowRight, CheckCircle, X, ArrowLeft, ShieldCheck
-} from 'lucide-react';
-import { SKILLS_LIST, CULTURAL_VALUES, ALL_CHARACTER_TRAITS } from '../../constants/matchingData';
+import { ArrowRight, ArrowLeft, Check, Code, Calculator, Target, Shield, Columns, Sun, Moon, ChevronDown, MessageSquare, Calendar, MoveRight, User } from 'lucide-react';
+import { SKILLS_LIST, CULTURAL_VALUES } from '../../constants/matchingData';
 
 interface Props {
     onGetStarted: () => void;
     onBack: () => void;
 }
 
-const DemoBrowseTalent = () => (
-    <div className="space-y-4 animate-in fade-in duration-500">
-        <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Chimed Talent</h4>
-            <div className="flex items-center text-xs font-bold text-blue-600"><Search className="w-3 h-3 mr-1"/> Precision Search</div>
-        </div>
-        {[
-            { name: 'S.K.', role: 'Senior Frontend Engineer', skills: ['React', 'TypeScript', 'Node.js'], match: 94 },
-            { name: 'M.R.', role: 'Full Stack Developer', skills: ['Python', 'React', 'AWS'], match: 89 },
-            { name: 'L.V.', role: 'Engineering Manager', skills: ['Strategy', 'Mentorship', 'Go'], match: 82 }
-        ].map((c, i) => (
-            <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center font-bold text-gray-400">{c.name}</div>
-                    <div>
-                        <div className="font-bold text-sm text-gray-900">{c.role}</div>
-                        <div className="flex gap-1 mt-1">
-                            {c.skills.map(s => <span key={s} className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{s}</span>)}
-                        </div>
-                    </div>
-                </div>
-                <div className="text-right">
-                    <div className="text-lg font-black text-green-600">{c.match}%</div>
-                    <div className="text-[9px] font-bold text-gray-400 uppercase">Chime</div>
-                </div>
-            </div>
-        ))}
-    </div>
-);
+// Demo tab definitions
+const demoTabs = [
+    { id: 'widget', label: 'Embeddable Widget', icon: Code },
+    { id: 'calculator', label: 'Cost Calculator', icon: Calculator },
+    { id: 'matching', label: 'Match Algorithm', icon: Target },
+    { id: 'approval', label: 'Executive Guardrails', icon: Shield },
+    { id: 'ats', label: 'Built-in ATS', icon: Columns }
+] as const;
 
-const DemoPostJob = () => (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-in slide-in-from-right-4 duration-500">
-        <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</div>
-            <h4 className="font-bold text-gray-900">Define Precision Levels</h4>
-        </div>
-        <div className="space-y-6">
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="flex justify-between items-center mb-3">
-                    <span className="font-bold text-sm">React Proficiency</span>
-                    <span className="text-xs font-bold text-blue-600">Level 4: Mastering</span>
-                </div>
-                <div className="flex gap-1 mb-2">
-                    {[1, 2, 3, 4, 5].map(lvl => <div key={lvl} className={`h-1.5 flex-1 rounded-full ${lvl <= 4 ? 'bg-blue-600' : 'bg-gray-200'}`} />)}
-                </div>
-                <p className="text-[10px] text-gray-500">"Handles ambiguous problems creatively. Establishes best practices."</p>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-purple-50 rounded-xl border-l-4 border-l-purple-400 border border-purple-100">
-                <div>
-                    <div className="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-1">Impact Scope</div>
-                    <div className="font-bold text-sm text-purple-900">Cross-Team Impact</div>
-                </div>
-            </div>
-        </div>
-    </div>
-);
+type DemoTabId = typeof demoTabs[number]['id'];
 
-const DemoReviewApplicants = () => (
-    <div className="flex gap-4 overflow-x-auto no-scrollbar animate-in fade-in duration-500">
-        {[
-            { title: 'New', count: 8, candidates: ['Alex M.', 'Jordan L.'] },
-            { title: 'Reviewing', count: 3, candidates: ['Sam T.'] },
-            { title: 'Interview', count: 2, candidates: ['Chris P.', 'Taylor W.'] }
-        ].map((col, i) => (
-            <div key={i} className="w-48 flex-shrink-0">
-                <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{col.title}</span>
-                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] font-bold">{col.count}</span>
-                </div>
-                <div className="space-y-2">
-                    {col.candidates.map(cand => (
-                        <div key={cand} className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm cursor-grab active:cursor-grabbing">
-                            <div className="text-xs font-bold text-gray-800">{cand}</div>
-                            <div className="mt-2 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 w-4/5" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        ))}
-    </div>
-);
-
-const DemoWidgetPreview = () => {
-    const [color, setColor] = useState('#3b82f6');
-    return (
-        <div className="animate-in fade-in duration-500">
-            <div className="flex justify-between items-center mb-6">
-                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Widget Preview</h4>
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">Brand Color</span>
-                    <input
-                        type="color"
-                        value={color}
-                        onChange={(e) => setColor(e.target.value)}
-                        className="w-6 h-6 rounded border-0 p-0 cursor-pointer"
-                    />
-                </div>
-            </div>
-            <div className="bg-white rounded-2xl border-2 border-dashed border-gray-100 p-6">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center font-black text-xl">L</div>
-                    <div>
-                        <div className="font-bold text-sm">Logo Corp</div>
-                        <div className="text-[10px] text-gray-500">Powered by chime</div>
-                    </div>
-                </div>
-                <div className="space-y-3">
-                    {[1, 2].map(i => (
-                        <div key={i} className="p-4 rounded-xl border border-gray-100 flex justify-between items-center group">
-                            <div>
-                                <div className="font-bold text-xs">Senior Cloud Architect</div>
-                                <div className="text-[9px] text-gray-400 mt-0.5">Remote · Full-Time</div>
-                            </div>
-                            <button style={{ backgroundColor: color }} className="text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm">Apply</button>
-                        </div>
-                    ))}
-                </div>
-                <div className="mt-6 pt-4 border-t border-gray-50 flex justify-center">
-                    <div className="bg-gray-100 px-3 py-1 rounded-full text-[9px] font-bold text-gray-400 uppercase tracking-widest">12 More Open Positions</div>
-                </div>
-            </div>
-            <div className="mt-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <p className="text-sm font-bold text-blue-800 leading-relaxed">
-                    The widget is optional. You get full access to the talent network without it.
-                </p>
-            </div>
-        </div>
-    );
-};
+// Sample skills for matching demo
+const sampleCandidateSkills = ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'AWS'];
+const sampleJobSkills = ['React', 'TypeScript', 'Python', 'PostgreSQL', 'Docker'];
+const sampleCandidateValues = ['Remote-First Culture', 'Ownership & Autonomy', 'Continuous Learning', 'Work-Life Balance'];
+const sampleJobValues = ['Remote-First Culture', 'Ownership & Autonomy', 'Fast-Paced Environment', 'Technical Excellence'];
 
 const ForCompaniesInfo: React.FC<Props> = ({ onGetStarted, onBack }) => {
-    const [activeFeature, setActiveFeature] = useState('widget');
-    const [activeDemo, setActiveDemo] = useState('browse');
-    const [hiresPerYear, setHiresPerYear] = useState(5);
-    const [avgSalary, setAvgSalary] = useState(120000);
+    const [activeTab, setActiveTab] = useState<DemoTabId>('widget');
+    const [widgetTheme, setWidgetTheme] = useState<'light' | 'dark'>('light');
+    const [hiresPerYear, setHiresPerYear] = useState(10);
+    const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
-    const agencyCost = avgSalary * 0.20 * hiresPerYear;
-    const jobBoardCost = 500 * 5 * hiresPerYear;
-    const openCost = 50 * 3 * hiresPerYear;
-    const savings = agencyCost + jobBoardCost - openCost;
+    // Cost calculator values
+    const avgSalary = 120000;
+    const agencyFee = 0.20;
+    const chimeCostPerHire = 1800;
+    const traditionalCost = hiresPerYear * avgSalary * agencyFee;
+    const chimeCost = hiresPerYear * chimeCostPerHire;
+    const savings = traditionalCost - chimeCost;
 
-    const features = [
-        { id: 'widget', title: 'White-Label Widget' },
-        { id: 'matching', title: 'Precision Matching' },
-        { id: 'approvals', title: 'Approvals' },
-        { id: 'savings', title: 'Cost Savings' }
-    ];
-
-    const oldWayItems = [
-        { title: '$15,000-30,000 per agency placement' },
-        { title: 'Weeks of back-and-forth with recruiters' },
-        { title: 'Resumes that tell you nothing about fit' },
-        { title: 'No data on why hires succeed or fail' },
-        { title: 'Hope as a hiring strategy' }
-    ];
-
-    const openWayItems = [
-        { title: '$50 per unlock — 300x cheaper than agencies' },
-        { title: 'Three-layer alignment: company values, team dynamics, role requirements' },
-        { title: 'Chime scores tell you who to prioritize' },
-        { title: 'Hiring managers define how their team actually works' },
-        { title: 'Works alongside your existing tools or standalone' }
-    ];
-
-    const howItWorksSteps = [
-        { num: '1', title: 'Define Your Company', desc: 'Set your culture, values, and what makes your org unique.' },
-        { num: '2', title: 'Set Team Dynamics', desc: 'Hiring managers define how their team works — intensity, cadence, communication style.' },
-        { num: '3', title: 'Post Roles', desc: 'Describe skills and requirements. The algorithm combines all three layers.' },
-        { num: '4', title: 'See Who Chimes', desc: 'Browse candidates ranked by alignment. Unlock at $50 each.' }
-    ];
-
-    const demoTabs = [
-        { id: 'browse', label: 'Browse Talent' },
-        { id: 'team_dynamics', label: 'Team Dynamics' },
-        { id: 'post', label: 'Post a Role' },
-        { id: 'review', label: 'Review Applicants' },
-        { id: 'widget_demo', label: 'Embed Widget', optional: true }
+    const comparisonData = [
+        {
+            feature: 'Matching',
+            traditional: 'Keyword Based (Low Signal)',
+            agencies: 'Human Based (Expensive)',
+            chime: 'Data Based (Precision)'
+        },
+        {
+            feature: 'ATS',
+            traditional: 'External / Costly',
+            agencies: 'None',
+            chime: 'Integrated & Free'
+        },
+        {
+            feature: 'CFO Oversight',
+            traditional: 'Manual / Retrospective',
+            agencies: 'None',
+            chime: 'Built-in Guardrails'
+        },
+        {
+            feature: 'Candidate Privacy',
+            traditional: 'Public / Noisy',
+            agencies: 'Controlled',
+            chime: 'Protected / High-Intent'
+        },
+        {
+            feature: 'Cost',
+            traditional: 'Per Post',
+            agencies: '15-25% of Salary',
+            chime: 'Fractional / Utility-Based'
+        }
     ];
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 py-10 space-y-24">
+        <div className="w-full max-w-6xl mx-auto px-4 py-12 space-y-24">
 
-            {/* Hero Section */}
-            <section className="text-center animate-in fade-in slide-in-from-bottom-6 duration-700">
-                <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-widest border border-blue-100 mb-8">
-                    Pay Per Chime · No Subscription
+            {/* HERO SECTION */}
+            <section className="text-center max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
+                {/* Pill Badge */}
+                <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold uppercase tracking-widest border border-teal-100 mb-8">
+                    For Companies
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-gray-900 leading-[1.1] mb-8">
-                    Find Talent That<br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                        Chimes With Your Team
-                    </span>
+
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-gray-900 leading-[1.05] mb-8">
+                    The Hiring <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Operating System</span><br />
+                    for High-Growth Teams
                 </h1>
-                <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed mb-12">
-                    Precision alignment for people, not profiles. chime surfaces technical candidates who fit your skills, values, and team dynamics — so hires actually stick.
+
+                <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed mb-12">
+                    Stop paying for "post and pray." Access a pre-aligned network of technical talent,
+                    manage your entire pipeline with a free white-label ATS, and ensure every hire
+                    resonates with your culture and budget.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+                {/* Dual CTAs */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <button
                         onClick={onGetStarted}
-                        className="bg-black text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-800 transition-all hover:shadow-2xl active:scale-95"
+                        className="w-full sm:w-auto bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-gray-800 hover:shadow-lg transition-all group flex items-center justify-center"
                     >
-                        Start Chiming
+                        Claim Your Company Profile
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </button>
                     <button
-                        onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="bg-white border border-gray-200 text-gray-700 px-10 py-5 rounded-2xl font-black text-lg hover:bg-gray-50 transition-all active:scale-95"
+                        onClick={() => document.getElementById('precision-suite')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="w-full sm:w-auto bg-white border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold text-base hover:border-gray-300 hover:shadow-md transition-all"
                     >
-                        See How It Works
+                        Schedule a Demo of the 85% Match
                     </button>
                 </div>
             </section>
 
-            {/* How It Works Section */}
-            <section id="how-it-works" className="space-y-16">
+            {/* THE PRECISION SUITE - Three Pillars */}
+            <section id="precision-suite" className="space-y-16">
+                {/* Section Header */}
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">How It Works</h2>
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold uppercase tracking-widest border border-teal-100 mb-6">
+                        The Precision Suite
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Three Pillars of Precision Hiring
+                    </h2>
+                    <p className="text-gray-500 text-lg">Built by engineers, for technical leaders.</p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {howItWorksSteps.map((s, i) => (
-                        <div key={i} className="flex items-start gap-6 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:scale-[1.02] group">
-                            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-xl flex-shrink-0 shadow-lg shadow-blue-200 group-hover:rotate-6 transition-transform">
-                                {s.num}
-                            </div>
-                            <div className="flex-1 space-y-2">
-                                <h3 className="font-black text-gray-900 text-lg leading-tight">{s.title}</h3>
-                                <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
+                {/* Three Pillars Grid */}
+                <div className="grid md:grid-cols-3 gap-8">
+                    {/* Pillar 1: Hyper-Precise Alignment */}
+                    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-6">
+                            <div className="w-6 h-6 border-2 border-gray-400 rounded-full flex items-center justify-center">
+                                <div className="w-2 h-2 bg-gray-400 rounded-full" />
                             </div>
                         </div>
-                    ))}
-                </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Hyper-Precise</span> Alignment
+                        </h3>
+                        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-gray-900">Multi-Dimensional Data Matching:</span> We don't just match on "Python."
+                                We align on 12+ data fields, including working style (Async/Sync), management preference, and exact salary bands.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">The Hiring Manager Layer:</span> Built by engineers, for engineers.
+                                Our interface allows technical leaders to bypass HR bottlenecks and see the data that actually matters:
+                                code samples, architectural preferences, and problem-solving styles.
+                            </p>
+                        </div>
+                    </div>
 
-                <div className="max-w-4xl mx-auto bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center">
-                    <p className="text-sm font-bold text-blue-800 leading-relaxed">
-                        Already have an ATS? Export candidates to Greenhouse, Lever, or Ashby. Don't have one? Use ours — included free.
+                    {/* Pillar 2: All-in-One Infrastructure */}
+                    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-6">
+                            <div className="w-6 h-6 flex flex-col gap-1">
+                                <div className="h-1.5 bg-gray-400 rounded" />
+                                <div className="h-1.5 bg-gray-400 rounded" />
+                                <div className="h-1.5 bg-gray-400 rounded" />
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">All-in-One</span> Infrastructure
+                        </h3>
+                        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-gray-900">Free White-Label ATS:</span> A fully branded Applicant Tracking System
+                                that lives on your domain. Includes built-in messaging, automated scheduling, and stage tracking.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">Career Page Embed Widget:</span> Turn your existing website into a talent magnet.
+                                Copy-paste a single line of code to display your chime jobs, complete with your company's values and "vibe" profile.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">Company Culture Hub:</span> A dedicated page to showcase your mission, values, and bio.
+                                It's not just a bio; it's a "Company DNA" profile that talent uses to self-select.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Pillar 3: Governance & Oversight */}
+                    <div className="bg-white rounded-xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-6">
+                            <div className="w-6 h-6 border-2 border-gray-400 rounded flex items-center justify-center">
+                                <Check className="w-4 h-4 text-gray-400" strokeWidth={3} />
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Governance</span> & Oversight
+                        </h3>
+                        <div className="space-y-4 text-gray-600 text-sm leading-relaxed">
+                            <p>
+                                <span className="font-semibold text-gray-900">Executive Approval Workflows:</span> Built-in "guardrails" for the CEO and CFO.
+                                Set pre-approved salary bands; if a match exceeds the budget, it triggers an instant oversight request—no more
+                                "surprise" offers that the board won't sign off on.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-gray-900">Cost-Effective Scalability:</span> Eliminate the 20% agency fees.
+                                chime's model is built for sustainable growth, charging for successful connections and platform utility, not a tax on your headcount.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* VISUAL NARRATIVE: THE HIRING FLOW */}
+            <section className="py-12">
+                <div className="bg-gray-50 rounded-2xl p-8 md:p-12 border border-gray-100">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
+                        {[
+                            { label: 'Raw Data', sub: 'Skills, Values, Style' },
+                            { label: 'Matching Algorithm', sub: '12+ Dimensions' },
+                            { label: 'Chime', sub: '85%+ Alignment' },
+                            { label: 'Hire', sub: 'That Actually Lasts' }
+                        ].map((step, i) => (
+                            <React.Fragment key={step.label}>
+                                <div className="text-center flex-1">
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{step.sub}</div>
+                                    <div className="text-lg font-bold text-gray-900">{step.label}</div>
+                                </div>
+                                {i < 3 && (
+                                    <div className="hidden md:block">
+                                        <ArrowRight className="w-5 h-5 text-gray-300" />
+                                    </div>
+                                )}
+                                {i < 3 && (
+                                    <div className="md:hidden">
+                                        <div className="w-px h-6 bg-gray-200" />
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* INTERACTIVE PRODUCT SHOWCASE */}
+            <section className="space-y-12">
+                {/* Section Header */}
+                <div className="text-center max-w-2xl mx-auto">
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold uppercase tracking-widest border border-blue-100 mb-6">
+                        See It In Action
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Your New Hiring Infrastructure
+                    </h2>
+                    <p className="text-gray-500 text-lg">
+                        Don't just read about it. See how Chime becomes your complete talent operating system.
                     </p>
                 </div>
-            </section>
 
-            {/* Social Proof Bar */}
-            <section className="py-12 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
-                <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-10">
-                    {[
-                        { value: '500+', label: 'Companies' },
-                        { value: '12,000+', label: 'Candidates' },
-                        { value: '94%', label: 'Match Accuracy' },
-                        { value: '16x', label: 'Cost Savings' },
-                    ].map((stat, i) => (
-                        <React.Fragment key={stat.label}>
-                            <div className="text-center">
-                                <div className="text-4xl font-black text-gray-900 mb-1">{stat.value}</div>
-                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</div>
-                            </div>
-                            {i < 3 && <div className="h-10 w-px bg-gray-100 hidden md:block" />}
-                        </React.Fragment>
-                    ))}
-                </div>
-            </section>
-
-            {/* Problem/Solution Section */}
-            <section className="space-y-12">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">What You're Replacing</h2>
-                    <p className="text-gray-500 font-medium leading-relaxed">Traditional methods prioritize volume. We prioritize data-enriched precision.</p>
+                {/* Tab Navigation - Desktop */}
+                <div className="hidden md:flex justify-center gap-2 bg-gray-100 p-1.5 rounded-xl max-w-4xl mx-auto">
+                    {demoTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                    activeTab === tab.id
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {tab.label}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
-                    {/* Old Way */}
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-32 bg-gray-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative z-10">
-                            <div className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] mb-8 flex items-center">
-                                <X className="w-4 h-4 mr-2" /> The Old Way
-                            </div>
-                            <ul className="space-y-4">
-                                {oldWayItems.map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-gray-400 border-l-4 border-l-gray-200 pl-4 py-1">
-                                        <span className="font-bold line-through">{item.title}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                {/* Tab Navigation - Mobile Dropdown */}
+                <div className="md:hidden relative">
+                    <button
+                        onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
+                        className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900"
+                    >
+                        <span className="flex items-center gap-2">
+                            {(() => {
+                                const currentTab = demoTabs.find(t => t.id === activeTab);
+                                const Icon = currentTab?.icon || Code;
+                                return (
+                                    <>
+                                        <Icon className="w-4 h-4 text-blue-600" />
+                                        {currentTab?.label}
+                                    </>
+                                );
+                            })()}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {mobileDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                            {demoTabs.map((tab) => {
+                                const Icon = tab.icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            setMobileDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                                            activeTab === tab.id
+                                                ? 'bg-blue-50 text-blue-600'
+                                                : 'text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
                         </div>
-                    </div>
-
-                    {/* chime Way */}
-                    <div className="bg-gray-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-32 bg-blue-600 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/2" />
-                        <div className="relative z-10">
-                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-8 flex items-center">
-                                <CheckCircle className="w-4 h-4 mr-2" /> What You Get
-                            </div>
-                            <ul className="space-y-4">
-                                {openWayItems.map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 group/item border-l-4 border-l-blue-500 pl-4 py-1">
-                                        <span className="font-bold text-lg leading-tight">{item.title}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="mt-12 pt-10 border-t border-white/5 flex items-center justify-between">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Enrichment Multiplier</p>
-                                <div className="text-blue-400 font-black text-xl">16x ROI</div>
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </div>
-            </section>
 
-            {/* Feature Deep-Dives (Tabs) */}
-            <section className="bg-white rounded-[3rem] border border-gray-200 overflow-hidden shadow-sm">
-                <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar">
-                    {features.map(f => (
-                        <button
-                            key={f.id}
-                            onClick={() => setActiveFeature(f.id)}
-                            className={`px-8 py-6 font-black text-[10px] uppercase tracking-[0.2em] transition-all border-b-4 whitespace-nowrap ${
-                                activeFeature === f.id
-                                    ? 'border-blue-600 text-blue-600 bg-blue-50/30'
-                                    : 'border-transparent text-gray-400 hover:text-gray-900 hover:bg-gray-50'
-                            }`}
-                        >
-                            {f.title}
-                        </button>
-                    ))}
-                </div>
-                <div className="p-10 md:p-16">
-                    {activeFeature === 'widget' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight">Your Brand,<br />Our Intelligence</h3>
-                                <ul className="space-y-4">
-                                    {['One line of code - works on any CMS', 'Fully customizable to match your UI', 'Mobile-responsive, accessibility-ready', 'Direct auto-sync with your chime jobs'].map(pt => (
-                                        <li key={pt} className="flex items-center gap-3 text-gray-600 font-bold">
-                                            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" /> {pt}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                                    <p className="text-sm font-bold text-blue-800 leading-relaxed italic">
-                                        "Every application through your widget automatically enriches your talent pipeline with verified skills, values, and culture data."
-                                    </p>
+                {/* Demo Content Area */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    {/* TAB 1: Widget & Careers Page Preview */}
+                    {activeTab === 'widget' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Embeddable Careers Widget</h3>
+                                    <p className="text-gray-500 text-sm">One line of code. Your entire careers page.</p>
+                                </div>
+                                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setWidgetTheme('light')}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                                            widgetTheme === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                                        }`}
+                                    >
+                                        <Sun className="w-4 h-4" /> Light
+                                    </button>
+                                    <button
+                                        onClick={() => setWidgetTheme('dark')}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                                            widgetTheme === 'dark' ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-600'
+                                        }`}
+                                    >
+                                        <Moon className="w-4 h-4" /> Dark
+                                    </button>
                                 </div>
                             </div>
-                            <div className="bg-gray-900 rounded-[2rem] p-8 shadow-2xl font-mono text-xs text-blue-300">
-                                <div className="flex gap-2 mb-4">
-                                    <div className="w-2 h-2 rounded-full bg-red-500" />
-                                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                                    <div className="w-2 h-2 rounded-full bg-green-500" />
+
+                            {/* Browser Chrome Mockup */}
+                            <div className="rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+                                {/* Browser Header */}
+                                <div className="bg-gray-100 px-4 py-3 flex items-center gap-3 border-b border-gray-200">
+                                    <div className="flex gap-1.5">
+                                        <div className="w-3 h-3 rounded-full bg-red-400" />
+                                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                                        <div className="w-3 h-3 rounded-full bg-green-400" />
+                                    </div>
+                                    <div className="flex-1 bg-white rounded-md px-3 py-1.5 text-xs text-gray-500 font-mono">
+                                        yourcompany.com/careers
+                                    </div>
                                 </div>
-                                <code className="block whitespace-pre-wrap leading-relaxed">
-                                    {`<div id="chime-careers-widget"></div>\n<script \n  src="https://chime.works/widget.js"\n  data-company-id="5cbc6857-3dce..."\n  defer\n></script>`}
+
+                                {/* Widget Preview */}
+                                <div className={`p-6 md:p-10 ${widgetTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                                    <div className={`max-w-2xl mx-auto space-y-4 ${widgetTheme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                        <h4 className="text-2xl font-bold">Join Our Team</h4>
+                                        <p className={`text-sm ${widgetTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            We're building the future of technical hiring. Find a role that chimes with you.
+                                        </p>
+
+                                        {/* Sample Job Cards */}
+                                        <div className="space-y-3 pt-4">
+                                            {[
+                                                { title: 'Senior Frontend Engineer', location: 'Remote', match: '92%' },
+                                                { title: 'Backend Engineer', location: 'San Francisco, CA', match: '88%' },
+                                                { title: 'Product Designer', location: 'Remote', match: '85%' }
+                                            ].map((job, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={`p-4 rounded-lg border ${
+                                                        widgetTheme === 'dark'
+                                                            ? 'bg-gray-800 border-gray-700'
+                                                            : 'bg-white border-gray-200'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <div className="font-semibold text-sm">{job.title}</div>
+                                                            <div className={`text-xs mt-1 ${widgetTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                {job.location}
+                                                            </div>
+                                                        </div>
+                                                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                                                            {job.match} Match
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Powered by Chime footer */}
+                                        <div className={`text-center pt-6 text-xs ${widgetTheme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            Powered by <span className="font-semibold">chime</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Code Snippet */}
+                            <div className="bg-gray-900 rounded-xl p-4 md:p-6 overflow-x-auto">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Embed Code</span>
+                                    <button className="text-xs text-blue-400 hover:text-blue-300 font-medium">Copy</button>
+                                </div>
+                                <code className="text-sm text-green-400 font-mono whitespace-nowrap">
+                                    {'<script src="https://chime.works/widget.js" data-company="your-company-id"></script>'}
                                 </code>
                             </div>
                         </div>
                     )}
-                    {activeFeature === 'matching' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight">Hire for the Team, Not Just the Role</h3>
-                                <div className="grid grid-cols-2 gap-4">
+
+                    {/* TAB 2: Cost Calculator */}
+                    {activeTab === 'calculator' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Cost Calculator</h3>
+                                <p className="text-gray-500 text-sm">See how much you could save by switching to Chime.</p>
+                            </div>
+
+                            {/* Slider Section */}
+                            <div className="space-y-6">
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <label className="text-sm font-medium text-gray-700">Hires Per Year</label>
+                                        <span className="text-2xl font-bold text-gray-900">{hiresPerYear}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="50"
+                                        value={hiresPerYear}
+                                        onChange={(e) => setHiresPerYear(parseInt(e.target.value))}
+                                        className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-600"
+                                    />
+                                    <div className="flex justify-between text-xs text-gray-400 mt-2">
+                                        <span>1</span>
+                                        <span>25</span>
+                                        <span>50</span>
+                                    </div>
+                                </div>
+
+                                {/* Cost Comparison Cards */}
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {/* Traditional Cost */}
+                                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Traditional Agencies</div>
+                                        <div className="text-3xl font-bold text-gray-900 mb-1">
+                                            ${traditionalCost.toLocaleString()}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            {hiresPerYear} hires x ${(avgSalary * agencyFee).toLocaleString()} (20% of avg salary)
+                                        </div>
+                                    </div>
+
+                                    {/* Chime Cost */}
+                                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                                        <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-2">Chime Platform</div>
+                                        <div className="text-3xl font-bold text-blue-700 mb-1">
+                                            ${chimeCost.toLocaleString()}
+                                        </div>
+                                        <div className="text-sm text-blue-600">
+                                            {hiresPerYear} hires x ${chimeCostPerHire.toLocaleString()} per hire
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Savings Display */}
+                                <div className="bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl p-8 text-center">
+                                    <div className="text-white/80 text-sm font-medium mb-2">Your Annual Savings</div>
+                                    <div className="text-4xl md:text-5xl font-black text-white mb-4">
+                                        ${savings.toLocaleString()}
+                                    </div>
+                                    <div className="text-white/70 text-sm">
+                                        That's enough to hire {Math.floor(savings / avgSalary)} additional engineers
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB 3: Precision Matching Simulation */}
+                    {activeTab === 'matching' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Precision Matching Algorithm</h3>
+                                <p className="text-gray-500 text-sm">Watch how we align candidates to roles across 12+ dimensions.</p>
+                            </div>
+
+                            {/* Matching Visualization */}
+                            <div className="grid md:grid-cols-3 gap-6 items-start">
+                                {/* Candidate Profile */}
+                                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Candidate Profile</div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-2">Technical Skills</div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {sampleCandidateSkills.map((skill, i) => (
+                                                    <span key={i} className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700">
+                                                        {skill}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-2">Core Values</div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {sampleCandidateValues.map((value, i) => (
+                                                    <span key={i} className="px-2 py-1 bg-teal-50 border border-teal-100 rounded text-xs font-medium text-teal-700">
+                                                        {value}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-2">Work Style</div>
+                                            <span className="px-2 py-1 bg-purple-50 border border-purple-100 rounded text-xs font-medium text-purple-700">
+                                                Async-First
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Matching Animation */}
+                                <div className="flex flex-col items-center justify-center py-8">
+                                    <div className="relative">
+                                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center animate-pulse">
+                                            <Target className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div className="absolute inset-0 w-20 h-20 rounded-full bg-blue-400/30 animate-ping" />
+                                    </div>
+                                    <div className="mt-4 text-sm font-medium text-gray-500">Analyzing Match</div>
+                                </div>
+
+                                {/* Job Requirements */}
+                                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Job Requirements</div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-2">Required Skills</div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {sampleJobSkills.map((skill, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`px-2 py-1 border rounded text-xs font-medium ${
+                                                            sampleCandidateSkills.includes(skill)
+                                                                ? 'bg-green-50 border-green-200 text-green-700'
+                                                                : 'bg-white border-gray-200 text-gray-700'
+                                                        }`}
+                                                    >
+                                                        {skill}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-2">Team Values</div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {sampleJobValues.map((value, i) => (
+                                                    <span
+                                                        key={i}
+                                                        className={`px-2 py-1 border rounded text-xs font-medium ${
+                                                            sampleCandidateValues.includes(value)
+                                                                ? 'bg-green-50 border-green-200 text-green-700'
+                                                                : 'bg-teal-50 border-teal-100 text-teal-700'
+                                                        }`}
+                                                    >
+                                                        {value}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 mb-2">Work Environment</div>
+                                            <span className="px-2 py-1 bg-green-50 border border-green-200 rounded text-xs font-medium text-green-700">
+                                                Async-First
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Match Score Breakdown */}
+                            <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-200">
+                                <div className="text-center mb-6">
+                                    <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">
+                                        90%
+                                    </div>
+                                    <div className="text-sm font-medium text-gray-500 mt-1">Overall Match Score</div>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     {[
-                                        { l: '8 Match Dimensions', n: '01' },
-                                        { l: 'Behavioral Skills', n: '02' },
-                                        { l: 'Culture Alignment', n: '03' },
-                                        { l: 'Personality Fit', n: '04' }
-                                    ].map(box => (
-                                        <div key={box.l} className="bg-gray-50 p-4 rounded-2xl border border-gray-100 border-l-4 border-l-blue-400">
-                                            <div className="text-2xl font-black text-blue-200 mb-2">{box.n}</div>
-                                            <div className="text-xs font-black uppercase tracking-widest text-gray-900">{box.l}</div>
+                                        { label: 'Technical Stack', score: 92 },
+                                        { label: 'Working Style', score: 88 },
+                                        { label: 'Core Values', score: 95 },
+                                        { label: 'Growth Alignment', score: 85 },
+                                        { label: 'Team Dynamics', score: 90 }
+                                    ].map((dim, i) => (
+                                        <div key={i} className="text-center">
+                                            <div className="relative w-16 h-16 mx-auto mb-2">
+                                                <svg className="w-16 h-16 transform -rotate-90">
+                                                    <circle
+                                                        cx="32"
+                                                        cy="32"
+                                                        r="28"
+                                                        stroke="#E5E7EB"
+                                                        strokeWidth="6"
+                                                        fill="none"
+                                                    />
+                                                    <circle
+                                                        cx="32"
+                                                        cy="32"
+                                                        r="28"
+                                                        stroke={dim.score >= 90 ? '#2563EB' : dim.score >= 85 ? '#0D9488' : '#6B7280'}
+                                                        strokeWidth="6"
+                                                        fill="none"
+                                                        strokeDasharray={`${dim.score * 1.76} 176`}
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+                                                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">
+                                                    {dim.score}%
+                                                </span>
+                                            </div>
+                                            <div className="text-xs text-gray-500">{dim.label}</div>
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-gray-600 font-medium leading-relaxed">chime's 8-dimensional matching evaluates candidates on skills, experience, values, personality, education, compensation, location, and culture fit - creating matches traditional methods can't achieve.</p>
                             </div>
+                        </div>
+                    )}
+
+                    {/* TAB 4: Approval Workflow */}
+                    {activeTab === 'approval' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Executive Guardrails</h3>
+                                <p className="text-gray-500 text-sm">Built-in approval workflows for CFO and CEO oversight.</p>
+                            </div>
+
+                            {/* Workflow Diagram */}
                             <div className="space-y-4">
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl border-l-4 border-l-blue-600">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Cadence Tuning</div>
-                                    <div className="space-y-6">
-                                        <div>
-                                            <div className="flex justify-between text-xs font-bold mb-2"><span>Steady Pace</span><span>Startup Hustle</span></div>
-                                            <div className="h-2 bg-gray-100 rounded-full relative"><div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full shadow-lg" /></div>
+                                {/* Step 1 */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span className="text-sm font-bold text-blue-600">1</span>
+                                    </div>
+                                    <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                        <div className="font-semibold text-gray-900 mb-1">Hiring Manager Creates Job</div>
+                                        <div className="text-sm text-gray-500">Defines role requirements, salary range, and team fit criteria</div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <div className="w-px h-6 bg-gray-300" />
+                                </div>
+
+                                {/* Step 2 */}
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span className="text-sm font-bold text-blue-600">2</span>
+                                    </div>
+                                    <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                        <div className="font-semibold text-gray-900 mb-1">System Checks Budget</div>
+                                        <div className="text-sm text-gray-500">Automatically validates salary against pre-approved bands</div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center">
+                                    <div className="w-px h-6 bg-gray-300" />
+                                </div>
+
+                                {/* Step 3 - Split */}
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {/* Auto-approve path */}
+                                    <div className="bg-green-50 rounded-xl p-5 border border-green-200">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">Within Budget</span>
+                                        </div>
+                                        <div className="font-semibold text-gray-900 mb-1">Auto-Approve</div>
+                                        <div className="text-sm text-gray-500 mb-3">Job published immediately</div>
+                                        <div className="flex items-center gap-2">
+                                            <Check className="w-5 h-5 text-green-600" />
+                                            <span className="text-sm font-medium text-green-700">Published</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Requires approval path */}
+                                    <div className="bg-amber-50 rounded-xl p-5 border border-amber-200">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded">Exceeds Budget</span>
+                                        </div>
+                                        <div className="font-semibold text-gray-900 mb-1">CFO/CEO Approval Required</div>
+                                        <div className="text-sm text-gray-500 mb-3">Notification sent for review</div>
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="w-5 h-5 text-amber-600" />
+                                            <span className="text-sm font-medium text-amber-700">Pending Review</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Sample Notification Card */}
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden max-w-md mx-auto">
+                                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">CFO Notification</div>
+                                </div>
+                                <div className="p-5 space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                            <Shield className="w-5 h-5 text-amber-600" />
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-xs font-bold mb-2"><span>Collaborative</span><span>Highly Autonomous</span></div>
-                                            <div className="h-2 bg-gray-100 rounded-full relative"><div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full shadow-lg" /></div>
+                                            <div className="font-semibold text-gray-900">New role request exceeds approved band</div>
+                                            <div className="text-sm text-gray-500 mt-1">Senior Engineer position requires review</div>
                                         </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Role:</span>
+                                            <span className="font-medium text-gray-900">Senior Engineer</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Requested:</span>
+                                            <span className="font-medium text-red-600">$180K</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Approved max:</span>
+                                            <span className="font-medium text-gray-900">$160K</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <button className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                            Approve
+                                        </button>
+                                        <button className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                                            Adjust Band
+                                        </button>
+                                        <button className="px-4 py-2 bg-white border border-gray-200 text-gray-500 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                            Deny
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     )}
-                    {activeFeature === 'approvals' && (
-                         <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                            <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight">Stakeholder Alignment,<br />Before You Post</h3>
-                                <p className="text-gray-600 font-medium leading-relaxed">Every approval decision is logged and enriches your hiring analytics. Understand bottlenecks and eliminate the "budget freeze" surprise mid-hiring.</p>
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-4 p-4 bg-green-50 rounded-2xl border-l-4 border-l-green-500 border border-green-100">
-                                        <CheckCircle className="w-6 h-6 text-green-600" />
-                                        <div>
-                                            <div className="text-xs font-black text-green-800 uppercase">Hiring Manager Approved</div>
-                                            <div className="text-[10px] text-green-600 font-bold">2 hours ago · Sarah J.</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 p-4 bg-yellow-50 rounded-2xl border-l-4 border-l-yellow-500 border border-yellow-100">
-                                        <div className="w-6 h-6 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin" />
-                                        <div>
-                                            <div className="text-xs font-black text-yellow-800 uppercase">Finance Review Pending</div>
-                                            <div className="text-[10px] text-yellow-600 font-bold">Assigned to Mark R.</div>
-                                        </div>
-                                    </div>
+
+                    {/* TAB 5: White-Label ATS Preview */}
+                    {activeTab === 'ats' && (
+                        <div className="p-6 md:p-10 space-y-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Built-in Applicant Tracking</h3>
+                                    <p className="text-gray-500 text-sm">Manage your entire pipeline from yourcompany.chime.works</p>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    Live Preview
                                 </div>
                             </div>
-                            <div className="bg-gray-50 rounded-[2.5rem] border border-gray-100 p-8 shadow-inner">
-                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Pipeline Audit Trail</div>
-                                <div className="space-y-6">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="flex gap-4">
-                                            <div className="w-2 h-2 rounded-full bg-blue-200 mt-2" />
-                                            <div className="flex-1 h-12 bg-white rounded-xl border border-gray-100 animate-pulse" />
+
+                            {/* ATS Kanban Preview */}
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 overflow-x-auto">
+                                <div className="flex gap-4 min-w-[800px]">
+                                    {/* Stage Columns */}
+                                    {[
+                                        { name: 'New Applications', count: 3, candidates: [
+                                            { id: 'Signal-7', score: 88, stage: 'new' },
+                                            { id: 'Signal-12', score: 92, stage: 'new' },
+                                            { id: 'Signal-18', score: 85, stage: 'new' }
+                                        ]},
+                                        { name: 'Screening', count: 5, candidates: [
+                                            { id: 'Signal-4', score: 90, stage: 'screening' },
+                                            { id: 'Signal-9', score: 87, stage: 'screening' }
+                                        ]},
+                                        { name: 'Technical Interview', count: 2, candidates: [
+                                            { id: 'Signal-2', score: 94, stage: 'technical' }
+                                        ]},
+                                        { name: 'Final Round', count: 1, candidates: [
+                                            { id: 'Signal-1', score: 96, stage: 'final' }
+                                        ]},
+                                        { name: 'Offer', count: 1, candidates: [] }
+                                    ].map((stage, i) => (
+                                        <div key={i} className="flex-1 min-w-[200px]">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="text-sm font-semibold text-gray-700">{stage.name}</span>
+                                                <span className="w-6 h-6 rounded-full bg-gray-200 text-xs font-medium text-gray-600 flex items-center justify-center">
+                                                    {stage.count}
+                                                </span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {stage.candidates.map((candidate, j) => (
+                                                    <div
+                                                        key={j}
+                                                        className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer"
+                                                    >
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                                                    <User className="w-4 h-4 text-gray-400" />
+                                                                </div>
+                                                                <span className="text-sm font-medium text-gray-900">{candidate.id}</span>
+                                                            </div>
+                                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded">
+                                                                {candidate.score}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <button className="flex-1 flex items-center justify-center gap-1 px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-xs text-gray-600 transition-colors">
+                                                                <MessageSquare className="w-3 h-3" />
+                                                                Message
+                                                            </button>
+                                                            <button className="flex-1 flex items-center justify-center gap-1 px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-xs text-gray-600 transition-colors">
+                                                                <Calendar className="w-3 h-3" />
+                                                                Schedule
+                                                            </button>
+                                                            <button className="flex items-center justify-center px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded text-xs text-blue-600 transition-colors">
+                                                                <MoveRight className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {stage.candidates.length === 0 && (
+                                                    <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-sm text-gray-400">
+                                                        Drop here
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    )}
-                    {activeFeature === 'savings' && (
-                        <div className="grid md:grid-cols-2 gap-16 items-center animate-in fade-in duration-500">
-                             <div className="space-y-8">
-                                <h3 className="text-4xl font-black text-gray-900 tracking-tight">Scale Your Hiring,<br />Not Your Fees</h3>
-                                <div className="space-y-8 bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center"><label className="text-sm font-black text-gray-700 uppercase">Hires per year</label><span className="text-blue-600 font-black text-lg">{hiresPerYear}</span></div>
-                                        <input type="range" min="1" max="50" value={hiresPerYear} onChange={e => setHiresPerYear(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center"><label className="text-sm font-black text-gray-700 uppercase">Average salary</label><span className="text-blue-600 font-black text-lg">${(avgSalary/1000).toFixed(0)}K</span></div>
-                                        <input type="range" min="50000" max="300000" step="5000" value={avgSalary} onChange={e => setAvgSalary(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-gray-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
-                                <div className="relative z-10 space-y-10">
-                                    <div>
-                                        <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-4">Estimated Annual Savings</div>
-                                        <div className="text-6xl font-black tabular-nums">${savings.toLocaleString()}</div>
-                                    </div>
-                                    <div className="space-y-4 border-t border-white/5 pt-8">
-                                        <div className="flex justify-between text-sm"><span className="text-gray-500">Standard Agency Costs</span><span className="text-red-400 line-through">${agencyCost.toLocaleString()}</span></div>
-                                        <div className="flex justify-between text-sm"><span className="text-gray-500">chime Costs</span><span className="text-green-400 font-black">${openCost.toLocaleString()}</span></div>
-                                    </div>
-                                    <p className="text-[10px] text-gray-500 leading-relaxed italic">"Savings compound as hiring data grows. chime companies see 40% faster time-to-hire after 6 months."</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </section>
 
-            {/* Interactive Demo Section */}
-            <section id="demo" className="space-y-12">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">How chime Compares</h2>
-                    <p className="text-gray-500 font-medium">Explore the unified recruitment interface built for precision.</p>
-                </div>
-
-                <div className="bg-white rounded-[3rem] border border-gray-200 shadow-2xl overflow-hidden animate-in zoom-in duration-700">
-                    {/* Browser Chrome */}
-                    <div className="bg-gray-50 px-6 py-4 flex items-center gap-4 border-b border-gray-200">
-                        <div className="flex gap-2">
-                            <div className="w-3 h-3 rounded-full bg-red-400" />
-                            <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                            <div className="w-3 h-3 rounded-full bg-green-400" />
-                        </div>
-                        <div className="flex-1 flex justify-center">
-                            <div className="bg-white rounded-full px-6 py-2 text-xs font-bold text-gray-400 flex items-center border border-gray-200 shadow-sm">
-                                <ShieldCheck className="w-3.5 h-3.5 mr-2 text-green-500" />
-                                app.chime.works/companies
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Demo Interface */}
-                    <div className="flex flex-col md:flex-row h-[600px]">
-                        {/* Sidebar Demo */}
-                        <div className="w-full md:w-64 bg-gray-50 border-r border-gray-100 p-6 space-y-2 hidden md:block">
-                            <div className="h-4 w-24 bg-gray-200 rounded mb-8 animate-pulse" />
-                            {demoTabs.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveDemo(tab.id)}
-                                    className={`w-full flex items-center px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                                        activeDemo === tab.id ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400 hover:text-gray-900'
-                                    }`}
-                                >
-                                    {tab.label}
-                                    {tab.optional && <span className="ml-auto text-[8px] font-bold text-gray-300 normal-case tracking-normal">Optional</span>}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Mobile Demo Tabs */}
-                        <div className="md:hidden flex border-b border-gray-100 overflow-x-auto no-scrollbar px-4">
-                             {demoTabs.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveDemo(tab.id)}
-                                    className={`px-4 py-4 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${
-                                        activeDemo === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400'
-                                    }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Demo Main Content Area */}
-                        <div className="flex-1 p-8 md:p-12 overflow-y-auto bg-white">
-                            {activeDemo === 'browse' && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div>
-                                        <h4 className="text-2xl font-black text-gray-900 mb-2">See Who Chimes</h4>
-                                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                                            Filter candidates by skills, proficiency level, values alignment, team fit, salary range, and location. See chime scores before you unlock.
-                                        </p>
-                                        <ul className="space-y-3 mb-6">
-                                            {[
-                                                'View anonymized profiles until you\'re ready to unlock',
-                                                'Chime scores explain why a candidate fits — or doesn\'t',
-                                                'Save searches and get notified when new talent chimes'
-                                            ].map(pt => (
-                                                <li key={pt} className="flex items-center gap-3 text-gray-600 font-bold text-sm">
-                                                    <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> {pt}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <DemoBrowseTalent />
-                                </div>
-                            )}
-                            {activeDemo === 'team_dynamics' && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div>
-                                        <h4 className="text-2xl font-black text-gray-900 mb-2">Define How Your Team Works</h4>
-                                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                                            Hiring managers set their team's working style — intensity, communication preferences, autonomy levels. Candidates who chime with your team rise to the top.
-                                        </p>
-                                        <ul className="space-y-3 mb-6">
-                                            {[
-                                                'Each team can have different dynamics within the same company',
-                                                'Candidates see team fit separate from company fit',
-                                                'Reduces mis-hires caused by team culture mismatch'
-                                            ].map(pt => (
-                                                <li key={pt} className="flex items-center gap-3 text-gray-600 font-bold text-sm">
-                                                    <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> {pt}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl border-l-4 border-l-blue-600">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Team Dynamics</div>
-                                        <div className="space-y-6">
-                                            <div>
-                                                <div className="flex justify-between text-xs font-bold mb-2"><span>Startup Sprint</span><span>Sustainable Pace</span></div>
-                                                <div className="h-2 bg-gray-100 rounded-full relative"><div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full shadow-lg" /></div>
+                            {/* Feature Highlights */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { icon: MessageSquare, label: 'Built-in Messaging' },
+                                    { icon: Calendar, label: 'Calendar Scheduling' },
+                                    { icon: Columns, label: 'Stage Tracking' },
+                                    { icon: Code, label: 'Your Domain' }
+                                ].map((feature, i) => {
+                                    const Icon = feature.icon;
+                                    return (
+                                        <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                                <Icon className="w-4 h-4 text-blue-600" />
                                             </div>
-                                            <div>
-                                                <div className="flex justify-between text-xs font-bold mb-2"><span>Async-First</span><span>High-Touch Sync</span></div>
-                                                <div className="h-2 bg-gray-100 rounded-full relative"><div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full shadow-lg" /></div>
-                                            </div>
-                                            <div>
-                                                <div className="flex justify-between text-xs font-bold mb-2"><span>Self-Directed</span><span>Structured Guidance</span></div>
-                                                <div className="h-2 bg-gray-100 rounded-full relative"><div className="absolute left-1/2 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full shadow-lg" /></div>
-                                            </div>
+                                            <span className="text-sm font-medium text-gray-700">{feature.label}</span>
                                         </div>
-                                    </div>
-                                </div>
-                            )}
-                            {activeDemo === 'post' && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div>
-                                        <h4 className="text-2xl font-black text-gray-900 mb-2">Define the Ideal Candidate</h4>
-                                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                                            Set requirements across all 8 dimensions. Adjust weight priorities with the matching equalizer. The algorithm surfaces your best fits automatically.
-                                        </p>
-                                    </div>
-                                    <DemoPostJob />
-                                </div>
-                            )}
-                            {activeDemo === 'review' && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div>
-                                        <h4 className="text-2xl font-black text-gray-900 mb-2">Ranked by Chime, Not Recency</h4>
-                                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                                            Applicants sorted by alignment score. See exactly where fit is strong and where gaps exist — at the company, team, and role level.
-                                        </p>
-                                        <ul className="space-y-3 mb-6">
-                                            {[
-                                                'Compare candidates side-by-side on any dimension',
-                                                'Track status through your pipeline (or export to your ATS)',
-                                                'Message candidates directly — no recruiter middleman'
-                                            ].map(pt => (
-                                                <li key={pt} className="flex items-center gap-3 text-gray-600 font-bold text-sm">
-                                                    <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> {pt}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <DemoReviewApplicants />
-                                </div>
-                            )}
-                            {activeDemo === 'widget_demo' && (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div>
-                                        <h4 className="text-2xl font-black text-gray-900 mb-2">Want Candidates to Come to You?</h4>
-                                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                                            Add our widget to your careers page. Candidates who apply get matched to your roles automatically — and join the chime network, enriching your future pipeline.
-                                        </p>
-                                    </div>
-                                    <DemoWidgetPreview />
-                                </div>
-                            )}
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Demo Footer */}
-                    <div className="bg-gray-900 px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <span className="text-gray-400 text-sm font-bold uppercase tracking-widest">Setup in 5 minutes</span>
-                        <button
-                            onClick={onGetStarted}
-                            className="bg-white text-gray-900 font-black px-8 py-3 rounded-xl text-sm hover:bg-gray-100 transition-all transform hover:scale-105 active:scale-95"
-                        >
-                            Get Started Free
-                        </button>
-                    </div>
+                    )}
                 </div>
             </section>
 
-            {/* Works With Your Stack */}
-            <section className="bg-white rounded-[3rem] p-12 md:p-16 border border-gray-100 shadow-sm space-y-8">
+            {/* COMPARATIVE VALUE TABLE */}
+            <section className="space-y-12">
+                {/* Section Header */}
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">Works With Your Stack</h2>
-                    <p className="text-gray-500 font-medium leading-relaxed">
-                        chime isn't here to replace your tools. Use us as a talent source alongside whatever you already have.
-                    </p>
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold uppercase tracking-widest border border-teal-100 mb-6">
+                        Why chime Wins
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                        Stop Overpaying for Underperformance
+                    </h2>
                 </div>
-                <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Export To</div>
-                        <div className="flex flex-wrap gap-2">
-                            {['Greenhouse', 'Lever', 'Ashby', 'Workday'].map(tool => (
-                                <span key={tool} className="bg-white px-3 py-1.5 rounded-lg text-sm font-bold text-gray-700 border border-gray-100 shadow-sm">{tool}</span>
+
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-hidden rounded-xl border border-gray-200">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="bg-gray-50">
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Feature</th>
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Traditional Job Boards</th>
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Recruitment Agencies</th>
+                                <th className="text-left px-6 py-4 text-xs font-semibold text-teal-700 uppercase tracking-wider bg-teal-50/50">chime.works</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {comparisonData.map((row, i) => (
+                                <tr key={i} className="bg-white">
+                                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">{row.feature}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">{row.traditional}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">{row.agencies}</td>
+                                    <td className="px-6 py-4 text-sm font-semibold text-teal-700 bg-teal-50/30">
+                                        <span className="flex items-center gap-2">
+                                            <Check className="w-4 h-4 text-teal-600" />
+                                            {row.chime}
+                                        </span>
+                                    </td>
+                                </tr>
                             ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-4">
+                    {comparisonData.map((row, i) => (
+                        <div key={i} className="bg-white rounded-xl border border-gray-200 p-5">
+                            <div className="text-sm font-bold text-gray-900 mb-4">{row.feature}</div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs text-gray-400 uppercase">Job Boards</span>
+                                    <span className="text-sm text-gray-500">{row.traditional}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs text-gray-400 uppercase">Agencies</span>
+                                    <span className="text-sm text-gray-500">{row.agencies}</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                    <span className="text-xs text-teal-600 uppercase font-semibold">chime</span>
+                                    <span className="text-sm font-semibold text-teal-700 flex items-center gap-1">
+                                        <Check className="w-4 h-4" />
+                                        {row.chime}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* CLOSING CTA SECTION */}
+            <section className="py-16">
+                <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-2xl p-12 md:p-16 text-center relative overflow-hidden">
+                    {/* Subtle background effect */}
+                    <div className="absolute inset-0 opacity-30">
+                        <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+                        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
                     </div>
-                    <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
-                        <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4">Or Use Built-In ATS</div>
-                        <p className="text-sm font-bold text-blue-800">Included free with your chime account. No extra cost, no setup required.</p>
+
+                    <div className="relative z-10 max-w-2xl mx-auto">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                            Ready to Build Your Precision Pipeline?
+                        </h2>
+                        <p className="text-gray-400 text-lg mb-10">
+                            Join 50+ high-growth teams hiring smarter, not harder.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <button
+                                onClick={onGetStarted}
+                                className="w-full sm:w-auto bg-white text-gray-900 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl"
+                            >
+                                Get Started Free
+                            </button>
+                        </div>
+                        <p className="mt-6 text-gray-500 text-sm">
+                            <button className="hover:text-gray-300 transition-colors underline underline-offset-2">
+                                Schedule a demo
+                            </button>
+                        </p>
                     </div>
                 </div>
             </section>
 
-            {/* Final CTA */}
-            <section className="py-24 bg-blue-600 rounded-[4rem] text-white text-center relative overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-indigo-800 opacity-50" />
-                <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-black/10 rounded-full blur-3xl" />
-
-                <div className="relative z-10 max-w-3xl mx-auto px-6 space-y-10">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">Start Chiming Today</h2>
-                    <p className="text-blue-100 text-xl font-medium leading-relaxed">
-                        Find talent that fits your team — not just the job description.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button
-                            onClick={onGetStarted}
-                            className="bg-white text-blue-600 px-12 py-5 rounded-[2rem] font-black text-xl hover:shadow-2xl transition-all active:scale-95 w-full sm:w-auto"
-                        >
-                            Get Started Free
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-blue-200">
-                        <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> No Credit Card</span>
-                        <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Setup in 5 Minutes</span>
-                        <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Cancel Anytime</span>
-                    </div>
-                </div>
-            </section>
-
-            <div className="text-center pb-12">
+            {/* Back Link */}
+            <div className="text-center pb-8">
                 <button
                     onClick={onBack}
-                    className="text-gray-400 font-bold hover:text-gray-900 transition-colors flex items-center justify-center mx-auto text-sm"
+                    className="text-gray-400 font-medium hover:text-gray-600 transition-colors flex items-center justify-center mx-auto text-sm"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" /> Return to Main Landing
                 </button>
