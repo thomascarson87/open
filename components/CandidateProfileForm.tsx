@@ -197,6 +197,36 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus('idle'), 2000);
     onSave({ ...formData, onboarding_completed: true });
+  };
+
+  // Save progress and exit onboarding (does NOT mark as complete)
+  const handleSaveAndExit = async () => {
+    if (!user?.id) return;
+
+    setIsSaving(true);
+    setSaveStatus('saving');
+
+    const dbUpdates = mapCandidateToDatabase(formData);
+    // Don't set onboarding_completed - user wants to save progress but exit
+
+    const { error } = await supabase
+      .from('candidate_profiles')
+      .update(dbUpdates)
+      .eq('id', user.id);
+
+    setIsSaving(false);
+
+    if (error) {
+      console.error('Save & exit failed:', error);
+      setSaveStatus('error');
+      alert(`Failed to save progress: ${error.message}`);
+      return;
+    }
+
+    setSaveStatus('saved');
+    // Exit onboarding but keep onboarding_completed: false so they can continue later
+    setIsOnboarding(false);
+    onSave(formData);
     setIsOnboarding(false);
   };
 
@@ -245,10 +275,11 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
       )}
 
       {isOnboarding ? (
-        <CandidateOnboarding 
-          profile={formData} 
-          onUpdate={handleUpdate} 
-          onComplete={handleCompleteOnboarding} 
+        <CandidateOnboarding
+          profile={formData}
+          onUpdate={handleUpdate}
+          onComplete={handleCompleteOnboarding}
+          onSaveExit={handleSaveAndExit}
           isSaving={isSaving}
         />
       ) : (

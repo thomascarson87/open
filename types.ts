@@ -3,6 +3,24 @@ export type Role = 'candidate' | 'recruiter' | null;
 
 export type MemberRole = 'admin' | 'hiring_manager' | 'finance' | 'interviewer';
 
+// Test Signup Types (Dev Mode)
+export interface TestSignupAccount {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+  onboardingStage: number; // 0=not started, 1=browsable, 2=can apply, 3=complete
+}
+
+export const ONBOARDING_STAGES = {
+  NOT_STARTED: 0,
+  BROWSABLE: 1,    // Can browse jobs (name + headline)
+  CAN_APPLY: 2,    // Can apply to jobs (+ location, skills, workMode, salaryMin)
+  COMPLETE: 3,     // Full matching (+ workStylePreferences, teamCollaborationPreferences)
+} as const;
+
+export type OnboardingStage = typeof ONBOARDING_STAGES[keyof typeof ONBOARDING_STAGES];
+
 // Language & Timezone Types
 export type LanguageProficiency = 'native' | 'fluent' | 'professional' | 'conversational' | 'basic';
 
@@ -390,6 +408,7 @@ export interface CompanyProfile {
   companyLanguages?: string[];
   defaultTimezone?: string;
   visaSponsorshipPolicy?: VisaSponsorshipPolicy;
+  follower_count?: number;
 }
 
 export interface Connection {

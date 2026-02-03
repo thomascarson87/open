@@ -367,13 +367,26 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
       </div>
 
       <div className="bg-white rounded-[2rem] shadow-xl border border-gray-200 overflow-hidden min-h-[700px] flex flex-col">
-        <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar scroll-smooth"><TabButton id="overview" label="Basics" icon={Layout} /><TabButton id="career" label="Career & Style" icon={Briefcase} /><TabButton id="preferences" label="Logistics" icon={DollarSign} /><TabButton id="values" label="Culture" icon={Heart} /><TabButton id="verifications" label="Verified" icon={ShieldCheck} /></div>
+        <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar scroll-smooth"><TabButton id="overview" label="Basics" icon={Layout} /><TabButton id="career" label="Career" icon={Briefcase} /><TabButton id="preferences" label="Logistics" icon={DollarSign} /><TabButton id="values" label="Culture & Dynamics" icon={Heart} /><TabButton id="verifications" label="Verified" icon={ShieldCheck} /></div>
         <div className="flex-1 p-8 md:p-12 overflow-y-auto">
           
           {activeTab === 'overview' && (
             <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
-              {/* Headline & Status Section */}
+              {/* Name & Headline Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={profile.name || ''}
+                    onChange={e => onUpdate({ name: e.target.value })}
+                    placeholder="Your full name"
+                    className="w-full p-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none font-bold text-gray-800"
+                  />
+                  <p className="text-xs text-gray-400 mt-2">This is how you'll appear to recruiters</p>
+                </div>
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
                     Professional Headline
@@ -386,31 +399,33 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                     maxLength={100}
                     className="w-full p-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none font-bold text-gray-800"
                   />
-                  <p className="text-xs text-gray-400 mt-2">Summarize your role and expertise in one line</p>
+                  <p className="text-xs text-gray-400 mt-2">Summarize your role and expertise</p>
                 </div>
-                <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
-                    Job Search Status
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {JOB_SEARCH_STATUS_OPTIONS.map(option => (
-                      <button
-                        key={option.value}
-                        onClick={() => onUpdate({ status: option.value })}
-                        className={`p-4 rounded-xl border-2 text-left transition-all ${
-                          profile.status === option.value
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${option.badgeColor}`} />
-                          <span className="font-bold text-sm">{option.label}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">{option.description}</p>
-                      </button>
-                    ))}
-                  </div>
+              </div>
+
+              {/* Status Section */}
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                  Job Search Status
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {JOB_SEARCH_STATUS_OPTIONS.map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => onUpdate({ status: option.value })}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        profile.status === option.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${option.badgeColor}`} />
+                        <span className="font-bold text-sm">{option.label}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{option.description}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -434,6 +449,22 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                       placeholder="Search city..."
                       focusRegion="europe"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                      <Globe className="w-4 h-4 inline mr-2" />Timezone
+                    </label>
+                    <select
+                      value={profile.timezone || ''}
+                      onChange={e => onUpdate({ timezone: e.target.value })}
+                      className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none font-bold text-gray-800"
+                    >
+                      <option value="">Select timezone...</option>
+                      {TIMEZONE_OPTIONS.map(tz => (
+                        <option key={tz.value} value={tz.value}>{tz.label} ({tz.offset})</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-2">Important for remote work matching</p>
                   </div>
                 </div>
                 <div className="space-y-8">
@@ -465,43 +496,6 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                   onSecondaryRolesChange={handleSecondaryRolesChange}
                   onSeniorityChange={handleSeniorityChange}
                 />
-              </section>
-
-              {/* Professional Tenure */}
-              <section className="bg-gray-50 rounded-[2.5rem] p-8 border border-gray-100 shadow-inner">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black text-gray-900 mb-2 flex items-center"><TrendingUp className="w-6 h-6 mr-2 text-blue-600" /> Professional Tenure</h3>
-                    <p className="text-gray-500 text-sm font-medium mb-6">How many years of relevant industry experience do you have?</p>
-                    <div className="flex items-center gap-6">
-                      <div className="flex-1">
-                        <input
-                          type="range"
-                          min="0"
-                          max="25"
-                          step="0.5"
-                          value={profile.totalYearsExperience || 0}
-                          onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) })}
-                          className="w-full accent-blue-600"
-                        />
-                        <div className="flex justify-between mt-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                          <span>0 Years</span>
-                          <span>25+ Years</span>
-                        </div>
-                      </div>
-                      <div className="w-24 relative">
-                        <input
-                          type="number"
-                          value={profile.totalYearsExperience || ''}
-                          onChange={e => onUpdate({ totalYearsExperience: parseFloat(e.target.value) || 0 })}
-                          className="w-full p-3 bg-white border border-gray-200 rounded-xl text-center font-black text-lg focus:ring-2 focus:ring-blue-100 outline-none"
-                          placeholder="0.0"
-                        />
-                        <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase">YRS</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </section>
 
               {/* Technical Skills Section */}
@@ -555,263 +549,12 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                 />
               </section>
               
+              {/* Languages Section */}
               <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Clock className="w-6 h-6 mr-2 text-blue-500" /> Work Style Preferences</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">How you prefer to work day-to-day. These help match you with compatible teams.</p>
-
-                {/* Row 1: Pace & Hours */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Work Schedule</label>
-                    <select value={profile.workStylePreferences?.workHours || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workHours: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {WORK_HOURS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Work Intensity</label>
-                    <select value={profile.workStylePreferences?.workIntensity || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workIntensity: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {WORK_INTENSITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 2: Autonomy & Decision Making */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Autonomy Level</label>
-                    <select value={profile.workStylePreferences?.autonomyLevel || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, autonomyLevel: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {AUTONOMY_LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Decision Making</label>
-                    <select value={profile.workStylePreferences?.decisionMaking || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, decisionMaking: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {DECISION_MAKING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 3: Projects & Tasks */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Project Duration</label>
-                    <select value={profile.workStylePreferences?.projectDuration || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, projectDuration: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {PROJECT_DURATION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Context Switching</label>
-                    <select value={profile.workStylePreferences?.contextSwitching || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, contextSwitching: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {CONTEXT_SWITCHING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 4: Change & Risk */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Change Frequency</label>
-                    <select value={profile.workStylePreferences?.changeFrequency || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, changeFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {CHANGE_FREQUENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Risk Tolerance</label>
-                    <select value={profile.workStylePreferences?.riskTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, riskTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {RISK_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 5: Innovation & Ambiguity */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Innovation vs Stability</label>
-                    <select value={profile.workStylePreferences?.innovationStability || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, innovationStability: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {INNOVATION_STABILITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ambiguity Tolerance</label>
-                    <select value={profile.workStylePreferences?.ambiguityTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, ambiguityTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {AMBIGUITY_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </section>
-
-              <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Users className="w-6 h-6 mr-2 text-green-500" /> Team & Collaboration</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">What team environment helps you thrive? These preferences improve culture fit matching.</p>
-
-                {/* Row 1: Team & Org Size */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ideal Team Size</label>
-                    <select value={profile.teamCollaborationPreferences?.teamSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {TEAM_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ideal Org Size</label>
-                    <select value={profile.teamCollaborationPreferences?.orgSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, orgSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {ORG_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 2: Structure & Distribution */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Reporting Structure</label>
-                    <select value={profile.teamCollaborationPreferences?.reportingStructure || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, reportingStructure: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {REPORTING_STRUCTURE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Team Distribution</label>
-                    <select value={profile.teamCollaborationPreferences?.teamDistribution || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamDistribution: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {TEAM_DISTRIBUTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 3: Collaboration Style */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Collaboration Frequency</label>
-                    <select value={profile.teamCollaborationPreferences?.collaborationFrequency || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, collaborationFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {COLLABORATION_FREQ_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Timezone Overlap</label>
-                    <select value={profile.teamCollaborationPreferences?.timezoneOverlap || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, timezoneOverlap: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {TIMEZONE_OVERLAP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 4: Working Together */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pair Programming</label>
-                    <select value={profile.teamCollaborationPreferences?.pairProgramming || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, pairProgramming: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {PAIR_PROGRAMMING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Cross-Functional Work</label>
-                    <select value={profile.teamCollaborationPreferences?.crossFunctional || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, crossFunctional: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {CROSS_FUNCTIONAL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </section>
-
-              <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Sparkles className="w-6 h-6 mr-2 text-purple-500" /> Manager & Growth Preferences</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">Help us match you with managers whose style fits your preferences.</p>
-
-                {/* Row 1: Leadership & Feedback */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Preferred Leadership Style</label>
-                    <select value={profile.preferredLeadershipStyle || ''} onChange={e => onUpdate({ preferredLeadershipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {LEADERSHIP_STYLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{LEADERSHIP_STYLE_OPTIONS.find(o => o.value === profile.preferredLeadershipStyle)?.description}</p>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Preferred Feedback Frequency</label>
-                    <select value={profile.preferredFeedbackFrequency || ''} onChange={e => onUpdate({ preferredFeedbackFrequency: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {FEEDBACK_FREQUENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{FEEDBACK_FREQUENCY_OPTIONS.find(o => o.value === profile.preferredFeedbackFrequency)?.description}</p>
-                  </div>
-                </div>
-
-                {/* Row 2: Communication & Meetings */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Communication Style</label>
-                    <select value={profile.preferredCommunicationStyle || ''} onChange={e => onUpdate({ preferredCommunicationStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {COMMUNICATION_PREFERENCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{COMMUNICATION_PREFERENCE_OPTIONS.find(o => o.value === profile.preferredCommunicationStyle)?.description}</p>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Meeting Culture</label>
-                    <select value={profile.preferredMeetingCulture || ''} onChange={e => onUpdate({ preferredMeetingCulture: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {MEETING_CULTURE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{MEETING_CULTURE_OPTIONS.find(o => o.value === profile.preferredMeetingCulture)?.description}</p>
-                  </div>
-                </div>
-
-                {/* Row 3: Conflict & Mentorship */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Conflict Resolution</label>
-                    <select value={profile.preferredConflictResolution || ''} onChange={e => onUpdate({ preferredConflictResolution: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {CONFLICT_RESOLUTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{CONFLICT_RESOLUTION_OPTIONS.find(o => o.value === profile.preferredConflictResolution)?.description}</p>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Mentorship Style</label>
-                    <select value={profile.preferredMentorshipStyle || ''} onChange={e => onUpdate({ preferredMentorshipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {MENTORSHIP_APPROACH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{MENTORSHIP_APPROACH_OPTIONS.find(o => o.value === profile.preferredMentorshipStyle)?.description}</p>
-                  </div>
-                </div>
-
-                {/* Row 4: Growth Goals */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Growth Goals</label>
-                    <select value={profile.growthGoals || ''} onChange={e => onUpdate({ growthGoals: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
-                      <option value="">Not Specified</option>
-                      {GROWTH_EXPECTATION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="text-xs text-gray-400 mt-1">{GROWTH_EXPECTATION_OPTIONS.find(o => o.value === profile.growthGoals)?.description}</p>
-                  </div>
-                  <div className="bg-purple-50 p-6 rounded-3xl border border-purple-100 flex items-center gap-4">
-                    <Sparkles className="w-10 h-10 text-purple-500 flex-shrink-0"/>
-                    <p className="text-xs font-bold text-purple-800">These preferences help match you with hiring managers whose leadership style complements how you work best.</p>
-                  </div>
-                </div>
-              </section>
-
-              <section className="pt-12 border-t"><h3 className="text-2xl font-black text-gray-900 mb-8 flex items-center"><Globe className="w-6 h-6 mr-2 text-indigo-500" /> Localization</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div><label className="block text-[10px] font-black text-gray-400 uppercase mb-3 tracking-widest">Your Timezone</label><select value={profile.timezone || ''} onChange={e => onUpdate({ timezone: e.target.value })} className="w-full p-4 bg-gray-50 rounded-2xl font-black focus:ring-2 focus:ring-blue-100 outline-none"><option value="">Select...</option>{TIMEZONE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label} ({o.offset})</option>)}</select></div>
-                  <div><label className="block text-[10px] font-black text-gray-400 uppercase mb-3 tracking-widest">Languages</label><LanguageManager languages={profile.languages || []} onChange={l => onUpdate({ languages: l })} /></div>
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Globe className="w-6 h-6 mr-2 text-indigo-500" /> Languages</h3>
+                <p className="text-gray-500 text-sm font-medium mb-8">Languages you speak - important for international teams and global roles.</p>
+                <div className="bg-gray-50 p-6 rounded-2xl border">
+                  <LanguageManager languages={profile.languages || []} onChange={l => onUpdate({ languages: l })} />
                 </div>
               </section>
               
@@ -989,9 +732,263 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
           )}
 
           {activeTab === 'values' && (
-            <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500 max-w-3xl">
-              <div><h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Heart className="w-6 h-6 mr-2 text-pink-500" /> Cultural Values</h3><p className="text-gray-500 font-medium mb-10">Principles guiding your work.</p><GroupedMultiSelect label="" options={CULTURAL_VALUES} selected={profile.values || []} onChange={v => onUpdate({ values: v })} maxSelections={5} /></div>
-              <div className="pt-12 border-t"><div><h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Smile className="w-6 h-6 mr-2 text-purple-500" /> Character Traits</h3><p className="text-gray-500 font-medium mb-10">Colleague personality perception.</p><GroupedMultiSelect label="" options={CHARACTER_TRAITS_CATEGORIES} selected={profile.characterTraits || []} onChange={v => onUpdate({ characterTraits: v })} grouped={true} maxSelections={8} /></div></div>
+            <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
+              {/* Cultural Values */}
+              <section>
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Heart className="w-6 h-6 mr-2 text-pink-500" /> Cultural Values</h3>
+                <p className="text-gray-500 font-medium mb-8">Principles guiding your work - select up to 5 that resonate most.</p>
+                <GroupedMultiSelect label="" options={CULTURAL_VALUES} selected={profile.values || []} onChange={v => onUpdate({ values: v })} maxSelections={5} />
+              </section>
+
+              {/* Character Traits */}
+              <section className="pt-12 border-t">
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Smile className="w-6 h-6 mr-2 text-purple-500" /> Character Traits</h3>
+                <p className="text-gray-500 font-medium mb-8">How colleagues would describe your personality.</p>
+                <GroupedMultiSelect label="" options={CHARACTER_TRAITS_CATEGORIES} selected={profile.characterTraits || []} onChange={v => onUpdate({ characterTraits: v })} grouped={true} maxSelections={8} />
+              </section>
+
+              {/* Work Style Preferences */}
+              <section className="pt-12 border-t">
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Clock className="w-6 h-6 mr-2 text-blue-500" /> Work Style Preferences</h3>
+                <p className="text-gray-500 text-sm font-medium mb-8">How you prefer to work day-to-day. These help match you with compatible teams.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Work Schedule</label>
+                    <select value={profile.workStylePreferences?.workHours || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workHours: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {WORK_HOURS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Work Intensity</label>
+                    <select value={profile.workStylePreferences?.workIntensity || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workIntensity: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {WORK_INTENSITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Autonomy Level</label>
+                    <select value={profile.workStylePreferences?.autonomyLevel || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, autonomyLevel: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {AUTONOMY_LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Decision Making</label>
+                    <select value={profile.workStylePreferences?.decisionMaking || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, decisionMaking: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {DECISION_MAKING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Project Duration</label>
+                    <select value={profile.workStylePreferences?.projectDuration || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, projectDuration: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {PROJECT_DURATION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Context Switching</label>
+                    <select value={profile.workStylePreferences?.contextSwitching || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, contextSwitching: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {CONTEXT_SWITCHING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Change Frequency</label>
+                    <select value={profile.workStylePreferences?.changeFrequency || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, changeFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {CHANGE_FREQUENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Risk Tolerance</label>
+                    <select value={profile.workStylePreferences?.riskTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, riskTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {RISK_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Innovation vs Stability</label>
+                    <select value={profile.workStylePreferences?.innovationStability || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, innovationStability: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {INNOVATION_STABILITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ambiguity Tolerance</label>
+                    <select value={profile.workStylePreferences?.ambiguityTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, ambiguityTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {AMBIGUITY_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              {/* Team & Collaboration */}
+              <section className="pt-12 border-t">
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Users className="w-6 h-6 mr-2 text-green-500" /> Team & Collaboration</h3>
+                <p className="text-gray-500 text-sm font-medium mb-8">What team environment helps you thrive? These preferences improve culture fit matching.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ideal Team Size</label>
+                    <select value={profile.teamCollaborationPreferences?.teamSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {TEAM_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ideal Org Size</label>
+                    <select value={profile.teamCollaborationPreferences?.orgSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, orgSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {ORG_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Reporting Structure</label>
+                    <select value={profile.teamCollaborationPreferences?.reportingStructure || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, reportingStructure: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {REPORTING_STRUCTURE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Team Distribution</label>
+                    <select value={profile.teamCollaborationPreferences?.teamDistribution || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamDistribution: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {TEAM_DISTRIBUTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Collaboration Frequency</label>
+                    <select value={profile.teamCollaborationPreferences?.collaborationFrequency || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, collaborationFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {COLLABORATION_FREQ_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Timezone Overlap</label>
+                    <select value={profile.teamCollaborationPreferences?.timezoneOverlap || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, timezoneOverlap: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {TIMEZONE_OVERLAP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pair Programming</label>
+                    <select value={profile.teamCollaborationPreferences?.pairProgramming || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, pairProgramming: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {PAIR_PROGRAMMING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Cross-Functional Work</label>
+                    <select value={profile.teamCollaborationPreferences?.crossFunctional || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, crossFunctional: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {CROSS_FUNCTIONAL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              {/* Manager & Growth Preferences */}
+              <section className="pt-12 border-t">
+                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Sparkles className="w-6 h-6 mr-2 text-purple-500" /> Manager & Growth Preferences</h3>
+                <p className="text-gray-500 text-sm font-medium mb-8">Help us match you with managers whose style fits your preferences.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Preferred Leadership Style</label>
+                    <select value={profile.preferredLeadershipStyle || ''} onChange={e => onUpdate({ preferredLeadershipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {LEADERSHIP_STYLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{LEADERSHIP_STYLE_OPTIONS.find(o => o.value === profile.preferredLeadershipStyle)?.description}</p>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Preferred Feedback Frequency</label>
+                    <select value={profile.preferredFeedbackFrequency || ''} onChange={e => onUpdate({ preferredFeedbackFrequency: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {FEEDBACK_FREQUENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{FEEDBACK_FREQUENCY_OPTIONS.find(o => o.value === profile.preferredFeedbackFrequency)?.description}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Communication Style</label>
+                    <select value={profile.preferredCommunicationStyle || ''} onChange={e => onUpdate({ preferredCommunicationStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {COMMUNICATION_PREFERENCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{COMMUNICATION_PREFERENCE_OPTIONS.find(o => o.value === profile.preferredCommunicationStyle)?.description}</p>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Meeting Culture</label>
+                    <select value={profile.preferredMeetingCulture || ''} onChange={e => onUpdate({ preferredMeetingCulture: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {MEETING_CULTURE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{MEETING_CULTURE_OPTIONS.find(o => o.value === profile.preferredMeetingCulture)?.description}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Conflict Resolution</label>
+                    <select value={profile.preferredConflictResolution || ''} onChange={e => onUpdate({ preferredConflictResolution: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {CONFLICT_RESOLUTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{CONFLICT_RESOLUTION_OPTIONS.find(o => o.value === profile.preferredConflictResolution)?.description}</p>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Mentorship Style</label>
+                    <select value={profile.preferredMentorshipStyle || ''} onChange={e => onUpdate({ preferredMentorshipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {MENTORSHIP_APPROACH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{MENTORSHIP_APPROACH_OPTIONS.find(o => o.value === profile.preferredMentorshipStyle)?.description}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Growth Goals</label>
+                    <select value={profile.growthGoals || ''} onChange={e => onUpdate({ growthGoals: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                      <option value="">Not Specified</option>
+                      {GROWTH_EXPECTATION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">{GROWTH_EXPECTATION_OPTIONS.find(o => o.value === profile.growthGoals)?.description}</p>
+                  </div>
+                  <div className="bg-purple-50 p-6 rounded-3xl border border-purple-100 flex items-center gap-4">
+                    <Sparkles className="w-10 h-10 text-purple-500 flex-shrink-0"/>
+                    <p className="text-xs font-bold text-purple-800">These preferences help match you with hiring managers whose leadership style complements how you work best.</p>
+                  </div>
+                </div>
+              </section>
             </div>
           )}
 

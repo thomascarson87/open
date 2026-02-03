@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   Briefcase, LogOut, User, Layout, Bell, MessageSquare,
   Calendar, PlusCircle, Users, Building, Search,
-  ClipboardList, Code, ChevronDown, Video, Settings, Target, Clock
+  ClipboardList, Code, ChevronDown, Video, Settings, Target, Clock, Heart
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -93,7 +93,13 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
 
   const candidateNav = [
     { id: 'dashboard', label: 'Discover', icon: Layout },
-    { id: 'network', label: 'Network', icon: Users },
+    {
+      id: 'network-group', label: 'Network', icon: Users,
+      children: [
+        { id: 'network', label: 'Connections', icon: Users, description: 'Your professional network' },
+        { id: 'following', label: 'Saved & Following', icon: Heart, description: 'Jobs and companies you follow' }
+      ]
+    },
     { id: 'applications', label: 'Applications', icon: ClipboardList }
   ];
 
@@ -146,9 +152,35 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
                     )}
                   </div>
                 )) : candidateNav.map(item => (
-                  <button key={item.id} onClick={() => handleNavItemClick(item.id)} className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${currentView === item.id ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}>
-                    <item.icon className="w-4 h-4 mr-2 opacity-70" />{item.label}
-                  </button>
+                  item.children ? (
+                    <div key={item.id} className="relative">
+                      <button
+                        onClick={() => setActiveDropdown(activeDropdown === item.id ? null : item.id)}
+                        className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${isParentActive(item) ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                      >
+                        <item.icon className="w-4 h-4 mr-2 opacity-70" />
+                        {item.label}
+                        <ChevronDown className={`ml-1.5 w-3.5 h-3.5 transition-transform ${activeDropdown === item.id ? 'rotate-180' : ''}`} />
+                      </button>
+                      {activeDropdown === item.id && (
+                        <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                          {item.children.map((child: any) => (
+                            <button key={child.id} onClick={() => handleNavItemClick(child.id)} className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${currentView === child.id ? 'bg-blue-50/50' : ''}`}>
+                              <div className={`p-2 rounded-lg ${currentView === child.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}><child.icon className="w-4 h-4" /></div>
+                              <div>
+                                <div className={`text-sm font-bold ${currentView === child.id ? 'text-blue-700' : 'text-gray-900'}`}>{child.label}</div>
+                                <div className="text-xs text-gray-400 font-medium">{child.description}</div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button key={item.id} onClick={() => handleNavItemClick(item.id)} className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${currentView === item.id ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}>
+                      <item.icon className="w-4 h-4 mr-2 opacity-70" />{item.label}
+                    </button>
+                  )
                 ))}
               </div>
             </div>

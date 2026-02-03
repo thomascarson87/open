@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { JobPosting, CompanyProfile, TeamMember, MatchBreakdown } from '../types';
-import { X, Heart, Share2, Zap, Building2, MapPin, DollarSign, Clock, CheckCircle, Target, Code, Users, Gift, MessageSquare, ArrowRight, Layout, GraduationCap } from 'lucide-react';
+import { X, Share2, Zap, Building2, MapPin, DollarSign, Clock, CheckCircle, Target, Code, Users, Gift, MessageSquare, ArrowRight, Layout, GraduationCap } from 'lucide-react';
 import SkillIcon from './SkillIcon';
+import SaveJobButton from './SaveJobButton';
 
 interface Props {
   isOpen: boolean;
@@ -44,9 +45,13 @@ const JobDetailModal: React.FC<Props> = ({ isOpen, onClose, enrichedJob, matchRe
         
         {/* Header Overlay Actions */}
         <div className="absolute top-6 right-8 z-10 flex gap-2">
-          <button className="p-3 bg-white/80 backdrop-blur shadow-sm hover:shadow-md rounded-2xl text-gray-400 hover:text-pink-500 transition-all">
-            <Heart className="w-5 h-5" />
-          </button>
+          <div className="bg-white/80 backdrop-blur shadow-sm hover:shadow-md rounded-2xl">
+            <SaveJobButton
+              jobId={job.id}
+              jobTitle={job.title}
+              variant="icon"
+            />
+          </div>
           <button className="p-3 bg-white/80 backdrop-blur shadow-sm hover:shadow-md rounded-2xl text-gray-400 hover:text-blue-600 transition-all">
             <Share2 className="w-5 h-5" />
           </button>

@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { CULTURAL_VALUES, INDUSTRIES, PERKS_CATEGORIES, ALL_CHARACTER_TRAITS, ALL_PERKS } from '../constants/matchingData';
 import { WORK_INTENSITY_OPTIONS, AUTONOMY_LEVEL_OPTIONS } from '../constants/workStyleData';
 import WidgetSetup from './WidgetSetup';
+import CompanyFollowerStats from './CompanyFollowerStats';
 
 interface Props {
   profile: CompanyProfileType;
@@ -126,6 +127,12 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave, teamMembers, onTeamU
                                 </div>
                                 <button className="text-sm font-bold text-blue-600 flex items-center hover:underline mt-6">View all plans <ArrowUpRight className="ml-1 w-4 h-4"/></button>
                             </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <CompanyFollowerStats
+                              companyId={profile.id}
+                              initialCount={profile.follower_count}
+                            />
                         </div>
                     </div>
                 )}

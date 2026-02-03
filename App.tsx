@@ -8,11 +8,12 @@ import CompanyProfile from './components/CompanyProfile';
 import EnrichedJobCard from './components/EnrichedJobCard';
 import EnrichedCandidateCard from './components/EnrichedCandidateCard';
 import JobDetailModal from './components/JobDetailModal';
-import MatchWeightingPanel, { MatchWeights } from './components/MatchWeightingPanel';
+import TriangleMatchPriority, { MatchWeights } from './components/TriangleMatchPriority';
 import CandidateDetails from './components/CandidateDetails';
 import CandidateDetailsLocked from './components/CandidateDetailsLocked';
 import RecruiterATS from './components/RecruiterATS';
 import ApplicationHub from './components/candidate/ApplicationHub';
+import FollowedCompanies from './components/candidate/FollowedCompanies';
 import CandidateApplications from './components/CandidateApplications';
 import Messages from './components/Messages';
 import Schedule from './components/Schedule';
@@ -21,12 +22,16 @@ import Notifications from './components/Notifications';
 import Network from './components/Network';
 import Login from './components/Login';
 import LandingPage from './components/LandingPage';
-import GoogleAuthCallback from './components/GoogleAuthCallback';
+import GoogleAuthCallback from './components/GoogleAuthCallback'; // For Google Calendar OAuth
+import AuthCallback from './components/AuthCallback'; // For Supabase OAuth (Google/GitHub sign-in)
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import TalentMatcher from './components/TalentMatcher';
 import RecruiterMyJobs from './components/RecruiterMyJobs';
 import VerificationForm from './components/VerificationForm';
 import CandidateProfileTabs from './components/CandidateProfileTabs';
 import DevModeSwitcher from './components/dev/DevModeSwitcher';
+import TestSignupBanner from './components/dev/TestSignupBanner';
 import HiringManagerPreferences from './pages/HiringManagerPreferences';
 import PendingApprovals from './pages/PendingApprovals';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
@@ -268,7 +273,7 @@ function calculateWeightedScore(baseMatch: any, weights: MatchWeights): number {
 }
 
 function MainApp() {
-    const { user, signOut, companyId: authCompanyId, teamRole, isDevMode, devProfileRole } = useAuth();
+    const { user, signOut, companyId: authCompanyId, teamRole, isDevMode, devProfileRole, testSignupAccounts } = useAuth();
     const [userRole, setUserRole] = useState<Role>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
     const [currentView, setCurrentView] = useState('dashboard');
@@ -277,7 +282,7 @@ function MainApp() {
     const [enrichedJobs, setEnrichedJobs] = useState<EnrichedJob[]>([]);
     const [matchWeights, setMatchWeights] = useState<MatchWeights>(() => {
         const saved = localStorage.getItem('match_weights');
-        return saved ? JSON.parse(saved) : { skills: 50, compensation: 25, culture: 25 };
+        return saved ? JSON.parse(saved) : { skills: 33, compensation: 33, culture: 34 };
     });
     const [selectedEnrichedJob, setSelectedEnrichedJob] = useState<EnrichedJob | null>(null);
 
@@ -316,6 +321,38 @@ function MainApp() {
     const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
     const [companyProfile, setCompanyProfile] = useState<CompanyProfileType | null>(null);
     const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
+
+    // Helper to create a default empty profile for test signup users
+    const getDefaultTestProfile = (): CandidateProfile | null => {
+        const testAccount = testSignupAccounts?.find(a => a.id === user?.id);
+        if (!testAccount) return null;
+
+        return {
+            id: testAccount.id,
+            user_id: testAccount.id,
+            name: testAccount.name || '',
+            headline: '',
+            email: testAccount.email,
+            location: '',
+            bio: '',
+            status: 'actively_looking',
+            skills: [],
+            values: [],
+            characterTraits: [],
+            salaryMin: 0,
+            salaryCurrency: 'USD',
+            preferredWorkMode: [],
+            desiredPerks: [],
+            interestedIndustries: [],
+            desiredImpactScopes: [],
+            contractTypes: [],
+            noticePeriod: '',
+            nonNegotiables: [],
+            onboarding_completed: false,
+            created_at: testAccount.createdAt,
+            updated_at: testAccount.createdAt,
+        };
+    };
 
     useEffect(() => {
         if (user) {
@@ -682,7 +719,10 @@ function MainApp() {
             case 'profile':
                 const tab = searchParams.get('tab') || 'profile';
                 if (userRole === 'recruiter') return companyProfile && <CompanyProfile profile={companyProfile} onSave={setCompanyProfile} teamMembers={teamMembers} onTeamUpdate={handleTeamMemberUpdate} initialTab={tab} />;
-                return candidateProfile && <CandidateProfileTabs profile={candidateProfile} onUpdate={(u) => setCandidateProfile({...candidateProfile, ...u})} onSave={() => handleUpdateCandidate(candidateProfile)} />;
+                // Use actual profile, or default test profile for test signup users
+                const effectiveProfile = candidateProfile || getDefaultTestProfile();
+                if (!effectiveProfile) return null;
+                return <CandidateProfileTabs profile={effectiveProfile} onUpdate={(u) => setCandidateProfile({...effectiveProfile, ...u})} onSave={() => handleUpdateCandidate(effectiveProfile)} />;
             case 'messages': 
                 if (userRole === 'candidate') {
                     setCurrentView('applications');
@@ -700,6 +740,7 @@ function MainApp() {
             case 'candidate-details': return selectedCandidate && (userRole === 'recruiter' && !selectedCandidate.isUnlocked ? <CandidateDetailsLocked candidate={selectedCandidate} onUnlock={handleUnlockCandidate} onBack={() => setCurrentView('dashboard')} /> : <CandidateDetails candidate={selectedCandidate} onBack={() => setCurrentView('dashboard')} onUnlock={() => {}} onMessage={navigateToMessage} onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }} />);
             case 'my-jobs': return <RecruiterMyJobs />;
             case 'network': return <Network connections={connections} />;
+            case 'following': return <FollowedCompanies />;
             case 'ats': 
                 return userRole === 'candidate' 
                   ? <ApplicationHub /> 
@@ -713,10 +754,10 @@ function MainApp() {
                 if (userRole === 'candidate') {
                     return (
                         <div className="max-w-[1400px] mx-auto px-4 py-8">
-                            <MatchWeightingPanel 
-                                weights={matchWeights} 
-                                onChange={setMatchWeights} 
-                                onReset={() => setMatchWeights({ skills: 50, compensation: 25, culture: 25 })}
+                            <TriangleMatchPriority
+                                weights={matchWeights}
+                                onChange={setMatchWeights}
+                                onReset={() => setMatchWeights({ skills: 33, compensation: 33, culture: 34 })}
                             />
                             
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -846,7 +887,14 @@ export default function App() {
     }, []);
 
     const renderRoute = () => {
+        // Supabase OAuth callback (Google/GitHub sign-in)
+        if (path === '/auth/callback') return <AuthCallback />;
+        // Google Calendar OAuth callback (separate from auth)
         if (path === '/auth/google/callback') return <GoogleAuthCallback />;
+        // Password reset flow
+        if (path === '/forgot-password') return <ForgotPassword />;
+        if (path === '/reset-password') return <ResetPassword />;
+        // Email verification
         if (path.startsWith('/verify/')) return <VerificationForm />;
         return <AuthWrapper />;
     };
@@ -855,6 +903,7 @@ export default function App() {
         <AuthProvider>
             {renderRoute()}
             <DevModeSwitcher />
+            <TestSignupBanner />
         </AuthProvider>
     );
 }

@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { JobPosting, CompanyProfile, MatchBreakdown } from '../types';
-import { MapPin, DollarSign, Clock, Heart, X, Zap, Building2, ChevronRight } from 'lucide-react';
+import { MapPin, DollarSign, Clock, X, Zap, Building2, ChevronRight } from 'lucide-react';
 import SkillIcon from './SkillIcon';
+import SaveJobButton from './SaveJobButton';
 
 interface Props {
   job: JobPosting;
@@ -74,9 +75,11 @@ const EnrichedJobCard: React.FC<Props> = ({
             )}
           </div>
           <div className="flex gap-1">
-            <button onClick={(e) => { e.stopPropagation(); }} className="p-2 text-gray-300 hover:text-pink-500 hover:bg-pink-50 rounded-xl transition-colors">
-              <Heart className="w-5 h-5" />
-            </button>
+            <SaveJobButton
+              jobId={job.id}
+              jobTitle={job.title}
+              variant="icon"
+            />
             <button onClick={(e) => { e.stopPropagation(); }} className="p-2 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
               <X className="w-5 h-5" />
             </button>

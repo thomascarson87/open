@@ -43,12 +43,16 @@ const Login: React.FC<Props> = ({ selectedRole, onBack }) => {
   };
 
   const handleOAuth = async (provider: 'google' | 'github') => {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin
-      }
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
+    if (error) {
+      console.error('OAuth error:', error.message);
+      setError(error.message);
+    }
   };
 
   return (
@@ -110,12 +114,26 @@ const Login: React.FC<Props> = ({ selectedRole, onBack }) => {
                   placeholder="••••••••"
                 />
               </div>
-              <button 
+              <button
                 disabled={loading}
                 className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center disabled:opacity-50 shadow-lg"
               >
                 {loading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')} <ArrowRight className="w-4 h-4 ml-2"/>
               </button>
+              {!isSignUp && (
+                <div className="text-center mt-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.history.pushState({}, '', '/forgot-password');
+                      window.dispatchEvent(new Event('popstate'));
+                    }}
+                    className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
            </form>
 
            <div className="my-6 flex items-center">
