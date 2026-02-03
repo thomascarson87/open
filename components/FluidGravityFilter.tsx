@@ -177,7 +177,7 @@ const DesktopDrawer: React.FC<{
 
   return (
     <motion.div
-      className="px-6 py-4 flex items-center gap-8"
+      className="px-4 py-3 flex items-center justify-center gap-6 max-w-4xl mx-auto"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
       initial={{ opacity: 0 }}
@@ -185,29 +185,31 @@ const DesktopDrawer: React.FC<{
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
     >
-      {/* Circle */}
+      {/* Circle - smaller on narrow screens */}
       <div className="flex-shrink-0">
         <GravityCircle
           weights={weights}
           onChange={onChange}
-          size="md"
+          size="sm-md"
           interactive={true}
           showLabels={true}
         />
       </div>
 
       {/* Weight bars */}
-      <CompactWeightBars weights={weights} />
+      <div className="flex-1 max-w-[180px]">
+        <CompactWeightBars weights={weights} />
+      </div>
 
-      {/* Presets - vertical stack */}
-      <div className="flex flex-col gap-1.5">
+      {/* Presets - horizontal on wide, vertical on narrow */}
+      <div className="flex-shrink-0">
         <GravityPresets weights={weights} onChange={onChange} variant="ghost" compact />
       </div>
 
       {/* Reset */}
       <button
         onClick={onReset}
-        className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-blue-600 transition-colors ml-auto"
+        className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-blue-600 transition-colors"
       >
         <RotateCcw className="w-3 h-3" />
         Reset
@@ -224,13 +226,13 @@ const MobileBottomSheet: React.FC<{
   onClose: () => void;
 }> = ({ weights, onChange, onReset, onClose }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const [dragY, setDragY] = useState(0);
+  const [isDraggingSheet, setIsDraggingSheet] = useState(false);
 
   return (
     <>
       {/* Backdrop - clicking closes */}
       <motion.div
-        className="fixed inset-0 z-40"
+        className="fixed inset-0 z-40 bg-black/20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -240,7 +242,7 @@ const MobileBottomSheet: React.FC<{
       {/* Sheet */}
       <motion.div
         ref={sheetRef}
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden shadow-2xl"
         style={{ backgroundColor: getDominantTint(weights) }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
@@ -248,35 +250,41 @@ const MobileBottomSheet: React.FC<{
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0, bottom: 0.5 }}
+        dragElastic={{ top: 0, bottom: 0.6 }}
+        onDragStart={() => setIsDraggingSheet(true)}
         onDragEnd={(_, info) => {
-          if (info.offset.y > 100) onClose();
+          setIsDraggingSheet(false);
+          if (info.offset.y > 80 || info.velocity.y > 500) onClose();
         }}
       >
-        <div className="bg-white/90 backdrop-blur-xl">
-          {/* Drag handle */}
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        <div className="bg-white/95 backdrop-blur-xl">
+          {/* Drag handle with swipe hint */}
+          <div className="flex flex-col items-center pt-2 pb-1">
+            <motion.div
+              className={`w-12 h-1.5 rounded-full transition-colors ${isDraggingSheet ? 'bg-gray-400' : 'bg-gray-300'}`}
+              animate={{ scaleX: isDraggingSheet ? 1.2 : 1 }}
+            />
+            <span className="text-[9px] text-gray-400 mt-1">Swipe down to close</span>
           </div>
 
-          {/* Content */}
-          <div className="px-5 pb-8">
-            <div className="flex flex-col items-center gap-4">
-              {/* Circle */}
+          {/* Content - more compact */}
+          <div className="px-5 pb-6 pt-2">
+            <div className="flex flex-col items-center gap-3">
+              {/* Circle - medium size on mobile */}
               <GravityCircle
                 weights={weights}
                 onChange={onChange}
-                size="lg"
+                size="md"
                 interactive={true}
                 showLabels={true}
               />
 
-              {/* Weight bars - horizontal on mobile */}
+              {/* Weight bars */}
               <div className="w-full max-w-xs">
                 <CompactWeightBars weights={weights} />
               </div>
 
-              {/* Presets */}
+              {/* Presets - 2x2 grid */}
               <div className="w-full max-w-xs">
                 <GravityPresets weights={weights} onChange={onChange} variant="ghost" />
               </div>
@@ -287,7 +295,7 @@ const MobileBottomSheet: React.FC<{
                 className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                Reset to Balanced
+                Reset
               </button>
             </div>
           </div>

@@ -14,7 +14,7 @@ import {
 interface GravityCircleProps {
   weights: MatchWeights;
   onChange?: (weights: MatchWeights) => void;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'sm-md' | 'md' | 'lg';
   interactive?: boolean;
   showLabels?: boolean;
   className?: string;
@@ -22,6 +22,7 @@ interface GravityCircleProps {
 
 const SIZE_MAP = {
   sm: 40,
+  'sm-md': 140,
   md: 200,
   lg: 280,
 };
@@ -99,8 +100,9 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
   const cultureIntensity = Math.pow(weights.culture / 100, 1.5);
 
   const isSmall = size === 'sm';
-  const puckRadius = isSmall ? 5 : isDragging ? 16 : 14;
-  const poleRadius = isSmall ? 3 : 8;
+  const isCompact = size === 'sm' || size === 'sm-md';
+  const puckRadius = isSmall ? 5 : isCompact ? (isDragging ? 12 : 10) : (isDragging ? 16 : 14);
+  const poleRadius = isSmall ? 3 : isCompact ? 6 : 8;
 
   return (
     <svg
@@ -196,7 +198,7 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
       />
 
       {/* Center marker */}
-      {!isSmall && (
+      {!isCompact && (
         <circle
           cx={CIRCLE_CONFIG.center.x}
           cy={CIRCLE_CONFIG.center.y}
@@ -216,25 +218,25 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
         <>
           <text
             x={POLES.skills.x}
-            y={POLES.skills.y - 16}
+            y={POLES.skills.y - (isCompact ? 10 : 16)}
             textAnchor="middle"
-            className="text-[11px] font-bold fill-blue-600 uppercase"
+            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-blue-600 uppercase`}
           >
             Skills
           </text>
           <text
-            x={POLES.compensation.x + 12}
-            y={POLES.compensation.y + 6}
+            x={POLES.compensation.x + (isCompact ? 8 : 12)}
+            y={POLES.compensation.y + (isCompact ? 4 : 6)}
             textAnchor="start"
-            className="text-[11px] font-bold fill-green-600 uppercase"
+            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-green-600 uppercase`}
           >
             Comp
           </text>
           <text
-            x={POLES.culture.x - 12}
-            y={POLES.culture.y + 6}
+            x={POLES.culture.x - (isCompact ? 8 : 12)}
+            y={POLES.culture.y + (isCompact ? 4 : 6)}
             textAnchor="end"
-            className="text-[11px] font-bold fill-purple-600 uppercase"
+            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-purple-600 uppercase`}
           >
             Culture
           </text>
