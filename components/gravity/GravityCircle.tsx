@@ -92,10 +92,11 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
     }
   }, [interactive, onChange, getSVGPoint]);
 
-  // Calculate heatmap intensities based on weights
-  const skillsIntensity = weights.skills / 100;
-  const compIntensity = weights.compensation / 100;
-  const cultureIntensity = weights.culture / 100;
+  // Calculate heatmap intensities with enhanced visibility
+  // Use quadratic scaling for more dramatic effect at higher weights
+  const skillsIntensity = Math.pow(weights.skills / 100, 1.5);
+  const compIntensity = Math.pow(weights.compensation / 100, 1.5);
+  const cultureIntensity = Math.pow(weights.culture / 100, 1.5);
 
   const isSmall = size === 'sm';
   const puckRadius = isSmall ? 5 : isDragging ? 16 : 14;
@@ -123,22 +124,25 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
           <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
         </filter>
 
-        {/* Dynamic heatmap gradients - positioned at each pole */}
-        <radialGradient id="skills-glow" cx={POLES.skills.x / 300} cy={POLES.skills.y / 300} r="0.5">
-          <stop offset="0%" stopColor={POLES.skills.color} stopOpacity={skillsIntensity * 0.35} />
-          <stop offset="70%" stopColor={POLES.skills.color} stopOpacity={skillsIntensity * 0.1} />
+        {/* Dynamic heatmap gradients - positioned at each pole with enhanced visibility */}
+        <radialGradient id="skills-glow" cx={POLES.skills.x / 300} cy={POLES.skills.y / 300} r="0.6">
+          <stop offset="0%" stopColor={POLES.skills.color} stopOpacity={skillsIntensity * 0.6} />
+          <stop offset="40%" stopColor={POLES.skills.color} stopOpacity={skillsIntensity * 0.3} />
+          <stop offset="80%" stopColor={POLES.skills.color} stopOpacity={skillsIntensity * 0.1} />
           <stop offset="100%" stopColor={POLES.skills.color} stopOpacity="0" />
         </radialGradient>
 
-        <radialGradient id="comp-glow" cx={POLES.compensation.x / 300} cy={POLES.compensation.y / 300} r="0.5">
-          <stop offset="0%" stopColor={POLES.compensation.color} stopOpacity={compIntensity * 0.35} />
-          <stop offset="70%" stopColor={POLES.compensation.color} stopOpacity={compIntensity * 0.1} />
+        <radialGradient id="comp-glow" cx={POLES.compensation.x / 300} cy={POLES.compensation.y / 300} r="0.6">
+          <stop offset="0%" stopColor={POLES.compensation.color} stopOpacity={compIntensity * 0.6} />
+          <stop offset="40%" stopColor={POLES.compensation.color} stopOpacity={compIntensity * 0.3} />
+          <stop offset="80%" stopColor={POLES.compensation.color} stopOpacity={compIntensity * 0.1} />
           <stop offset="100%" stopColor={POLES.compensation.color} stopOpacity="0" />
         </radialGradient>
 
-        <radialGradient id="culture-glow" cx={POLES.culture.x / 300} cy={POLES.culture.y / 300} r="0.5">
-          <stop offset="0%" stopColor={POLES.culture.color} stopOpacity={cultureIntensity * 0.35} />
-          <stop offset="70%" stopColor={POLES.culture.color} stopOpacity={cultureIntensity * 0.1} />
+        <radialGradient id="culture-glow" cx={POLES.culture.x / 300} cy={POLES.culture.y / 300} r="0.6">
+          <stop offset="0%" stopColor={POLES.culture.color} stopOpacity={cultureIntensity * 0.6} />
+          <stop offset="40%" stopColor={POLES.culture.color} stopOpacity={cultureIntensity * 0.3} />
+          <stop offset="80%" stopColor={POLES.culture.color} stopOpacity={cultureIntensity * 0.1} />
           <stop offset="100%" stopColor={POLES.culture.color} stopOpacity="0" />
         </radialGradient>
 
