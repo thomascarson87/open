@@ -93,12 +93,12 @@ class CompanyFollowService {
         notification_enabled,
         company_profiles (
           id,
-          companyName,
-          logoUrl,
+          company_name,
+          logo_url,
           industry,
-          fundingStage,
-          teamSize,
-          location,
+          funding_stage,
+          team_size,
+          headquarters_location,
           follower_count
         )
       `)
@@ -110,7 +110,22 @@ class CompanyFollowService {
       return [];
     }
 
-    return (data as FollowedCompanyWithProfile[]) || [];
+    // Map snake_case DB columns to camelCase for frontend
+    const mapped = data?.map(item => ({
+      ...item,
+      company_profiles: item.company_profiles ? {
+        id: item.company_profiles.id,
+        companyName: item.company_profiles.company_name,
+        logoUrl: item.company_profiles.logo_url,
+        industry: item.company_profiles.industry,
+        fundingStage: item.company_profiles.funding_stage,
+        teamSize: item.company_profiles.team_size,
+        location: item.company_profiles.headquarters_location,
+        follower_count: item.company_profiles.follower_count
+      } : null
+    })) || [];
+
+    return mapped as FollowedCompanyWithProfile[];
   }
 
   /**
