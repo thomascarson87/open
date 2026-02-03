@@ -8,7 +8,7 @@ import CompanyProfile from './components/CompanyProfile';
 import EnrichedJobCard from './components/EnrichedJobCard';
 import EnrichedCandidateCard from './components/EnrichedCandidateCard';
 import JobDetailModal from './components/JobDetailModal';
-import TriangleMatchPriority, { MatchWeights } from './components/TriangleMatchPriority';
+import FluidGravityFilter, { MatchWeights } from './components/FluidGravityFilter';
 import CandidateDetails from './components/CandidateDetails';
 import CandidateDetailsLocked from './components/CandidateDetailsLocked';
 import RecruiterATS from './components/RecruiterATS';
@@ -754,7 +754,7 @@ function MainApp() {
                 if (userRole === 'candidate') {
                     return (
                         <div className="max-w-[1400px] mx-auto px-4 py-8">
-                            <TriangleMatchPriority
+                            <FluidGravityFilter
                                 weights={matchWeights}
                                 onChange={setMatchWeights}
                                 onReset={() => setMatchWeights({ skills: 33, compensation: 33, culture: 34 })}
