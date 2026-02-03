@@ -4,6 +4,7 @@ import { JobPosting, CompanyProfile, TeamMember, MatchBreakdown } from '../types
 import { X, Share2, Zap, Building2, MapPin, DollarSign, Clock, CheckCircle, Target, Code, Users, Gift, MessageSquare, ArrowRight, Layout, GraduationCap } from 'lucide-react';
 import SkillIcon from './SkillIcon';
 import SaveJobButton from './SaveJobButton';
+import FollowCompanyButton from './FollowCompanyButton';
 
 interface Props {
   isOpen: boolean;
@@ -74,9 +75,16 @@ const JobDetailModal: React.FC<Props> = ({ isOpen, onClose, enrichedJob, matchRe
             <div className="text-center md:text-left">
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3 tracking-tight">{job.title}</h1>
               <div className="flex flex-wrap justify-center md:justify-start items-center gap-4">
-                <div className="flex items-center gap-1.5 font-bold text-gray-900">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  {company.companyName}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 font-bold text-gray-900">
+                    <Building2 className="w-4 h-4 text-blue-600" />
+                    {company.companyName}
+                  </div>
+                  <FollowCompanyButton
+                    companyId={company.id}
+                    companyName={company.companyName}
+                    variant="button"
+                  />
                 </div>
                 <div className="h-1 w-1 bg-gray-300 rounded-full" />
                 <div className="text-sm font-bold text-gray-500 uppercase tracking-widest">

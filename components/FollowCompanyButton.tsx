@@ -23,9 +23,14 @@ const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(initialFollowing !== undefined);
 
+  // In production, devProfileRole is null but user is logged in
+  // In dev mode, devProfileRole is set explicitly
+  // Button should render if user is logged in (candidates see job cards, so they can follow)
+  const isCandidate = devProfileRole === 'candidate' || (devProfileRole === null && user?.id);
+
   // Check initial follow status if not provided
   useEffect(() => {
-    if (user?.id && initialFollowing === undefined && devProfileRole === 'candidate') {
+    if (user?.id && initialFollowing === undefined && isCandidate) {
       companyFollowService.isFollowing(user.id, companyId)
         .then(status => {
           setIsFollowing(status);
@@ -33,13 +38,13 @@ const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
         })
         .catch(() => setInitialized(true));
     }
-  }, [user?.id, companyId, initialFollowing, devProfileRole]);
+  }, [user?.id, companyId, initialFollowing, isCandidate]);
 
   const handleToggle = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (!user?.id || loading || devProfileRole !== 'candidate') return;
+    if (!user?.id || loading || !isCandidate) return;
 
     setLoading(true);
     try {
@@ -51,10 +56,10 @@ const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [user?.id, companyId, loading, devProfileRole, onFollowChange]);
+  }, [user?.id, companyId, loading, isCandidate, onFollowChange]);
 
-  // Don't render for non-candidates
-  if (devProfileRole !== 'candidate') {
+  // Don't render if user not logged in
+  if (!user?.id) {
     return null;
   }
 

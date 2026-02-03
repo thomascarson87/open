@@ -25,9 +25,14 @@ const SaveJobButton: React.FC<SaveJobButtonProps> = ({
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(initialSaved !== undefined);
 
+  // In production, devProfileRole is null but user is logged in
+  // In dev mode, devProfileRole is set explicitly
+  // Button should render if user is logged in (candidates see job cards, so they can save)
+  const isCandidate = devProfileRole === 'candidate' || (devProfileRole === null && user?.id);
+
   // Check initial saved status if not provided
   useEffect(() => {
-    if (user?.id && initialSaved === undefined && devProfileRole === 'candidate') {
+    if (user?.id && initialSaved === undefined && isCandidate) {
       savedJobService.isSaved(user.id, jobId)
         .then(status => {
           setIsSaved(status);
@@ -35,13 +40,13 @@ const SaveJobButton: React.FC<SaveJobButtonProps> = ({
         })
         .catch(() => setInitialized(true));
     }
-  }, [user?.id, jobId, initialSaved, devProfileRole]);
+  }, [user?.id, jobId, initialSaved, isCandidate]);
 
   const handleToggle = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (!user?.id || loading || devProfileRole !== 'candidate') return;
+    if (!user?.id || loading || !isCandidate) return;
 
     setLoading(true);
     try {
@@ -53,10 +58,10 @@ const SaveJobButton: React.FC<SaveJobButtonProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [user?.id, jobId, loading, devProfileRole, onSaveChange]);
+  }, [user?.id, jobId, loading, isCandidate, onSaveChange]);
 
-  // Don't render for non-candidates
-  if (devProfileRole !== 'candidate') {
+  // Don't render if user not logged in
+  if (!user?.id) {
     return null;
   }
 
