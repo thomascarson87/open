@@ -1,10 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TalentSearchResult, CandidateProfile, TalentSearchCriteria } from '../types';
 import EnrichedCandidateCard from './EnrichedCandidateCard';
+import FluidGravityFilter, { MatchWeights } from './FluidGravityFilter';
 import { Save, Filter, Download, ArrowLeft } from 'lucide-react';
 import { talentMatcherService } from '../services/talentMatcherService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabaseClient';
+
+// LocalStorage key for company match weights (shared across pages)
+const COMPANY_WEIGHTS_KEY = 'company_match_weights';
+const DEFAULT_WEIGHTS: MatchWeights = { skills: 40, compensation: 30, culture: 30 };
+
+// Load weights from localStorage
+function loadCompanyWeights(): MatchWeights {
+  try {
+    const saved = localStorage.getItem(COMPANY_WEIGHTS_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (
+        typeof parsed.skills === 'number' &&
+        typeof parsed.compensation === 'number' &&
+        typeof parsed.culture === 'number' &&
+        Math.abs(parsed.skills + parsed.compensation + parsed.culture - 100) < 2
+      ) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load company weights from localStorage');
+  }
+  return DEFAULT_WEIGHTS;
+}
+
+// Save weights to localStorage
+function saveCompanyWeights(weights: MatchWeights): void {
+  try {
+    localStorage.setItem(COMPANY_WEIGHTS_KEY, JSON.stringify(weights));
+  } catch (e) {
+    console.warn('Failed to save company weights to localStorage');
+  }
+}
+
+// Calculate weighted score for a candidate
+function calculateWeightedScore(result: TalentSearchResult, weights: MatchWeights): number {
+  const breakdown = result.matchBreakdown?.details;
+  if (!breakdown) return result.matchScore;
+
+  const skillsScore = breakdown.skills?.score ?? 0;
+  const salaryScore = breakdown.salary?.score ?? 0;
+  // Combine culture and traits for culture dimension
+  const cultureScore = ((breakdown.culture?.score ?? 0) + (breakdown.traits?.score ?? 0)) / 2;
+
+  return (
+    (skillsScore * weights.skills / 100) +
+    (salaryScore * weights.compensation / 100) +
+    (cultureScore * weights.culture / 100)
+  );
+}
 
 interface Props {
   results: TalentSearchResult[];
@@ -18,21 +70,38 @@ interface Props {
 
 const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnlock, onSchedule, onMessage, onViewProfile }) => {
     const { user } = useAuth();
-    const [sortBy, setSortBy] = useState<'match' | 'salary_low' | 'salary_high'>('match');
+    const [sortBy, setSortBy] = useState<'match' | 'weighted' | 'salary_low' | 'salary_high'>('weighted');
     const [saveName, setSaveName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [showSaveDialog, setShowSaveDialog] = useState(false);
 
-    const sortedResults = [...results].sort((a, b) => {
-        if (sortBy === 'match') return b.matchScore - a.matchScore;
-        if (sortBy === 'salary_low') {
-             return (a.candidate.salaryMin || 0) - (b.candidate.salaryMin || 0);
-        }
-        if (sortBy === 'salary_high') {
-             return (b.candidate.salaryMin || 0) - (a.candidate.salaryMin || 0);
-        }
-        return 0;
-    });
+    // Match priority weights state
+    const [matchWeights, setMatchWeights] = useState<MatchWeights>(loadCompanyWeights);
+
+    // Save weights to localStorage when they change
+    useEffect(() => {
+      saveCompanyWeights(matchWeights);
+    }, [matchWeights]);
+
+    // Calculate weighted scores and sort
+    const sortedResults = useMemo(() => {
+        const resultsWithWeightedScore = results.map(res => ({
+            ...res,
+            weightedScore: calculateWeightedScore(res, matchWeights)
+        }));
+
+        return resultsWithWeightedScore.sort((a, b) => {
+            if (sortBy === 'weighted') return b.weightedScore - a.weightedScore;
+            if (sortBy === 'match') return b.matchScore - a.matchScore;
+            if (sortBy === 'salary_low') {
+                 return (a.candidate.salaryMin || 0) - (b.candidate.salaryMin || 0);
+            }
+            if (sortBy === 'salary_high') {
+                 return (b.candidate.salaryMin || 0) - (a.candidate.salaryMin || 0);
+            }
+            return 0;
+        });
+    }, [results, matchWeights, sortBy]);
 
     const handleSaveSearch = async () => {
         if (!saveName) return;
@@ -67,30 +136,38 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
                          <p className="text-gray-500">{results.length} candidates fit your precision criteria</p>
                      </div>
                 </div>
-                
+
                 <div className="flex flex-wrap justify-center gap-2">
-                    <select 
+                    <select
                         className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
                         value={sortBy}
                         onChange={e => setSortBy(e.target.value as any)}
                     >
+                        <option value="weighted">Priority Weighted</option>
                         <option value="match">Best Match</option>
                         <option value="salary_low">Lowest Salary</option>
                         <option value="salary_high">Highest Salary</option>
                     </select>
-                    
-                    <button 
+
+                    <button
                         onClick={() => setShowSaveDialog(true)}
                         className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition-colors"
                     >
                         <Save className="w-4 h-4 mr-2 text-blue-600"/> Save Search
                     </button>
-                    
+
                     <button className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition-colors">
                         <Download className="w-4 h-4 mr-2 text-gray-400"/> Export
                     </button>
                 </div>
             </div>
+
+            {/* Match Priority Filter */}
+            <FluidGravityFilter
+                weights={matchWeights}
+                onChange={setMatchWeights}
+                onReset={() => setMatchWeights(DEFAULT_WEIGHTS)}
+            />
 
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
