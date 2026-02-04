@@ -233,9 +233,9 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
             Comp
           </text>
           <text
-            x={POLES.culture.x - (isCompact ? 8 : 12)}
+            x={isCompact ? 8 : 5}
             y={POLES.culture.y + (isCompact ? 4 : 6)}
-            textAnchor="end"
+            textAnchor="start"
             className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-purple-600 uppercase`}
           >
             Culture
