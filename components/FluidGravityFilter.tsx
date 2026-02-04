@@ -56,12 +56,12 @@ function getDominantTint(weights: MatchWeights): string {
   return `rgba(147, 51, 234, ${intensity})`; // Purple
 }
 
-// Compact horizontal weight bars
-const CompactWeightBars: React.FC<{ weights: MatchWeights }> = ({ weights }) => (
-  <div className="flex flex-col gap-2 min-w-[140px]">
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] font-bold text-gray-500 w-14">Skills</span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+// Weight bars - responsive sizing
+const WeightBars: React.FC<{ weights: MatchWeights; compact?: boolean }> = ({ weights, compact = false }) => (
+  <div className={`flex flex-col ${compact ? 'gap-2' : 'gap-3'} w-full`}>
+    <div className="flex items-center gap-3">
+      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-gray-600`}>Skills</span>
+      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 rounded-full overflow-hidden`}>
         <motion.div
           className={`h-full ${COLORS.skills.bg} rounded-full`}
           initial={false}
@@ -69,11 +69,11 @@ const CompactWeightBars: React.FC<{ weights: MatchWeights }> = ({ weights }) => 
           transition={{ duration: 0.15 }}
         />
       </div>
-      <span className={`text-xs font-black ${COLORS.skills.text} w-8 text-right`}>{weights.skills}%</span>
+      <span className={`${compact ? 'text-xs w-10' : 'text-sm w-12'} font-black ${COLORS.skills.text} text-right`}>{weights.skills}%</span>
     </div>
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] font-bold text-gray-500 w-14">Comp</span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+    <div className="flex items-center gap-3">
+      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-gray-600`}>Comp</span>
+      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 rounded-full overflow-hidden`}>
         <motion.div
           className={`h-full ${COLORS.compensation.bg} rounded-full`}
           initial={false}
@@ -81,11 +81,11 @@ const CompactWeightBars: React.FC<{ weights: MatchWeights }> = ({ weights }) => 
           transition={{ duration: 0.15 }}
         />
       </div>
-      <span className={`text-xs font-black ${COLORS.compensation.text} w-8 text-right`}>{weights.compensation}%</span>
+      <span className={`${compact ? 'text-xs w-10' : 'text-sm w-12'} font-black ${COLORS.compensation.text} text-right`}>{weights.compensation}%</span>
     </div>
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] font-bold text-gray-500 w-14">Culture</span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+    <div className="flex items-center gap-3">
+      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-gray-600`}>Culture</span>
+      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 rounded-full overflow-hidden`}>
         <motion.div
           className={`h-full ${COLORS.culture.bg} rounded-full`}
           initial={false}
@@ -93,7 +93,7 @@ const CompactWeightBars: React.FC<{ weights: MatchWeights }> = ({ weights }) => 
           transition={{ duration: 0.15 }}
         />
       </div>
-      <span className={`text-xs font-black ${COLORS.culture.text} w-8 text-right`}>{weights.culture}%</span>
+      <span className={`${compact ? 'text-xs w-10' : 'text-sm w-12'} font-black ${COLORS.culture.text} text-right`}>{weights.culture}%</span>
     </div>
   </div>
 );
@@ -112,6 +112,9 @@ const SparklineHeader: React.FC<{
     <div className="bg-blue-50 p-1.5 rounded-lg flex-shrink-0">
       <Sliders className="w-4 h-4 text-blue-600" />
     </div>
+
+    {/* Label - visible when collapsed */}
+    <span className="text-sm font-semibold text-gray-700 hidden sm:block">Match Priority</span>
 
     <GravityCircle
       weights={weights}
@@ -177,7 +180,7 @@ const DesktopDrawer: React.FC<{
 
   return (
     <motion.div
-      className="px-4 py-3 flex items-center justify-center gap-6 max-w-4xl mx-auto"
+      className="px-6 py-4 flex items-center justify-between gap-8"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
       initial={{ opacity: 0 }}
@@ -185,33 +188,33 @@ const DesktopDrawer: React.FC<{
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
     >
-      {/* Circle - smaller on narrow screens */}
+      {/* Circle */}
       <div className="flex-shrink-0">
         <GravityCircle
           weights={weights}
           onChange={onChange}
-          size="sm-md"
+          size="md"
           interactive={true}
           showLabels={true}
         />
       </div>
 
-      {/* Weight bars */}
-      <div className="flex-1 max-w-[180px]">
-        <CompactWeightBars weights={weights} />
+      {/* Weight bars - takes available space */}
+      <div className="flex-1 max-w-md">
+        <WeightBars weights={weights} />
       </div>
 
-      {/* Presets - horizontal on wide, vertical on narrow */}
+      {/* Presets */}
       <div className="flex-shrink-0">
-        <GravityPresets weights={weights} onChange={onChange} variant="ghost" compact />
+        <GravityPresets weights={weights} onChange={onChange} variant="ghost" />
       </div>
 
       {/* Reset */}
       <button
         onClick={onReset}
-        className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-blue-600 transition-colors"
+        className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-blue-600 transition-colors"
       >
-        <RotateCcw className="w-3 h-3" />
+        <RotateCcw className="w-4 h-4" />
         Reset
       </button>
     </motion.div>
@@ -281,7 +284,7 @@ const MobileBottomSheet: React.FC<{
 
               {/* Weight bars */}
               <div className="w-full max-w-xs">
-                <CompactWeightBars weights={weights} />
+                <WeightBars weights={weights} compact />
               </div>
 
               {/* Presets - 2x2 grid */}
