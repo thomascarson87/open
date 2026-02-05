@@ -25,7 +25,7 @@ const AboutSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
 
                 <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed mb-12">
                     A match isn't a keyword hit. It's the alignment of technical DNA, team values, and organizational impact.
-                    We built chime for teams who understand that great hires aren't found—they resonate.
+                    We support teams who understand that great hires aren't found—they chime.
                 </p>
             </section>
 
