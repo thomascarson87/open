@@ -3,6 +3,8 @@ import { ArrowRight, Menu, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import ForCompaniesInfo from './landing/ForCompaniesInfo';
 import ForTalentInfo from './landing/ForTalentInfo';
+import AboutSection from './landing/AboutSection';
+import PricingSection from './landing/PricingSection';
 import EnrichedCandidateCard from './EnrichedCandidateCard';
 import EnrichedJobCard from './EnrichedJobCard';
 import { CandidateProfile, JobPosting } from '../types';
@@ -423,7 +425,7 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
     const [jobs, setJobs] = useState<any[]>([]);
     const [candidates, setCandidates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showInfoPage, setShowInfoPage] = useState<false | 'companies' | 'talent'>(false);
+    const [showInfoPage, setShowInfoPage] = useState<false | 'companies' | 'talent' | 'about' | 'pricing'>(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
@@ -496,6 +498,22 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
                         For Companies
                     </button>
                     <button
+                        onClick={() => { setShowInfoPage('pricing'); setMobileMenuOpen(false); }}
+                        className={`text-sm font-medium transition-colors ${
+                            showInfoPage === 'pricing' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
+                        }`}
+                    >
+                        Pricing
+                    </button>
+                    <button
+                        onClick={() => { setShowInfoPage('about'); setMobileMenuOpen(false); }}
+                        className={`text-sm font-medium transition-colors ${
+                            showInfoPage === 'about' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
+                        }`}
+                    >
+                        About
+                    </button>
+                    <button
                         onClick={() => onSelectRole('candidate')}
                         className="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
                     >
@@ -551,6 +569,32 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
                         >
                             For Companies
                         </button>
+                        <button
+                            onClick={() => {
+                                setShowInfoPage('pricing');
+                                setMobileMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
+                                showInfoPage === 'pricing'
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            }`}
+                        >
+                            Pricing
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowInfoPage('about');
+                                setMobileMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
+                                showInfoPage === 'about'
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'text-gray-600 hover:bg-gray-50'
+                            }`}
+                        >
+                            About
+                        </button>
                         {showInfoPage && (
                             <button
                                 onClick={() => {
@@ -585,12 +629,22 @@ const LandingPage: React.FC<Props> = ({ onSelectRole, onNavigate }) => {
                         onGetStarted={() => onSelectRole('recruiter')}
                         onBack={() => setShowInfoPage(false)}
                     />
-                ) : (
+                ) : showInfoPage === 'talent' ? (
                     <ForTalentInfo
                         onGetStarted={() => onSelectRole('candidate')}
                         onBack={() => setShowInfoPage(false)}
                     />
-                )}
+                ) : showInfoPage === 'about' ? (
+                    <AboutSection
+                        onGetStarted={() => onSelectRole('candidate')}
+                        onBack={() => setShowInfoPage(false)}
+                    />
+                ) : showInfoPage === 'pricing' ? (
+                    <PricingSection
+                        onGetStarted={() => onSelectRole('recruiter')}
+                        onBack={() => setShowInfoPage(false)}
+                    />
+                ) : null}
             </main>
 
             <footer className="py-10 bg-white border-t border-gray-100">
