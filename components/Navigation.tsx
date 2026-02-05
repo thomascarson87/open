@@ -88,7 +88,8 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
         { id: 'messages', label: 'Chat', icon: MessageSquare, description: 'Candidate messaging' },
         { id: 'schedule', label: 'Calendar', icon: Calendar, description: 'Interview schedule' }
       ]
-    }
+    },
+    { id: 'talent-market', label: 'Talent Market', icon: Layout }
   ];
 
   const candidateNav = [
@@ -100,7 +101,8 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
         { id: 'following', label: 'Saved & Following', icon: Heart, description: 'Jobs and companies you follow' }
       ]
     },
-    { id: 'applications', label: 'Applications', icon: ClipboardList }
+    { id: 'applications', label: 'Applications', icon: ClipboardList },
+    { id: 'market-pulse', label: 'Market Pulse', icon: Layout }
   ];
 
   const handleNavItemClick = (id: string, tab?: string) => {
@@ -128,29 +130,35 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
               
               <div className="hidden md:flex md:space-x-1" ref={navRef}>
                 {role === 'recruiter' ? recruiterNav.map(group => (
-                  <div key={group.id} className="relative">
-                    <button 
-                      onClick={() => setActiveDropdown(activeDropdown === group.id ? null : group.id)}
-                      className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${isParentActive(group) ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
-                    >
-                      <group.icon className="w-4 h-4 mr-2 opacity-70" />
-                      {group.label}
-                      <ChevronDown className={`ml-1.5 w-3.5 h-3.5 transition-transform ${activeDropdown === group.id ? 'rotate-180' : ''}`} />
+                  group.children ? (
+                    <div key={group.id} className="relative">
+                      <button
+                        onClick={() => setActiveDropdown(activeDropdown === group.id ? null : group.id)}
+                        className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${isParentActive(group) ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
+                      >
+                        <group.icon className="w-4 h-4 mr-2 opacity-70" />
+                        {group.label}
+                        <ChevronDown className={`ml-1.5 w-3.5 h-3.5 transition-transform ${activeDropdown === group.id ? 'rotate-180' : ''}`} />
+                      </button>
+                      {activeDropdown === group.id && (
+                        <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                          {group.children.map(child => (
+                            <button key={child.id} onClick={() => handleNavItemClick(child.id)} className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${currentView === child.id ? 'bg-blue-50/50' : ''}`}>
+                              <div className={`p-2 rounded-lg ${currentView === child.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}><child.icon className="w-4 h-4" /></div>
+                              <div>
+                                <div className={`text-sm font-bold ${currentView === child.id ? 'text-blue-700' : 'text-gray-900'}`}>{child.label}</div>
+                                <div className="text-xs text-gray-400 font-medium">{child.description}</div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button key={group.id} onClick={() => handleNavItemClick(group.id)} className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200 ${currentView === group.id ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}>
+                      <group.icon className="w-4 h-4 mr-2 opacity-70" />{group.label}
                     </button>
-                    {activeDropdown === group.id && (
-                      <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                        {group.children.map(child => (
-                          <button key={child.id} onClick={() => handleNavItemClick(child.id)} className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${currentView === child.id ? 'bg-blue-50/50' : ''}`}>
-                            <div className={`p-2 rounded-lg ${currentView === child.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}><child.icon className="w-4 h-4" /></div>
-                            <div>
-                              <div className={`text-sm font-bold ${currentView === child.id ? 'text-blue-700' : 'text-gray-900'}`}>{child.label}</div>
-                              <div className="text-xs text-gray-400 font-medium">{child.description}</div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  )
                 )) : candidateNav.map(item => (
                   item.children ? (
                     <div key={item.id} className="relative">

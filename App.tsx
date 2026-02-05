@@ -34,6 +34,9 @@ import DevModeSwitcher from './components/dev/DevModeSwitcher';
 import TestSignupBanner from './components/dev/TestSignupBanner';
 import HiringManagerPreferences from './pages/HiringManagerPreferences';
 import PendingApprovals from './pages/PendingApprovals';
+import MarketPulse from './pages/candidate/MarketPulse';
+import TalentMarket from './pages/company/TalentMarket';
+import CompanyHomepage from './components/homepage/CompanyHomepage';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
 import { Loader2, Briefcase } from 'lucide-react';
 import { notificationService } from './services/notificationService';
@@ -750,6 +753,8 @@ function MainApp() {
             case 'notifications': return <Notifications notifications={notifications} />;
             case 'hm-preferences': return <HiringManagerPreferences />;
             case 'pending-approvals': return <PendingApprovals />;
+            case 'market-pulse': return <MarketPulse />;
+            case 'talent-market': return <TalentMarket />;
             default: 
                 if (userRole === 'candidate') {
                     return (
@@ -818,21 +823,16 @@ function MainApp() {
                     );
                 }
                 return (
-                    <div className="max-w-[1400px] mx-auto px-4 py-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {candidatesList.map(c => (
-                                <EnrichedCandidateCard
-                                    key={c.id}
-                                    candidate={c}
-                                    onViewProfile={(candidate) => { setSelectedCandidate(candidate); setCurrentView('candidate-details'); }}
-                                    onUnlock={handleUnlockCandidate}
-                                    onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }}
-                                    onMessage={navigateToMessage}
-                                    showMatchBreakdown={false}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    <CompanyHomepage
+                        companyProfile={companyProfile!}
+                        companyId={authCompanyId || user?.id || ''}
+                        onViewProfile={(candidate) => { setSelectedCandidate(candidate); setCurrentView('candidate-details'); }}
+                        onUnlock={handleUnlockCandidate}
+                        onSchedule={(id) => { setSearchParams({candidateId: id, view: 'schedule'}); setCurrentView('schedule'); }}
+                        onMessage={navigateToMessage}
+                        onNavigateToCreateJob={() => setCurrentView('create-job')}
+                        onNavigateToTalentMatcher={() => setCurrentView('talent-matcher')}
+                    />
                 );
         }
     };
