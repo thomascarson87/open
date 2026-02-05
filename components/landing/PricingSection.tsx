@@ -120,7 +120,7 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-gray-900 leading-[1.05] mb-8">
                     Pay for <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Precision</span>,<br />
-                    Not Volume
+                    Not Noise
                 </h1>
 
                 <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
