@@ -187,7 +187,7 @@ const EnrichedCandidateCard: React.FC<EnrichedCandidateCardProps> = ({
         <div className="px-6 mb-6">
           <div className="bg-gray-50/80 rounded-[1.5rem] p-4 border border-gray-100">
             <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Match Breakdown</div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className={`grid gap-2 ${matchResult.details.certifications && matchResult.details.certifications.reason !== 'No certification requirements' ? 'grid-cols-5' : 'grid-cols-4'}`}>
               {/* Skills */}
               <div className="space-y-1.5 text-center">
                 <div className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Skills</div>
@@ -220,6 +220,16 @@ const EnrichedCandidateCard: React.FC<EnrichedCandidateCardProps> = ({
                   <div className="h-full bg-orange-600" style={{ width: `${matchResult.details.traits?.score || 0}%` }} />
                 </div>
               </div>
+              {/* Certifications (conditional) */}
+              {matchResult.details.certifications && matchResult.details.certifications.reason !== 'No certification requirements' && (
+                <div className="space-y-1.5 text-center">
+                  <div className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Certs</div>
+                  <div className="text-sm font-black text-gray-900">{matchResult.details.certifications.score}%</div>
+                  <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-600" style={{ width: `${matchResult.details.certifications.score}%` }} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

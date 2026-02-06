@@ -7,7 +7,7 @@ import { useJobPermissions } from '../hooks/useJobPermissions';
 import { applyHMPreferencesToJob, hasExistingWorkStyleValues, JobWithHMMetadata } from '../services/hmPreferencesService';
 import {
     ArrowLeft, ArrowRight, Zap, Award, Heart, CheckCircle, Users, UserCheck,
-    Trash2, Plus, X, Clock, Globe, Shield, DollarSign, Briefcase, GraduationCap, Target, Sparkles, Building2, AlertTriangle, Lock, User, FileText, Loader2
+    Trash2, Plus, X, Clock, Globe, Shield, DollarSign, Briefcase, GraduationCap, Target, Sparkles, Building2, AlertTriangle, Lock, User, FileText, Loader2, ChevronDown, ChevronUp, Search
 } from 'lucide-react';
 import GroupedMultiSelect from './GroupedMultiSelect';
 import SkillPillEditor from './SkillPillEditor';
@@ -21,6 +21,9 @@ import { WORK_INTENSITY_OPTIONS, AUTONOMY_LEVEL_OPTIONS, TEAM_SIZE_PREF_OPTIONS,
 import { COMMON_TECH_STACK } from '../constants/companyData';
 import { COMMON_LANGUAGES, LANGUAGE_PROFICIENCY_LEVELS, COMMON_TIMEZONES, TIMEZONE_OVERLAP_OPTIONS as LOGISTICS_TIMEZONE_OVERLAP } from '../constants/languageData';
 import { getSkillLevelForSeniority, getImpactScopeForSeniority } from '../constants/seniorityData';
+import { CERTIFICATION_CATEGORIES } from '../constants/certifications';
+import { fetchCertifications, fetchRegulatoryDomains, groupCertificationsByCategory } from '../utils/certifications';
+import type { Certification, RegulatoryDomain } from '../types';
 
 interface Props {
     onPublish: (job: JobPosting) => void;
@@ -45,6 +48,11 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, teamMemb
     const [isGenerating, setIsGenerating] = useState(false);
     const [hmPrefsApplied, setHmPrefsApplied] = useState(false);
     const [hmPrefsSource, setHmPrefsSource] = useState<string | null>(null);
+    const [certSectionOpen, setCertSectionOpen] = useState(false);
+    const [certifications, setCertifications] = useState<Certification[]>([]);
+    const [regulatoryDomainsList, setRegulatoryDomainsList] = useState<RegulatoryDomain[]>([]);
+    const [certLoading, setCertLoading] = useState(false);
+    const [certSearch, setCertSearch] = useState('');
     const [jobData, setJobData] = useState<JobWithHMMetadata>({
         title: '', description: '', location: '', workMode: WorkMode.Remote, seniority: SeniorityLevel.Senior,
         contractTypes: [JobType.FullTime], requiredSkills: [], values: [], perks: [], desiredTraits: [], requiredTraits: [],
@@ -53,8 +61,22 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, teamMemb
         workStyleDealbreakers: [], teamRequirements: companyProfile?.teamStructure || {}, teamDealbreakers: [],
         approvals: { hiringManager: { status: 'pending', assignedTo: '' }, finance: { status: 'pending', assignedTo: '' } },
         preferredLanguages: [], requiredTimezoneOverlap: undefined,
-        visaSponsorshipAvailable: false, equityOffered: false, relocationAssistance: false
+        visaSponsorshipAvailable: false, equityOffered: false, relocationAssistance: false,
+        requiredCertifications: [], preferredCertifications: [], regulatoryDomains: []
     });
+
+    // Fetch certifications & regulatory domains when section is opened
+    useEffect(() => {
+        if (!certSectionOpen || certifications.length > 0) return;
+        setCertLoading(true);
+        Promise.all([fetchCertifications(), fetchRegulatoryDomains()])
+            .then(([certs, domains]) => {
+                setCertifications(certs);
+                setRegulatoryDomainsList(domains);
+            })
+            .catch(err => console.error('Failed to fetch certifications:', err))
+            .finally(() => setCertLoading(false));
+    }, [certSectionOpen]);
 
     // Get permissions based on team role
     const permissions = useJobPermissions(jobData, teamRole, user?.id);
@@ -345,6 +367,184 @@ const CreateJob: React.FC<Props> = ({ onPublish, onCancel, teamMembers, teamMemb
                         onRemoveSkill={handleRemoveSkill}
                     />
                     <div className="pt-8 border-t"><h3 className="text-xl font-black mb-4 flex items-center"><Target className="w-5 h-5 mr-2 text-blue-500"/> Required Impact Scope</h3><ImpactScopeSelector currentScope={jobData.required_impact_scope} onChangeCurrent={s => setJobData({...jobData, required_impact_scope: s})} maxSelections={1} /></div>
+
+                    {/* Certifications & Compliance - Collapsible */}
+                    <div className="pt-8 border-t">
+                        <button
+                            type="button"
+                            onClick={() => setCertSectionOpen(!certSectionOpen)}
+                            className="w-full flex items-center justify-between group"
+                        >
+                            <div>
+                                <h3 className="text-xl font-black flex items-center">
+                                    <Shield className="w-5 h-5 mr-2 text-gray-400"/>
+                                    Certifications & Regulatory Experience
+                                    <span className="ml-2 text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Optional</span>
+                                </h3>
+                                <p className="text-sm text-gray-400 mt-1 text-left">For roles requiring specific credentials or compliance expertise</p>
+                            </div>
+                            {certSectionOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                        </button>
+
+                        {certSectionOpen && (
+                            <div className="mt-6 space-y-8">
+                                {certLoading ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                                        <span className="ml-3 text-sm text-gray-400 font-bold">Loading certifications...</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Search */}
+                                        {certifications.length > 15 && (
+                                            <div className="relative">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                <input
+                                                    value={certSearch}
+                                                    onChange={e => setCertSearch(e.target.value)}
+                                                    placeholder="Search certifications..."
+                                                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border-transparent rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Required Certifications */}
+                                        <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100">
+                                            <label className="block text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Must-have certifications</label>
+                                            <p className="text-xs text-amber-600 mb-4">Candidates without these won't be matched</p>
+                                            {certifications.length === 0 ? (
+                                                <p className="text-sm text-gray-400 italic">No certifications available</p>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {Object.entries(groupCertificationsByCategory(
+                                                        certSearch
+                                                            ? certifications.filter(c => c.name.toLowerCase().includes(certSearch.toLowerCase()))
+                                                            : certifications
+                                                    )).map(([category, certs]) => {
+                                                        const categoryLabel = CERTIFICATION_CATEGORIES.find(c => c.value === category)?.label || category;
+                                                        const selectedInCategory = certs.filter(c => (jobData.requiredCertifications || []).includes(c.id)).length;
+                                                        return (
+                                                            <div key={category}>
+                                                                <p className="text-xs font-black text-amber-800 mb-2">
+                                                                    {categoryLabel}
+                                                                    {selectedInCategory > 0 && <span className="ml-1 text-amber-600">({selectedInCategory} selected)</span>}
+                                                                </p>
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                                                    {certs.map(cert => {
+                                                                        const isRequired = (jobData.requiredCertifications || []).includes(cert.id);
+                                                                        const isPreferred = (jobData.preferredCertifications || []).includes(cert.id);
+                                                                        return (
+                                                                            <label key={cert.id} className={`flex items-center gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${isRequired ? 'bg-amber-100' : 'hover:bg-amber-100/50'} ${isPreferred ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={isRequired}
+                                                                                    disabled={isPreferred}
+                                                                                    onChange={() => {
+                                                                                        const current = jobData.requiredCertifications || [];
+                                                                                        const updated = isRequired ? current.filter(id => id !== cert.id) : [...current, cert.id];
+                                                                                        setJobData({...jobData, requiredCertifications: updated});
+                                                                                    }}
+                                                                                    className="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                                                                                />
+                                                                                <span className={`text-sm font-bold ${isRequired ? 'text-amber-900' : 'text-gray-700'}`}>{cert.name}</span>
+                                                                            </label>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Preferred Certifications */}
+                                        <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-200">
+                                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Nice-to-have certifications</label>
+                                            <p className="text-xs text-gray-400 mb-4">Candidates with these will rank higher</p>
+                                            {certifications.length === 0 ? (
+                                                <p className="text-sm text-gray-400 italic">No certifications available</p>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {Object.entries(groupCertificationsByCategory(
+                                                        certSearch
+                                                            ? certifications.filter(c => c.name.toLowerCase().includes(certSearch.toLowerCase()))
+                                                            : certifications
+                                                    )).map(([category, certs]) => {
+                                                        const categoryLabel = CERTIFICATION_CATEGORIES.find(c => c.value === category)?.label || category;
+                                                        const selectedInCategory = certs.filter(c => (jobData.preferredCertifications || []).includes(c.id)).length;
+                                                        return (
+                                                            <div key={category}>
+                                                                <p className="text-xs font-black text-gray-500 mb-2">
+                                                                    {categoryLabel}
+                                                                    {selectedInCategory > 0 && <span className="ml-1 text-gray-400">({selectedInCategory} selected)</span>}
+                                                                </p>
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                                                    {certs.map(cert => {
+                                                                        const isPreferred = (jobData.preferredCertifications || []).includes(cert.id);
+                                                                        const isRequired = (jobData.requiredCertifications || []).includes(cert.id);
+                                                                        return (
+                                                                            <label key={cert.id} className={`flex items-center gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${isPreferred ? 'bg-white' : 'hover:bg-white/70'} ${isRequired ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={isPreferred}
+                                                                                    disabled={isRequired}
+                                                                                    onChange={() => {
+                                                                                        const current = jobData.preferredCertifications || [];
+                                                                                        const updated = isPreferred ? current.filter(id => id !== cert.id) : [...current, cert.id];
+                                                                                        setJobData({...jobData, preferredCertifications: updated});
+                                                                                    }}
+                                                                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                                />
+                                                                                <span className={`text-sm font-bold ${isPreferred ? 'text-gray-900' : 'text-gray-600'}`}>{cert.name}</span>
+                                                                            </label>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Regulatory Domains */}
+                                        <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-200">
+                                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Regulatory experience needed</label>
+                                            <p className="text-xs text-gray-400 mb-4">Industries where compliance knowledge is critical for this role</p>
+                                            {regulatoryDomainsList.length === 0 ? (
+                                                <p className="text-sm text-gray-400 italic">No regulatory domains available</p>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                    {regulatoryDomainsList.map(domain => {
+                                                        const isSelected = (jobData.regulatoryDomains || []).includes(domain.id);
+                                                        return (
+                                                            <label key={domain.id} className={`flex items-start gap-2.5 p-3 rounded-xl cursor-pointer transition-all ${isSelected ? 'bg-white border border-blue-200' : 'hover:bg-white/70'}`}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isSelected}
+                                                                    onChange={() => {
+                                                                        const current = jobData.regulatoryDomains || [];
+                                                                        const updated = isSelected ? current.filter(id => id !== domain.id) : [...current, domain.id];
+                                                                        setJobData({...jobData, regulatoryDomains: updated});
+                                                                    }}
+                                                                    className="w-4 h-4 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                />
+                                                                <div>
+                                                                    <span className={`text-sm font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{domain.name}</span>
+                                                                    {domain.description && <p className="text-xs text-gray-400 mt-0.5">{domain.description}</p>}
+                                                                </div>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
             }

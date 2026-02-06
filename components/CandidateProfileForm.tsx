@@ -111,6 +111,12 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   if (profile.preferredMentorshipStyle !== undefined) mapping.preferred_mentorship_style = profile.preferredMentorshipStyle;
   if (profile.growthGoals !== undefined) mapping.growth_goals = profile.growthGoals;
 
+  // Company & Regulatory Preferences
+  if (profile.preferredCompanyFocus !== undefined) mapping.preferred_company_focus = profile.preferredCompanyFocus;
+  if (profile.preferredMissionOrientation !== undefined) mapping.preferred_mission_orientation = profile.preferredMissionOrientation;
+  if (profile.preferredWorkStyle !== undefined) mapping.preferred_work_style = profile.preferredWorkStyle;
+  if (profile.regulatoryExperience !== undefined) mapping.regulatory_experience = profile.regulatoryExperience;
+
   // Always update timestamp
   mapping.updated_at = new Date().toISOString();
   

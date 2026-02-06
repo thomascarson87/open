@@ -116,6 +116,9 @@ function mapJobFromDB(data: any): JobPosting {
         key_deliverables: data.key_deliverables || [],
         success_metrics: data.success_metrics || [],
         growth_opportunities: data.growth_opportunities,
-        team_structure: data.team_structure
+        team_structure: data.team_structure,
+        requiredCertifications: data.required_certifications || [],
+        preferredCertifications: data.preferred_certifications || [],
+        regulatoryDomains: data.regulatory_domains || []
     } as JobPosting;
 }

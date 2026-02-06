@@ -1,6 +1,6 @@
 
 import { supabase } from './supabaseClient';
-import { TalentSearchCriteria, TalentSearchResult, CandidateProfile, SavedSearch } from '../types';
+import { TalentSearchCriteria, TalentSearchResult, CandidateProfile, CompanyProfile, SavedSearch } from '../types';
 import { calculateCandidateMatch, calculateRoleAlignment } from './matchingService';
 
 interface CandidateRole {
@@ -79,7 +79,27 @@ class TalentMatcherService {
       }
     }
 
-    // 2. Fetch candidates
+    // 2. Fetch company profile for culture alignment
+    let companyProfile: CompanyProfile | undefined;
+    const { data: companyData } = await supabase
+      .from('company_profiles')
+      .select('*')
+      .eq('id', companyId)
+      .maybeSingle();
+
+    if (companyData) {
+      companyProfile = {
+        ...companyData,
+        companyName: companyData.company_name,
+        focusType: companyData.focus_type || null,
+        missionOrientation: companyData.mission_orientation || null,
+        workStyle: companyData.work_style || null,
+        industry: companyData.industry || [],
+        companySizeRange: companyData.company_size_range,
+      } as CompanyProfile;
+    }
+
+    // 2b. Fetch candidates
     let query = supabase
       .from('candidate_profiles')
       .select('*')
@@ -90,6 +110,21 @@ class TalentMatcherService {
     if (error) {
       console.error('Error fetching candidates', error);
       return [];
+    }
+
+    // 2b. Fetch candidate certifications in bulk
+    const candidateCertMap = new Map<string, string[]>();
+    const { data: allCandidateCerts } = await supabase
+      .from('candidate_certifications')
+      .select('candidate_id, certification_id')
+      .eq('status', 'active');
+
+    if (allCandidateCerts) {
+      allCandidateCerts.forEach((cc: any) => {
+        const existing = candidateCertMap.get(cc.candidate_id) || [];
+        existing.push(cc.certification_id);
+        candidateCertMap.set(cc.candidate_id, existing);
+      });
     }
 
     // 3. Map to profiles with role data
@@ -110,11 +145,16 @@ class TalentMatcherService {
       primaryRoleId: c.primary_role_id,
       primaryRoleName: c.primary_role_name,
       secondaryRoles: c.secondary_roles || [],
+      regulatoryExperience: c.regulatory_experience || [],
+      preferredCompanyFocus: c.preferred_company_focus || [],
+      preferredMissionOrientation: c.preferred_mission_orientation || [],
+      preferredWorkStyle: c.preferred_work_style || [],
     })) as CandidateProfile[];
 
-    // 4. Run matching algorithm on each
+    // 4. Run matching algorithm on each (pass company + cert data for sub-factor scoring)
     const results: TalentSearchResult[] = profiles.map(candidate => {
-      const breakdown = calculateCandidateMatch(criteria, candidate);
+      const candCertIds = candidateCertMap.get(candidate.id) || [];
+      const breakdown = calculateCandidateMatch(criteria, candidate, companyProfile, candCertIds);
 
       // Calculate role alignment if role filter is active
       let roleAlignmentScore = 100; // Default if no role filter

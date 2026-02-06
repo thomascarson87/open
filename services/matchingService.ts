@@ -219,6 +219,129 @@ function calculateVisaRelocationMatch(
   return { score: 100, reason: 'No visa/relocation concerns' };
 }
 
+// Certification matching — binary for required, scored for preferred
+export function calculateCertificationMatch(
+  candidateCertIds: string[],
+  jobRequiredCerts: string[],
+  jobPreferredCerts: string[]
+): MatchDetails {
+  const hasRequired = jobRequiredCerts && jobRequiredCerts.length > 0;
+  const hasPreferred = jobPreferredCerts && jobPreferredCerts.length > 0;
+
+  if (!hasRequired && !hasPreferred) {
+    return { score: 100, reason: 'No certification requirements' };
+  }
+
+  // HARD REQUIREMENT: Must have ALL required certifications
+  if (hasRequired) {
+    const missing = jobRequiredCerts.filter(id => !candidateCertIds.includes(id));
+    if (missing.length > 0) {
+      return { score: 0, reason: `Missing ${missing.length} required certification(s)` };
+    }
+
+    // All required met
+    if (!hasPreferred) {
+      return { score: 100, reason: 'All required certifications met' };
+    }
+
+    // Score preferred on top of required base (80-100 range)
+    const metPreferred = jobPreferredCerts.filter(id => candidateCertIds.includes(id));
+    const preferredRatio = metPreferred.length / jobPreferredCerts.length;
+    const score = Math.round(80 + (preferredRatio * 20));
+    return { score, reason: `All required met, ${metPreferred.length}/${jobPreferredCerts.length} preferred` };
+  }
+
+  // Only preferred certs (no required)
+  const metPreferred = jobPreferredCerts.filter(id => candidateCertIds.includes(id));
+  const score = Math.round((metPreferred.length / jobPreferredCerts.length) * 100);
+  return { score, reason: `${metPreferred.length}/${jobPreferredCerts.length} preferred certifications` };
+}
+
+// Company culture alignment — candidate preferences vs company profile
+export function calculateCompanyCultureAlignment(
+  candidatePreferredFocus: string[],
+  candidatePreferredMission: string[],
+  candidatePreferredWorkStyle: string[],
+  companyFocus: string | null | undefined,
+  companyMission: string | null | undefined,
+  companyWorkStyle: string | null | undefined
+): MatchDetails {
+  // If company hasn't specified any culture fields, neutral match
+  if (!companyFocus && !companyMission && !companyWorkStyle) {
+    return { score: 100, reason: 'Company culture not specified' };
+  }
+
+  // If candidate has no preferences, neutral match (open to anything)
+  if (
+    candidatePreferredFocus.length === 0 &&
+    candidatePreferredMission.length === 0 &&
+    candidatePreferredWorkStyle.length === 0
+  ) {
+    return { score: 100, reason: 'No company preferences set' };
+  }
+
+  let matches = 0;
+  let total = 0;
+  const reasons: string[] = [];
+
+  if (companyFocus && candidatePreferredFocus.length > 0) {
+    total++;
+    if (candidatePreferredFocus.includes(companyFocus)) {
+      matches++;
+      reasons.push('Focus match');
+    }
+  }
+
+  if (companyMission && candidatePreferredMission.length > 0) {
+    total++;
+    if (candidatePreferredMission.includes(companyMission)) {
+      matches++;
+      reasons.push('Mission match');
+    }
+  }
+
+  if (companyWorkStyle && candidatePreferredWorkStyle.length > 0) {
+    total++;
+    if (candidatePreferredWorkStyle.includes(companyWorkStyle)) {
+      matches++;
+      reasons.push('Work style match');
+    }
+  }
+
+  if (total === 0) return { score: 100, reason: 'No comparable attributes' };
+
+  const score = Math.round((matches / total) * 100);
+  return {
+    score,
+    reason: matches > 0 ? reasons.join(', ') : `${total - matches}/${total} culture mismatch(es)`
+  };
+}
+
+// Regulatory experience matching — candidate domains vs job requirements
+export function calculateRegulatoryMatch(
+  candidateRegDomains: string[],
+  jobRegDomains: string[]
+): MatchDetails {
+  if (!jobRegDomains || jobRegDomains.length === 0) {
+    return { score: 100, reason: 'No regulatory requirements' };
+  }
+
+  if (!candidateRegDomains || candidateRegDomains.length === 0) {
+    return { score: 30, reason: 'No regulatory experience (can potentially learn)' };
+  }
+
+  const overlap = jobRegDomains.filter(id => candidateRegDomains.includes(id)).length;
+  // Scale to 30-100 range (some experience > none)
+  const score = Math.round(30 + ((overlap / jobRegDomains.length) * 70));
+
+  return {
+    score,
+    reason: overlap > 0
+      ? `${overlap}/${jobRegDomains.length} regulatory domain(s) matched`
+      : 'No regulatory domain overlap'
+  };
+}
+
 export function calculatePerformanceMatch(candidatePerformance: any, jobRequirements?: any): MatchDetails {
   if (!jobRequirements || Object.keys(jobRequirements).length === 0) return { score: 100, reason: 'No performance requirements' };
   const dimensions = ['communication', 'problemSolving', 'reliability', 'collaboration'] as const;
@@ -233,7 +356,7 @@ export function calculatePerformanceMatch(candidatePerformance: any, jobRequirem
   return { score: checked > 0 ? totalScore / checked : 100, reason: 'Based on verified performance' };
 }
 
-export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, company?: CompanyProfile): MatchBreakdown => {
+export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, company?: CompanyProfile, candidateCertIds?: string[]): MatchBreakdown => {
   if (!candidate || !job) return { overallScore: 0, details: {} as any, dealBreakers: ['Invalid data'], recommendations: [] };
   
   const verificationBoost = calculateVerificationBoost(candidate);
@@ -295,20 +418,96 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
     hmPrefs
   );
 
+  // --- New sub-factor scoring ---
+
+  // Certification match (binary for required)
+  const hasCertData = candidateCertIds !== undefined;
+  const certMatch = calculateCertificationMatch(
+    hasCertData ? candidateCertIds! : [],
+    job.requiredCertifications || [],
+    job.preferredCertifications || []
+  );
+
+  // Company culture alignment (candidate prefs vs company profile)
+  const cultureAlignmentMatch = calculateCompanyCultureAlignment(
+    candidate.preferredCompanyFocus || [],
+    candidate.preferredMissionOrientation || [],
+    candidate.preferredWorkStyle || [],
+    company?.focusType || null,
+    company?.missionOrientation || null,
+    company?.workStyle || null
+  );
+
+  // Regulatory experience match
+  const regulatoryMatch = calculateRegulatoryMatch(
+    candidate.regulatoryExperience || [],
+    job.regulatoryDomains || []
+  );
+
+  // --- Hard disqualification check ---
+  const hasRequiredCerts = (job.requiredCertifications?.length || 0) > 0;
+  const isDisqualifiedByCerts = hasCertData && hasRequiredCerts && certMatch.score === 0;
+
+  if (isDisqualifiedByCerts) {
+    return {
+      overallScore: 0,
+      details: {
+        skills: { score: 0, reason: 'Disqualified: missing required certifications' },
+        seniority: { score: 0, reason: '' },
+        salary: { score: 0, reason: '' },
+        location: { score: 0, reason: '' },
+        workMode: { score: 0, reason: '' },
+        contract: { score: 0, reason: '' },
+        culture: cultureAlignmentMatch,
+        perks: { score: 0, reason: '' },
+        industry: industryMatch,
+        companySize: companySizeMatch,
+        traits: { score: 0, reason: '' },
+        workStyle: workStyleMatch,
+        teamFit: teamFitMatch,
+        performance: { score: 0, reason: '' },
+        language: languageMatch,
+        timezone: timezoneMatch,
+        visa: visaRelocationMatch,
+        relocation: visaRelocationMatch,
+        managementFit: managementFitMatch,
+        certifications: certMatch
+      },
+      dealBreakers: ['Missing required certifications'],
+      recommendations: []
+    };
+  }
+
+  // --- Dimension blending ---
+
+  // Skills: blend cert sub-factor at 30% when cert requirements exist
+  const hasCertRequirements = (job.requiredCertifications?.length || 0) + (job.preferredCertifications?.length || 0) > 0;
+  const certSubWeight = (hasCertData && hasCertRequirements) ? 0.3 : 0;
+  const blendedSkillsScore = (skillsMatch.score * (1 - certSubWeight)) + (certMatch.score * certSubWeight);
+
+  // Culture: blend company culture alignment at 40% (replaces old placeholder)
+  const blendedCultureScore = (100 * 0.6) + (cultureAlignmentMatch.score * 0.4);
+
+  // Industry: blend regulatory sub-factor at 20% when regulatory domains specified
+  const hasRegRequirements = (job.regulatoryDomains?.length || 0) > 0;
+  const regSubWeight = hasRegRequirements ? 0.2 : 0;
+  const blendedIndustryScore = (industryMatch.score * (1 - regSubWeight)) + (regulatoryMatch.score * regSubWeight);
+
   let salaryScore = 100;
   if (job.salaryMax && candidate.salaryMin && candidate.salaryMin > job.salaryMax) salaryScore = 0;
-  
+
   let workModeScore = (candidate.preferredWorkMode || []).includes(job.workMode) ? 100 : 0;
   let seniorityScore = (candidate.desiredSeniority || []).includes(job.seniority) || (candidate.desiredSeniority||[]).length === 0 ? 100 : 50;
-  
+
+  // Weights: certifications dimension removed, redistributed to skills (+0.02) and culture (+0.02)
   const DIMENSION_WEIGHTS = {
-    skills: 0.20,
+    skills: 0.22,
     seniority: 0.07,
     salary: 0.09,
     industry: 0.05,
     companySize: 0.04,
     culture: 0.05,
-    perks: 0.04,
+    perks: 0.02,
     location: 0.04,
     workStyle: 0.07,
     teamFit: 0.06,
@@ -317,17 +516,19 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
     timezone: 0.05,
     visa: 0.03,
     relocation: 0.03,
-    managementFit: 0.09  // New: manager style alignment
+    managementFit: 0.09
   };
 
   const perfMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
 
   const weightedScore = (
-      (skillsMatch.score * DIMENSION_WEIGHTS.skills) +
+      (blendedSkillsScore * DIMENSION_WEIGHTS.skills) +
       (seniorityScore * DIMENSION_WEIGHTS.seniority) +
       (salaryScore * DIMENSION_WEIGHTS.salary) +
-      (industryMatch.score * DIMENSION_WEIGHTS.industry) +
+      (blendedIndustryScore * DIMENSION_WEIGHTS.industry) +
       (companySizeMatch.score * DIMENSION_WEIGHTS.companySize) +
+      (blendedCultureScore * DIMENSION_WEIGHTS.culture) +
+      (100 * DIMENSION_WEIGHTS.perks) + // Perks placeholder
       (workModeScore * DIMENSION_WEIGHTS.location) +
       (workStyleMatch.score * DIMENSION_WEIGHTS.workStyle) +
       (teamFitMatch.score * DIMENSION_WEIGHTS.teamFit) +
@@ -335,8 +536,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
       (languageMatch.score * DIMENSION_WEIGHTS.language) +
       (timezoneMatch.score * DIMENSION_WEIGHTS.timezone) +
       (visaRelocationMatch.score * (DIMENSION_WEIGHTS.visa + DIMENSION_WEIGHTS.relocation)) +
-      (managementFitMatch.score * DIMENSION_WEIGHTS.managementFit) +
-      (100 * (DIMENSION_WEIGHTS.culture + DIMENSION_WEIGHTS.perks)) // Culture/Perks placeholder
+      (managementFitMatch.score * DIMENSION_WEIGHTS.managementFit)
   );
 
   const dealBreakers: string[] = [];
@@ -348,15 +548,15 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
   return {
       overallScore: Math.round(weightedScore),
       details: {
-          skills: skillsMatch,
+          skills: { score: Math.round(blendedSkillsScore), reason: skillsMatch.reason },
           seniority: { score: seniorityScore, reason: '' },
           salary: { score: salaryScore, reason: '' },
           location: { score: workModeScore, reason: '' },
           workMode: { score: workModeScore, reason: '' },
           contract: { score: 100, reason: '' },
-          culture: { score: 100, reason: '' },
+          culture: { score: Math.round(blendedCultureScore), reason: cultureAlignmentMatch.reason },
           perks: { score: 100, reason: '' },
-          industry: industryMatch,
+          industry: { score: Math.round(blendedIndustryScore), reason: industryMatch.reason },
           companySize: companySizeMatch,
           traits: { score: 100, reason: '' },
           workStyle: workStyleMatch,
@@ -366,14 +566,20 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
           timezone: timezoneMatch,
           visa: visaRelocationMatch,
           relocation: visaRelocationMatch,
-          managementFit: managementFitMatch
+          managementFit: managementFitMatch,
+          certifications: certMatch
       },
       dealBreakers,
       recommendations: []
   };
 };
 
-export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidate: CandidateProfile): MatchBreakdown => {
+export const calculateCandidateMatch = (
+  criteria: TalentSearchCriteria,
+  candidate: CandidateProfile,
+  company?: CompanyProfile,
+  candidateCertIds?: string[]
+): MatchBreakdown => {
     // Wrapper for search criteria matching
     return calculateMatch({
         requiredSkills: criteria.requiredSkills,
@@ -381,8 +587,11 @@ export const calculateCandidateMatch = (criteria: TalentSearchCriteria, candidat
         teamRequirements: criteria.teamFilters,
         seniority: criteria.seniority?.[0] || 'Senior',
         salaryMax: criteria.salaryMax,
-        workMode: criteria.workMode?.[0] || 'Remote'
-    } as any, candidate);
+        workMode: criteria.workMode?.[0] || 'Remote',
+        requiredCertifications: criteria.requiredCertifications || [],
+        preferredCertifications: criteria.preferredCertifications || [],
+        regulatoryDomains: criteria.regulatoryDomains || [],
+    } as any, candidate, company, candidateCertIds);
 };
 
 /**

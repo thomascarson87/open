@@ -1,12 +1,15 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { CandidateProfile, SeniorityLevel, WorkMode, JobType, Skill, LanguageEntry } from '../types';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { CandidateProfile, SeniorityLevel, WorkMode, JobType, Skill, LanguageEntry, Certification, CandidateCertification, RegulatoryDomain } from '../types';
 import {
   User, Briefcase, Award, Heart, CheckCircle, Zap, DollarSign,
   MapPin, Clock, Lock, Unlock, Edit2, Plus, Trash2, Layout,
   ShieldCheck, Globe, Users, X, Info, Target, GraduationCap, Loader2, TrendingUp,
-  Phone, Building2, Plane, Sparkles, Download, Smile
+  Phone, Building2, Plane, Sparkles, Download, Smile, Shield, Calendar, Search
 } from 'lucide-react';
+import { supabase } from '../services/supabaseClient';
+import { COMPANY_FOCUS_TYPES, MISSION_ORIENTATIONS, WORK_STYLES, CERTIFICATION_CATEGORIES } from '../constants/certifications';
+import { fetchCertifications, fetchRegulatoryDomains, groupCertificationsByCategory } from '../utils/certifications';
 import { LocationAutocomplete } from './ui/LocationAutocomplete';
 import { calculateProfileCompleteness } from '../utils/profileCompleteness';
 import { JOB_SEARCH_STATUS_OPTIONS, getStatusOption } from '../constants/candidateStatusOptions';
@@ -115,6 +118,126 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
   // Education panel state
   const [educationToEdit, setEducationToEdit] = useState<Education | null>(null);
   const [showEducationPanel, setShowEducationPanel] = useState(false);
+
+  // Certification state
+  const [candidateCerts, setCandidateCerts] = useState<(CandidateCertification & { certification?: Certification })[]>([]);
+  const [certTaxonomy, setCertTaxonomy] = useState<Certification[]>([]);
+  const [regulatoryDomainsList, setRegulatoryDomainsList] = useState<RegulatoryDomain[]>([]);
+  const [certDataLoaded, setCertDataLoaded] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [editingCert, setEditingCert] = useState<CandidateCertification | null>(null);
+  const [certSaving, setCertSaving] = useState(false);
+  const [certModalSearch, setCertModalSearch] = useState('');
+  const [certModalData, setCertModalData] = useState({
+    certificationId: '',
+    status: 'active' as 'active' | 'expired' | 'in_progress',
+    issueDate: '',
+    expiryDate: '',
+    credentialId: '',
+  });
+
+  // Fetch cert taxonomy + candidate certs + regulatory domains
+  useEffect(() => {
+    if (certDataLoaded) return;
+    const load = async () => {
+      const [certs, domains] = await Promise.all([
+        fetchCertifications().catch(() => [] as Certification[]),
+        fetchRegulatoryDomains().catch(() => [] as RegulatoryDomain[]),
+      ]);
+      setCertTaxonomy(certs);
+      setRegulatoryDomainsList(domains);
+
+      // Fetch candidate's certifications
+      const { data } = await supabase
+        .from('candidate_certifications')
+        .select('*, certification:certifications(*)')
+        .eq('candidate_id', profile.id)
+        .order('created_at', { ascending: false });
+      if (data) setCandidateCerts(data);
+      setCertDataLoaded(true);
+    };
+    load();
+  }, [profile.id, certDataLoaded]);
+
+  // Certification CRUD handlers
+  const openAddCertModal = useCallback(() => {
+    setEditingCert(null);
+    setCertModalData({ certificationId: '', status: 'active', issueDate: '', expiryDate: '', credentialId: '' });
+    setCertModalSearch('');
+    setIsCertModalOpen(true);
+  }, []);
+
+  const openEditCertModal = useCallback((cert: CandidateCertification & { certification?: Certification }) => {
+    setEditingCert(cert);
+    setCertModalData({
+      certificationId: cert.certificationId,
+      status: cert.status,
+      issueDate: cert.issueDate || '',
+      expiryDate: cert.expiryDate || '',
+      credentialId: cert.credentialId || '',
+    });
+    setCertModalSearch('');
+    setIsCertModalOpen(true);
+  }, []);
+
+  const handleSaveCert = useCallback(async () => {
+    if (!certModalData.certificationId || !certModalData.status) return;
+    setCertSaving(true);
+
+    if (editingCert) {
+      // Update existing
+      const { error } = await supabase
+        .from('candidate_certifications')
+        .update({
+          status: certModalData.status,
+          issue_date: certModalData.issueDate || null,
+          expiry_date: certModalData.expiryDate || null,
+          credential_id: certModalData.credentialId || null,
+        })
+        .eq('id', editingCert.id);
+
+      if (!error) {
+        setCandidateCerts(prev => prev.map(c =>
+          c.id === editingCert.id
+            ? { ...c, status: certModalData.status, issueDate: certModalData.issueDate || null, expiryDate: certModalData.expiryDate || null, credentialId: certModalData.credentialId || null }
+            : c
+        ));
+      }
+    } else {
+      // Insert new
+      const { data, error } = await supabase
+        .from('candidate_certifications')
+        .insert({
+          candidate_id: profile.id,
+          certification_id: certModalData.certificationId,
+          status: certModalData.status,
+          issue_date: certModalData.issueDate || null,
+          expiry_date: certModalData.expiryDate || null,
+          credential_id: certModalData.credentialId || null,
+        })
+        .select('*, certification:certifications(*)')
+        .single();
+
+      if (!error && data) {
+        setCandidateCerts(prev => [data, ...prev]);
+      }
+    }
+
+    setCertSaving(false);
+    setIsCertModalOpen(false);
+    setEditingCert(null);
+  }, [certModalData, editingCert, profile.id]);
+
+  const handleDeleteCert = useCallback(async (certId: string) => {
+    const { error } = await supabase
+      .from('candidate_certifications')
+      .delete()
+      .eq('id', certId);
+
+    if (!error) {
+      setCandidateCerts(prev => prev.filter(c => c.id !== certId));
+    }
+  }, []);
 
   // Handler for primary role selection - updates skills and impact scope
   const handlePrimaryRoleChange = useCallback((
@@ -581,6 +704,86 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                   <p className="text-xs font-bold text-blue-800">Highlight bootcamps or self-taught paths—many Open partners value non-traditional excellence.</p>
                 </div>
               </section>
+
+              {/* Certifications Section */}
+              <section className="pt-12 border-t">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center">
+                      <Shield className="w-6 h-6 mr-2 text-amber-500" /> My Certifications
+                    </h3>
+                    <p className="text-gray-500 text-sm font-medium">Professional credentials that verify your expertise.</p>
+                  </div>
+                  <button
+                    onClick={openAddCertModal}
+                    className="bg-amber-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-amber-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" /> Add Cert
+                  </button>
+                </div>
+
+                {!certDataLoaded ? (
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                    <span className="ml-3 text-sm text-gray-400 font-bold">Loading certifications...</span>
+                  </div>
+                ) : candidateCerts.length === 0 ? (
+                  <div className="text-center py-16 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
+                    <Shield className="w-10 h-10 text-gray-300 mx-auto mb-3 opacity-50" />
+                    <h4 className="text-lg font-bold text-gray-400">No certifications added yet</h4>
+                    <p className="text-sm text-gray-400 max-w-xs mx-auto mt-1">
+                      Add your first certification to show employers your verified credentials.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {candidateCerts.map(cert => (
+                      <div key={cert.id} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all group">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-black text-gray-900 truncate">{cert.certification?.name || 'Unknown Certification'}</h4>
+                            {cert.certification?.provider && (
+                              <p className="text-xs text-gray-400 font-medium">{cert.certification.provider}</p>
+                            )}
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ml-3 flex-shrink-0 ${
+                            cert.status === 'active' ? 'bg-green-100 text-green-700' :
+                            cert.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-500'
+                          }`}>
+                            {cert.status === 'in_progress' ? 'In Progress' : cert.status}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 font-medium mb-3">
+                          {cert.issueDate && (
+                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Issued {cert.issueDate}</span>
+                          )}
+                          {cert.expiryDate && (
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Expires {cert.expiryDate}</span>
+                          )}
+                          {cert.credentialId && (
+                            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> {cert.credentialId}</span>
+                          )}
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => openEditCertModal(cert)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            <Edit2 className="w-3 h-3" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCert(cert.id)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
           )}
 
@@ -697,6 +900,153 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Company Preferences */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center"><Target className="w-4 h-4 mr-2" />Company Preferences</label>
+                <p className="text-xs text-gray-400 mb-6">What type of companies do you want to work for? Select all that apply.</p>
+
+                {/* Company Focus Type */}
+                <div className="mb-8">
+                  <label className="block text-xs font-bold text-gray-500 mb-3">Company Focus</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {COMPANY_FOCUS_TYPES.map(opt => {
+                      const isSelected = (profile.preferredCompanyFocus || []).includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            const current = profile.preferredCompanyFocus || [];
+                            const updated = isSelected ? current.filter(v => v !== opt.value) : [...current, opt.value];
+                            onUpdate({ preferredCompanyFocus: updated });
+                          }}
+                          className={`p-4 rounded-xl border-2 text-left transition-all ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isSelected && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                            <span className="font-black text-sm">{opt.label}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Mission Orientation */}
+                <div className="mb-8">
+                  <label className="block text-xs font-bold text-gray-500 mb-3">Mission Orientation</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {MISSION_ORIENTATIONS.map(opt => {
+                      const isSelected = (profile.preferredMissionOrientation || []).includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            const current = profile.preferredMissionOrientation || [];
+                            const updated = isSelected ? current.filter(v => v !== opt.value) : [...current, opt.value];
+                            onUpdate({ preferredMissionOrientation: updated });
+                          }}
+                          className={`p-4 rounded-xl border-2 text-left transition-all ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isSelected && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                            <span className="font-black text-sm">{opt.label}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Work Style */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-3">Work Style</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {WORK_STYLES.map(opt => {
+                      const isSelected = (profile.preferredWorkStyle || []).includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            const current = profile.preferredWorkStyle || [];
+                            const updated = isSelected ? current.filter(v => v !== opt.value) : [...current, opt.value];
+                            onUpdate({ preferredWorkStyle: updated });
+                          }}
+                          className={`p-4 rounded-xl border-2 text-left transition-all ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isSelected && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                            <span className="font-black text-sm">{opt.label}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Regulatory Experience */}
+              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center"><Shield className="w-4 h-4 mr-2" />Regulatory Experience</label>
+                <p className="text-xs text-gray-400 mb-6">Select industries where you understand compliance requirements. This helps match you with regulated industry roles.</p>
+                {!certDataLoaded ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                    <span className="ml-2 text-sm text-gray-400 font-bold">Loading...</span>
+                  </div>
+                ) : regulatoryDomainsList.length === 0 ? (
+                  <p className="text-sm text-gray-400 italic">No regulatory domains available</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {regulatoryDomainsList.map(domain => {
+                      const isSelected = (profile.regulatoryExperience || []).includes(domain.id);
+                      return (
+                        <label
+                          key={domain.id}
+                          className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all border-2 ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              const current = profile.regulatoryExperience || [];
+                              const updated = isSelected ? current.filter(id => id !== domain.id) : [...current, domain.id];
+                              onUpdate({ regulatoryExperience: updated });
+                            }}
+                            className="w-4 h-4 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <div>
+                            <span className={`text-sm font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{domain.name}</span>
+                            {domain.description && <p className="text-xs text-gray-400 mt-0.5">{domain.description}</p>}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Call Availability */}
@@ -1008,6 +1358,163 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
         </div>
       </div>
       
+      {/* Certification Add/Edit Modal */}
+      {isCertModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsCertModalOpen(false)}>
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-8 pt-8 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-black text-gray-900">{editingCert ? 'Edit Certification' : 'Add Certification'}</h3>
+                <button onClick={() => setIsCertModalOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+              {/* Certification Selector (only for new) */}
+              {!editingCert && (
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                    Certification <span className="text-red-500">*</span>
+                  </label>
+                  {certTaxonomy.length > 10 && (
+                    <div className="relative mb-3">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        value={certModalSearch}
+                        onChange={e => setCertModalSearch(e.target.value)}
+                        placeholder="Search certifications..."
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none border border-gray-200"
+                      />
+                    </div>
+                  )}
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl">
+                    {Object.entries(groupCertificationsByCategory(
+                      certModalSearch
+                        ? certTaxonomy.filter(c => c.name.toLowerCase().includes(certModalSearch.toLowerCase()))
+                        : certTaxonomy
+                    )).map(([category, certs]) => {
+                      const categoryLabel = CERTIFICATION_CATEGORIES.find(c => c.value === category)?.label || category;
+                      const alreadyAdded = new Set(candidateCerts.map(c => c.certificationId));
+                      const availableCerts = certs.filter(c => !alreadyAdded.has(c.id));
+                      if (availableCerts.length === 0) return null;
+                      return (
+                        <div key={category}>
+                          <div className="px-4 py-2 bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest sticky top-0">{categoryLabel}</div>
+                          {availableCerts.map(cert => (
+                            <button
+                              key={cert.id}
+                              type="button"
+                              onClick={() => setCertModalData(prev => ({ ...prev, certificationId: cert.id }))}
+                              className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors ${
+                                certModalData.certificationId === cert.id
+                                  ? 'bg-blue-50 text-blue-700'
+                                  : 'text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              {cert.name}
+                              {cert.provider && <span className="text-xs text-gray-400 ml-2">({cert.provider})</span>}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {editingCert && (
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Certification</p>
+                  <p className="font-bold text-gray-900">{editingCert.certification?.name || 'Unknown'}</p>
+                </div>
+              )}
+
+              {/* Status */}
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-3">
+                  {([
+                    { value: 'active', label: 'Active', color: 'green' },
+                    { value: 'in_progress', label: 'In Progress', color: 'blue' },
+                    { value: 'expired', label: 'Expired', color: 'gray' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setCertModalData(prev => ({ ...prev, status: opt.value }))}
+                      className={`flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all ${
+                        certModalData.status === opt.value
+                          ? opt.color === 'green' ? 'border-green-500 bg-green-50 text-green-700'
+                            : opt.color === 'blue' ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-400 bg-gray-50 text-gray-600'
+                          : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Issue Date</label>
+                  <input
+                    type="date"
+                    value={certModalData.issueDate}
+                    onChange={e => setCertModalData(prev => ({ ...prev, issueDate: e.target.value }))}
+                    className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800 focus:ring-2 focus:ring-blue-100 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Expiry Date</label>
+                  <input
+                    type="date"
+                    value={certModalData.expiryDate}
+                    onChange={e => setCertModalData(prev => ({ ...prev, expiryDate: e.target.value }))}
+                    className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800 focus:ring-2 focus:ring-blue-100 outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Credential ID */}
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Credential ID</label>
+                <input
+                  type="text"
+                  value={certModalData.credentialId}
+                  onChange={e => setCertModalData(prev => ({ ...prev, credentialId: e.target.value }))}
+                  placeholder="e.g., ABC-123-XYZ"
+                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800 focus:ring-2 focus:ring-blue-100 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="px-8 py-6 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setIsCertModalOpen(false)}
+                className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-black text-sm uppercase tracking-widest hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCert}
+                disabled={certSaving || (!editingCert && !certModalData.certificationId)}
+                className="flex-1 py-3 rounded-xl bg-gray-900 text-white font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {certSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                {editingCert ? 'Update' : 'Add Certification'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Skill Selector Modal */}
       <SkillSelectorModal
         isOpen={isSkillSelectorOpen}

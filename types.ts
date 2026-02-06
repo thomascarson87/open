@@ -355,6 +355,48 @@ export interface VerificationStats {
   verified_traits: string[];
 }
 
+// =============================================================================
+// CERTIFICATIONS & REGULATORY DOMAINS
+// =============================================================================
+
+export type CertificationCategory = 'cloud' | 'agile_pm' | 'compliance' | 'industry_specific';
+
+export interface Certification {
+  id: string;
+  name: string;
+  category: CertificationCategory;
+  provider: string | null;
+  description: string | null;
+  createdAt: string;
+}
+
+export interface CandidateCertification {
+  id: string;
+  candidateId: string;
+  userId: string;
+  certificationId: string;
+  status: 'active' | 'expired' | 'in_progress';
+  issueDate: string | null;
+  expiryDate: string | null;
+  credentialId: string | null;
+  createdAt: string;
+  /** Joined from certifications table */
+  certification?: Certification;
+}
+
+export interface RegulatoryDomain {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+}
+
+// =============================================================================
+
+export type CompanyFocusType = 'product_led' | 'consultancy' | 'agency' | 'hybrid';
+export type MissionOrientation = 'social_impact' | 'environmental' | 'commercial' | 'tech_innovation';
+export type CompanyWorkStyle = 'internal_product' | 'client_projects' | 'hybrid';
+
 export type ApplicationStatus = 'applied' | 'reviewing' | 'phone_screen_scheduled' | 'phone_screen_completed' | 'technical_scheduled' | 'technical_completed' | 'final_round_scheduled' | 'final_round_completed' | 'offer_extended' | 'offer_accepted' | 'hired' | 'rejected' | 'withdrawn';
 
 export interface Application {
@@ -409,6 +451,13 @@ export interface CompanyProfile {
   defaultTimezone?: string;
   visaSponsorshipPolicy?: VisaSponsorshipPolicy;
   follower_count?: number;
+  // Company enrichment fields
+  focusType?: CompanyFocusType | null;
+  missionOrientation?: MissionOrientation | null;
+  workStyle?: CompanyWorkStyle | null;
+  requiredCertifications?: string[];
+  preferredCertifications?: string[];
+  regulatoryDomains?: string[];
 }
 
 export interface Connection {
@@ -538,6 +587,11 @@ export interface CandidateProfile {
   preferredConflictResolution?: 'direct_immediate' | 'mediated' | 'consensus_building' | 'escalation_path';
   preferredMentorshipStyle?: 'structured_program' | 'informal_adhoc' | 'peer_based' | 'self_directed';
   growthGoals?: 'specialist_depth' | 'generalist_breadth' | 'leadership_track' | 'flexible';
+  // Candidate enrichment fields
+  preferredCompanyFocus?: string[];
+  preferredMissionOrientation?: string[];
+  preferredWorkStyle?: string[];
+  regulatoryExperience?: string[];
 }
 
 export interface JobPosting {
@@ -597,6 +651,10 @@ export interface JobPosting {
   visaSponsorshipAvailable?: boolean;
   equityOffered?: boolean;
   relocationAssistance?: boolean;
+  // Certification & regulatory fields
+  requiredCertifications?: string[];
+  preferredCertifications?: string[];
+  regulatoryDomains?: string[];
 }
 
 export interface MatchDetails {
@@ -627,6 +685,7 @@ export interface MatchBreakdown {
     visa?: MatchDetails;
     relocation?: MatchDetails;
     managementFit?: MatchDetails;
+    certifications?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
@@ -653,6 +712,10 @@ export interface TalentSearchCriteria {
   // Role-based filtering
   roleIds?: string[];  // canonical_role_ids to filter by
   includeRelatedRoles?: boolean;  // Include roles from same family
+  // Certification & regulatory filtering
+  requiredCertifications?: string[];
+  preferredCertifications?: string[];
+  regulatoryDomains?: string[];
 }
 
 export interface TalentSearchResult {

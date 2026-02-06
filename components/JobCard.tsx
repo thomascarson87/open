@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { JobPosting, CandidateProfile } from '../types';
-import { MapPin, DollarSign, Clock, ArrowRight, Building2, Users } from 'lucide-react';
+import { MapPin, DollarSign, Clock, ArrowRight, Building2, Users, Shield } from 'lucide-react';
 import { calculateMatch } from '../services/matchingService';
 
 interface Props {
@@ -95,8 +95,25 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
             </div>
          )}
 
+         {/* Certification & Regulatory Requirements */}
+         {((job.requiredCertifications?.length || 0) > 0 || (job.regulatoryDomains?.length || 0) > 0) && (
+            <div className="flex flex-wrap gap-2 mt-2">
+                {(job.requiredCertifications?.length || 0) > 0 && (
+                  <span className="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-full border border-amber-200 flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    {job.requiredCertifications!.length} cert{job.requiredCertifications!.length !== 1 ? 's' : ''} required
+                  </span>
+                )}
+                {(job.regulatoryDomains?.length || 0) > 0 && (
+                  <span className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-full border border-gray-200">
+                    Regulated industry
+                  </span>
+                )}
+            </div>
+         )}
+
          {/* Match Breakdown Snippet */}
-         <div className="grid grid-cols-4 gap-1 mt-2">
+         <div className={`grid gap-1 mt-2 ${matchResult.details.certifications && matchResult.details.certifications.reason !== 'No certification requirements' ? 'grid-cols-5' : 'grid-cols-4'}`}>
              <div className="text-[10px] text-center bg-gray-50 rounded py-1">
                  <span className="block text-gray-400">Skills</span>
                  <span className="font-bold text-gray-700">{matchResult.details.skills.score}%</span>
@@ -113,6 +130,12 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
                  <span className="block text-gray-400">Traits</span>
                  <span className="font-bold text-gray-700">{matchResult.details.traits.score}%</span>
              </div>
+             {matchResult.details.certifications && matchResult.details.certifications.reason !== 'No certification requirements' && (
+               <div className="text-[10px] text-center bg-amber-50 rounded py-1">
+                 <span className="block text-amber-600">Certs</span>
+                 <span className="font-bold text-amber-800">{matchResult.details.certifications.score}%</span>
+               </div>
+             )}
          </div>
 
          {matchResult.dealBreakers.length > 0 && (

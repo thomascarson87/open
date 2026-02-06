@@ -6,6 +6,7 @@ import GroupedMultiSelect from './GroupedMultiSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { CULTURAL_VALUES, INDUSTRIES, PERKS_CATEGORIES, ALL_CHARACTER_TRAITS, ALL_PERKS } from '../constants/matchingData';
 import { WORK_INTENSITY_OPTIONS, AUTONOMY_LEVEL_OPTIONS } from '../constants/workStyleData';
+import { COMPANY_FOCUS_TYPES, MISSION_ORIENTATIONS, WORK_STYLES } from '../constants/certifications';
 import WidgetSetup from './WidgetSetup';
 import CompanyFollowerStats from './CompanyFollowerStats';
 
@@ -44,7 +45,9 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave, teamMembers, onTeamU
           funding_stage: formData.fundingStage, growth_stage: formData.growthStage, tech_stack: formData.techStack,
           social_media: formData.socialMedia, company_photos: formData.companyPhotos,
           culture_description: formData.cultureDescription, work_environment: formData.workEnvironment,
-          benefits_description: formData.benefitsDescription
+          benefits_description: formData.benefitsDescription,
+          focus_type: formData.focusType || null, mission_orientation: formData.missionOrientation || null,
+          work_style: formData.workStyle || null
       }).eq('id', user?.id);
       if (error) throw error;
       onSave(formData);
@@ -92,6 +95,44 @@ const CompanyProfile: React.FC<Props> = ({ profile, onSave, teamMembers, onTeamU
                 )}
                 {activeTab === 'culture' && (
                     <div className="space-y-10 animate-in fade-in duration-300">
+                        <div className="space-y-8">
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Focus Type</label>
+                                <p className="text-xs text-gray-400 mb-3">How candidates will spend their time</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {COMPANY_FOCUS_TYPES.map(o => (
+                                        <button key={o.value} onClick={() => setFormData({...formData, focusType: o.value})} className={`p-4 rounded-xl border-2 text-left transition-all ${formData.focusType === o.value ? 'bg-blue-50 border-blue-600' : 'bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                            <div className={`text-sm font-black ${formData.focusType === o.value ? 'text-blue-700' : 'text-gray-700'}`}>{o.label}</div>
+                                            <div className={`text-xs mt-0.5 ${formData.focusType === o.value ? 'text-blue-500' : 'text-gray-400'}`}>{o.description}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Mission Orientation</label>
+                                <p className="text-xs text-gray-400 mb-3">What drives your company's decisions</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {MISSION_ORIENTATIONS.map(o => (
+                                        <button key={o.value} onClick={() => setFormData({...formData, missionOrientation: o.value})} className={`p-4 rounded-xl border-2 text-left transition-all ${formData.missionOrientation === o.value ? 'bg-blue-50 border-blue-600' : 'bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                            <div className={`text-sm font-black ${formData.missionOrientation === o.value ? 'text-blue-700' : 'text-gray-700'}`}>{o.label}</div>
+                                            <div className={`text-xs mt-0.5 ${formData.missionOrientation === o.value ? 'text-blue-500' : 'text-gray-400'}`}>{o.description}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Work Style</label>
+                                <p className="text-xs text-gray-400 mb-3">Day-to-day team structure</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {WORK_STYLES.map(o => (
+                                        <button key={o.value} onClick={() => setFormData({...formData, workStyle: o.value})} className={`p-4 rounded-xl border-2 text-left transition-all ${formData.workStyle === o.value ? 'bg-blue-50 border-blue-600' : 'bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                            <div className={`text-sm font-black ${formData.workStyle === o.value ? 'text-blue-700' : 'text-gray-700'}`}>{o.label}</div>
+                                            <div className={`text-xs mt-0.5 ${formData.workStyle === o.value ? 'text-blue-500' : 'text-gray-400'}`}>{o.description}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-blue-50 p-8 rounded-3xl border border-blue-100">
                             <div><label className="block text-xs font-black text-blue-600 uppercase mb-4">Typical Intensity</label><div className="grid grid-cols-2 gap-2">{WORK_INTENSITY_OPTIONS.map(o => <button key={o.value} onClick={() => setFormData({...formData, workStyleCulture: {...formData.workStyleCulture, workIntensity: o.value}})} className={`p-3 rounded-xl border-2 text-xs font-black transition-all ${formData.workStyleCulture?.workIntensity === o.value ? 'bg-white border-blue-600 text-blue-700' : 'bg-white/50 border-transparent text-gray-500'}`}>{o.label}</button>)}</div></div>
                             <div><label className="block text-xs font-black text-blue-600 uppercase mb-4">Management Style</label><div className="grid grid-cols-2 gap-2">{AUTONOMY_LEVEL_OPTIONS.map(o => <button key={o.value} onClick={() => setFormData({...formData, workStyleCulture: {...formData.workStyleCulture, autonomyLevel: o.value}})} className={`p-3 rounded-xl border-2 text-xs font-black transition-all ${formData.workStyleCulture?.autonomyLevel === o.value ? 'bg-white border-blue-600 text-blue-700' : 'bg-white/50 border-transparent text-gray-500'}`}>{o.label}</button>)}</div></div>

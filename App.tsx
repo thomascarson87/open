@@ -126,7 +126,10 @@ const mapJobFromDB = (data: any): JobPosting => {
         visaSponsorshipAvailable: data.visa_sponsorship_available || false,
         equityOffered: data.equity_offered || false,
         relocationAssistance: data.relocation_assistance || false,
-        desiredEnneagramTypes: data.desired_enneagram_types || []
+        desiredEnneagramTypes: data.desired_enneagram_types || [],
+        requiredCertifications: data.required_certifications || [],
+        preferredCertifications: data.preferred_certifications || [],
+        regulatoryDomains: data.regulatory_domains || []
     };
 };
 
@@ -205,7 +208,12 @@ const mapCandidateFromDB = (data: any): CandidateProfile => {
         preferredMeetingCulture: data.preferred_meeting_culture,
         preferredConflictResolution: data.preferred_conflict_resolution,
         preferredMentorshipStyle: data.preferred_mentorship_style,
-        growthGoals: data.growth_goals
+        growthGoals: data.growth_goals,
+        // Enrichment fields
+        preferredCompanyFocus: data.preferred_company_focus || [],
+        preferredMissionOrientation: data.preferred_mission_orientation || [],
+        preferredWorkStyle: data.preferred_work_style || [],
+        regulatoryExperience: data.regulatory_experience || []
     };
 };
 
@@ -246,7 +254,10 @@ const mapCompanyFromDB = (data: any): CompanyProfileType => {
         companyLanguages: data.company_languages || [],
         // New fields
         defaultTimezone: data.default_timezone,
-        visaSponsorshipPolicy: data.visa_sponsorship_policy
+        visaSponsorshipPolicy: data.visa_sponsorship_policy,
+        focusType: data.focus_type || null,
+        missionOrientation: data.mission_orientation || null,
+        workStyle: data.work_style || null
     };
 };
 
@@ -322,6 +333,7 @@ function MainApp() {
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [teamMembersLoading, setTeamMembersLoading] = useState(true);
     const [candidateProfile, setCandidateProfile] = useState<CandidateProfile | null>(null);
+    const [candidateCertIds, setCandidateCertIds] = useState<string[]>([]);
     const [companyProfile, setCompanyProfile] = useState<CompanyProfileType | null>(null);
     const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
 
@@ -416,6 +428,13 @@ function MainApp() {
                 setTeamMembersLoading(false); // Not applicable for candidates
                 const { data: cand } = await supabase.from('candidate_profiles').select('*').eq('id', user?.id).maybeSingle();
                 if (cand) setCandidateProfile(mapCandidateFromDB(cand));
+                // Fetch candidate's active certification IDs for matching
+                const { data: certData } = await supabase
+                    .from('candidate_certifications')
+                    .select('certification_id')
+                    .eq('candidate_id', user?.id)
+                    .eq('status', 'active');
+                if (certData) setCandidateCertIds(certData.map((c: any) => c.certification_id));
             } else {
                 // Use authCompanyId from context (handles dev mode), fallback to user.id
                 const effectiveCompanyId = authCompanyId || user?.id;
@@ -572,7 +591,10 @@ function MainApp() {
                 visa_sponsorship_available: job.visaSponsorshipAvailable || false,
                 equity_offered: job.equityOffered || false,
                 relocation_assistance: job.relocationAssistance || false,
-                desired_enneagram_types: job.desiredEnneagramTypes || []
+                desired_enneagram_types: job.desiredEnneagramTypes || [],
+                required_certifications: job.requiredCertifications || [],
+                preferred_certifications: job.preferredCertifications || [],
+                regulatory_domains: job.regulatoryDomains || []
             };
 
             const { error } = await supabase.from('jobs').insert([dbJobPayload]);
@@ -694,13 +716,12 @@ function MainApp() {
         if (!candidateProfile) return [];
         return enrichedJobs
             .map(ej => {
-                const matchResult = calculateMatch(ej.job, candidateProfile, ej.company);
+                const matchResult = calculateMatch(ej.job, candidateProfile, ej.company, candidateCertIds);
                 const weightedScore = calculateWeightedScore(matchResult, matchWeights);
-                // The mapping already includes matchResult, no type assertion needed later
                 return { ...ej, matchResult, weightedScore };
             })
             .sort((a, b) => b.weightedScore - a.weightedScore);
-    }, [enrichedJobs, candidateProfile, matchWeights]);
+    }, [enrichedJobs, candidateProfile, matchWeights, candidateCertIds]);
 
     if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /></div>;
 

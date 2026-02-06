@@ -6,64 +6,97 @@ interface Props {
     onBack: () => void;
 }
 
-type TierId = 'seed' | 'series' | 'scale';
+type TierId = 'solo' | 'ensemble' | 'orchestra';
 
-const tiers = [
+interface TierFeature {
+    label: string;
+    value: string;
+    highlight?: boolean;
+}
+
+interface Tier {
+    id: TierId;
+    name: string;
+    tagline: string;
+    price: string;
+    period: string;
+    highlight?: string;
+    popular?: boolean;
+    features: TierFeature[];
+    cta: string;
+    ctaStyle: 'primary' | 'secondary';
+}
+
+const tiers: Tier[] = [
     {
-        id: 'seed' as TierId,
-        name: 'Seed',
-        subtitle: 'Free',
-        bestFor: 'Early-stage teams & solo founders',
+        id: 'solo',
+        name: 'Solo',
+        tagline: 'For founders hiring their first team',
         price: '€0',
         period: '/month',
-        features: {
-            ats: 'Full ATS + Careers Widget',
-            applicants: 'Unlimited & Free',
-            pool: 'Pay-as-you-Chime',
-            unlock: '€15/unlock'
-        },
-        cta: 'Get Started Free',
+        highlight: '14-day full access trial with 20 free chimes',
+        features: [
+            { label: 'Direct Applicants', value: 'Always free', highlight: true },
+            { label: 'Active Jobs', value: 'Up to 3' },
+            { label: 'Team Seats', value: '2 seats' },
+            { label: 'Careers Widget', value: 'Basic branding' },
+            { label: 'Matching', value: '8-dimension precision matching' },
+            { label: 'Equalizer', value: 'Weighted matching equalizer' },
+            { label: 'Support', value: 'Email support' },
+            { label: 'Talent Pool', value: '€10 per chime (pay-as-you-go)' }
+        ],
+        cta: 'Start Free Trial',
         ctaStyle: 'secondary'
     },
     {
-        id: 'series' as TierId,
-        name: 'Series',
-        subtitle: 'Growth',
-        bestFor: 'High-velocity Series A/B startups',
-        price: '€149',
+        id: 'ensemble',
+        name: 'Ensemble',
+        tagline: 'For growing teams scaling fast',
+        price: '€99',
         period: '/month',
-        features: {
-            ats: 'Advanced Budgeting & Approvals',
-            applicants: 'Unlimited & Free',
-            pool: '12 Included Chimes/month',
-            unlock: 'Extra unlocks @ €10'
-        },
+        popular: true,
+        features: [
+            { label: 'Direct Applicants', value: 'Always free', highlight: true },
+            { label: 'Active Jobs', value: 'Up to 10' },
+            { label: 'Team Seats', value: '5 seats' },
+            { label: 'Careers Widget', value: 'Full white-label' },
+            { label: 'Chimes', value: '15 included monthly (then €10 each)' },
+            { label: 'Approvals', value: 'Hiring manager & executive workflows' },
+            { label: 'Insights', value: 'Market competitiveness data' },
+            { label: 'Analytics', value: 'Talent pool analytics' },
+            { label: 'Roadmap', value: 'Product roadmap input' }
+        ],
         cta: 'Start Trial',
         ctaStyle: 'primary'
     },
     {
-        id: 'scale' as TierId,
-        name: 'Scale',
-        subtitle: 'Enterprise',
-        bestFor: 'Established tech organizations',
-        price: '€599',
+        id: 'orchestra',
+        name: 'Orchestra',
+        tagline: 'For organizations hiring at scale',
+        price: '€399',
         period: '/month',
-        features: {
-            ats: 'Executive Dashboards & Analytics',
-            applicants: 'Unlimited & Free',
-            pool: 'Unlimited Chime Access',
-            unlock: 'Included'
-        },
-        cta: 'Contact Sales',
+        features: [
+            { label: 'Direct Applicants', value: 'Always free', highlight: true },
+            { label: 'Active Jobs', value: 'Unlimited' },
+            { label: 'Team Seats', value: 'Unlimited' },
+            { label: 'Careers Widget', value: 'Full white-label + API access' },
+            { label: 'Chimes', value: 'Unlimited included' },
+            { label: 'Approvals', value: 'All approval workflows' },
+            { label: 'Intelligence', value: 'Full Market Intelligence suite' },
+            { label: 'Analytics', value: 'ROI dashboard & hiring velocity' },
+            { label: 'Support', value: 'Priority support + dedicated CSM' },
+            { label: 'Roadmap', value: 'Product roadmap input' }
+        ],
+        cta: 'Contact Us',
         ctaStyle: 'secondary'
     }
 ];
 
-// Hiring velocity options
+// Hiring velocity options for calculator
 const hiringOptions = [
-    { value: 1, label: '1-2 hires/quarter', tier: 'seed' as TierId },
-    { value: 2, label: '3-6 hires/quarter', tier: 'series' as TierId },
-    { value: 3, label: '7+ hires/quarter', tier: 'scale' as TierId }
+    { value: 1, label: '1-3 hires/quarter', tier: 'solo' as TierId },
+    { value: 2, label: '4-8 hires/quarter', tier: 'ensemble' as TierId },
+    { value: 3, label: '9+ hires/quarter', tier: 'orchestra' as TierId }
 ];
 
 const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
@@ -72,12 +105,12 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
     // Determine recommended tier based on slider
     const recommendedTier = useMemo((): TierId => {
         const option = hiringOptions.find(o => o.value === hiringVelocity);
-        return option?.tier || 'seed';
+        return option?.tier || 'solo';
     }, [hiringVelocity]);
 
     // Calculate cost comparison based on velocity
     const costAnalysis = useMemo(() => {
-        const hiresPerQuarter = hiringVelocity === 1 ? 2 : hiringVelocity === 2 ? 5 : 10;
+        const hiresPerQuarter = hiringVelocity === 1 ? 2 : hiringVelocity === 2 ? 6 : 12;
         const hiresPerYear = hiresPerQuarter * 4;
         const avgSalary = 90000;
 
@@ -86,15 +119,15 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
 
         // Chime cost based on tier
         let chimeCost = 0;
-        if (recommendedTier === 'seed') {
-            chimeCost = hiresPerYear * 15; // €15 per unlock
-        } else if (recommendedTier === 'series') {
-            const monthlyFee = 149 * 12;
-            const includedChimes = 12 * 12; // 144 chimes/year
+        if (recommendedTier === 'solo') {
+            chimeCost = hiresPerYear * 10; // €10 per unlock
+        } else if (recommendedTier === 'ensemble') {
+            const monthlyFee = 99 * 12;
+            const includedChimes = 15 * 12; // 180 chimes/year
             const extraChimes = Math.max(0, hiresPerYear - includedChimes) * 10;
             chimeCost = monthlyFee + extraChimes;
         } else {
-            chimeCost = 599 * 12; // Unlimited
+            chimeCost = 399 * 12; // Unlimited
         }
 
         const savings = agencyCost - chimeCost;
@@ -109,7 +142,7 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
     }, [hiringVelocity, recommendedTier]);
 
     return (
-        <div className="w-full max-w-6xl mx-auto px-4 py-12 space-y-24">
+        <div className="w-full max-w-6xl mx-auto px-4 py-12 space-y-16">
 
             {/* HERO SECTION */}
             <section className="text-center max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -124,9 +157,31 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
                 </h1>
 
                 <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
-                    No hidden fees. No per-seat charges. Direct applicants are always free.
+                    No hidden fees. No per-seat surprises. Direct applicants are always free.
                     You only pay when you unlock talent from our precision-matched pool.
                 </p>
+            </section>
+
+            {/* TRIAL CALLOUT - Subtle version */}
+            <section className="max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-3 px-6 py-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <span className="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0" />
+                    <p className="text-sm text-gray-600">
+                        <span className="font-semibold text-gray-900">14 days full access + 20 free chimes.</span>
+                        {' '}No credit card required.
+                    </p>
+                </div>
+            </section>
+
+            {/* FREE ATS CALLOUT */}
+            <section className="max-w-4xl mx-auto text-center">
+                <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                    <h2 className="text-xl font-bold text-gray-900 mb-3">Free ATS for everyone</h2>
+                    <p className="text-gray-500 leading-relaxed max-w-2xl mx-auto">
+                        Unlimited direct applicants through your careers widget—always free, no unlock cost.
+                        Chimes are only for proactively browsing and unlocking candidates from the talent pool.
+                    </p>
+                </div>
             </section>
 
             {/* FIND YOUR FIT - Interactive Selector */}
@@ -201,18 +256,29 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
             <section className="grid md:grid-cols-3 gap-6 lg:gap-8">
                 {tiers.map((tier) => {
                     const isMatch = tier.id === recommendedTier;
+                    const isPopular = tier.popular;
                     return (
                         <div
                             key={tier.id}
                             className={`relative bg-white rounded-2xl p-8 border-2 transition-all duration-300 ${
-                                isMatch
-                                    ? 'border-teal-200 shadow-md'
-                                    : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                                isPopular
+                                    ? 'border-teal-300 shadow-lg md:-translate-y-2'
+                                    : isMatch
+                                        ? 'border-teal-200 shadow-md'
+                                        : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'
                             }`}
                         >
-                            {isMatch && (
+                            {/* Badges */}
+                            {isPopular && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-600 text-white text-xs font-semibold tracking-wide">
+                                        Most Popular
+                                    </span>
+                                </div>
+                            )}
+                            {isMatch && !isPopular && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-700 text-white text-xs font-semibold tracking-wide">
                                         Best fit for you
                                     </span>
                                 </div>
@@ -220,52 +286,44 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
 
                             {/* Header */}
                             <div className="mb-6">
-                                <div className="flex items-baseline gap-2 mb-1">
-                                    <h3 className="text-xl font-bold text-gray-900">{tier.name}</h3>
-                                    <span className="text-sm text-gray-500">{tier.subtitle}</span>
-                                </div>
-                                <p className="text-sm text-gray-500">{tier.bestFor}</p>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-1">{tier.name}</h3>
+                                <p className="text-sm text-gray-500">{tier.tagline}</p>
                             </div>
 
                             {/* Price */}
-                            <div className="mb-8">
+                            <div className="mb-2">
                                 <span className="text-4xl font-black text-gray-900">{tier.price}</span>
                                 <span className="text-gray-500">{tier.period}</span>
                             </div>
 
+                            {/* Trial Highlight for Solo */}
+                            {tier.highlight && (
+                                <div className="mb-6">
+                                    <span className="text-sm text-teal-600 font-medium">{tier.highlight}</span>
+                                </div>
+                            )}
+                            {!tier.highlight && <div className="mb-6" />}
+
                             {/* Features */}
-                            <div className="space-y-5 mb-8">
-                                <div>
-                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        ATS & Infrastructure
+                            <div className="space-y-3 mb-8">
+                                {tier.features.map((feature, idx) => (
+                                    <div key={idx} className="flex items-start gap-3">
+                                        <div className={`w-1 h-1 rounded-full mt-2 flex-shrink-0 ${feature.highlight ? 'bg-teal-500' : 'bg-gray-300'}`} />
+                                        <p className={`text-sm ${feature.highlight ? 'text-teal-700' : 'text-gray-600'}`}>
+                                            <span className={`font-medium ${feature.highlight ? 'text-teal-700' : 'text-gray-900'}`}>{feature.value}</span>
+                                            {feature.label !== feature.value && (
+                                                <span className={feature.highlight ? 'text-teal-600' : 'text-gray-400'}> — {feature.label.toLowerCase()}</span>
+                                            )}
+                                        </p>
                                     </div>
-                                    <p className="text-sm text-gray-700">{tier.features.ats}</p>
-                                </div>
-                                <div>
-                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        Direct Applicants
-                                    </div>
-                                    <p className="text-sm text-gray-700">{tier.features.applicants}</p>
-                                </div>
-                                <div>
-                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        Talent Pool Access
-                                    </div>
-                                    <p className="text-sm text-gray-700">{tier.features.pool}</p>
-                                </div>
-                                <div>
-                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        Unlock Price
-                                    </div>
-                                    <p className="text-sm text-gray-700 font-medium">{tier.features.unlock}</p>
-                                </div>
+                                ))}
                             </div>
 
                             {/* CTA */}
                             <button
                                 onClick={onGetStarted}
                                 className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center group ${
-                                    isMatch
+                                    tier.ctaStyle === 'primary' || isPopular
                                         ? 'bg-gray-900 text-white hover:bg-gray-800'
                                         : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
                                 }`}
@@ -292,12 +350,20 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
                                 Transparency Incentive
                             </h3>
                             <p className="text-gray-600 leading-relaxed">
-                                Any job post with a <span className="font-semibold text-gray-900">Verified Salary Range</span> (EU 2026 compliant)
-                                earns <span className="font-semibold text-teal-700">2 Free Chimes</span> for that role.
+                                Jobs with a <span className="font-semibold text-gray-900">verified salary range</span> earn{' '}
+                                <span className="font-semibold text-teal-700">2 bonus chimes</span>.
                                 Lead on transparency, get rewarded.
                             </p>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            {/* EARLY ADOPTER */}
+            <section className="max-w-3xl mx-auto text-center">
+                <div className="inline-flex items-center px-4 py-2 rounded-full bg-gray-100 text-gray-600 text-sm">
+                    <span className="w-2 h-2 rounded-full bg-teal-500 mr-3" />
+                    Early adopters get direct input on our product roadmap
                 </div>
             </section>
 
@@ -334,7 +400,7 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
                         <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider mb-3">
                             Chime
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 mb-4">€10-15</div>
+                        <div className="text-2xl font-bold text-gray-900 mb-4">€10</div>
                         <p className="text-sm text-gray-600">Per precision match. Direct applicants free. No salary percentage.</p>
                     </div>
                 </div>
@@ -355,20 +421,24 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
                             a: 'A Chime is an unlock. When you find a matched candidate in our talent pool, you spend a Chime to reveal their full profile and contact details. Direct applicants to your job posts are always free—no Chimes required.'
                         },
                         {
-                            q: 'Can I try before I commit?',
-                            a: 'The Seed tier is completely free forever. You get full ATS functionality and can post unlimited jobs. You only pay when you want to unlock candidates from our curated talent pool.'
+                            q: 'Are direct applicants really free?',
+                            a: 'Yes. Anyone who applies through your careers widget or job posts is completely free to view, message, and hire. Chimes are only used when you proactively browse our talent pool and want to unlock a candidate who hasn\'t applied to you.'
+                        },
+                        {
+                            q: 'What happens during the 14-day trial?',
+                            a: 'You get full Orchestra-level access plus 20 free chimes to unlock candidates. No credit card required. At the end of 14 days, you choose the plan that fits your needs—or stay on Solo for free.'
                         },
                         {
                             q: 'What happens to unused Chimes?',
-                            a: 'On the Series plan, included Chimes roll over for up to 3 months. We want you to hire when you find the right match, not rush to use credits.'
+                            a: 'On Ensemble, included Chimes roll over for up to 3 months. We want you to hire when you find the right match, not rush to use credits.'
                         },
                         {
-                            q: 'Is there a per-seat fee?',
-                            a: 'No. Add your entire hiring team—recruiters, hiring managers, executives—without additional charges. Collaboration is unlimited on all plans.'
+                            q: 'Can I add more team members?',
+                            a: 'Solo includes 2 seats, Ensemble includes 5. Need more? Orchestra offers unlimited seats, or contact us for custom arrangements.'
                         },
                         {
                             q: 'What if I outgrow my plan?',
-                            a: 'Upgrade anytime. If you start on Seed and your hiring accelerates, switching to Series takes one click. Your job posts, candidates, and pipeline history all carry over.'
+                            a: 'Upgrade anytime. If you start on Solo and your hiring accelerates, switching to Ensemble takes one click. Your job posts, candidates, and pipeline history all carry over.'
                         }
                     ].map((faq, idx) => (
                         <div key={idx} className="bg-white rounded-xl p-6 border border-gray-100">
@@ -390,17 +460,17 @@ const PricingSection: React.FC<Props> = ({ onGetStarted, onBack }) => {
 
                     <div className="relative z-10">
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
-                            Start Hiring Smarter
+                            Start Your Free Trial
                         </h2>
                         <p className="text-gray-400 text-lg mb-10 max-w-xl mx-auto">
-                            Free ATS. Unlimited job posts. Pay only for precision matches.
+                            14 days of full access. 20 free chimes. No credit card required.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
                                 onClick={onGetStarted}
                                 className="bg-white text-gray-900 px-10 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl group inline-flex items-center justify-center"
                             >
-                                Get Started Free
+                                Start Free Trial
                                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </div>
