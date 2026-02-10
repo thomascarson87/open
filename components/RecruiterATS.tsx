@@ -5,7 +5,8 @@ import { messageService } from '../services/messageService';
 import StatusBadge from './StatusBadge';
 import { atsService } from '../services/atsService';
 import { ApplicationStatus } from '../types';
-import { 
+import ScheduleCallModal from './ScheduleCallModal';
+import {
   Search, Filter, MoreHorizontal, MessageSquare, X, Check,
   User, MapPin, Briefcase, GraduationCap, Heart, Zap, Clock,
   Calendar, Phone, Code, Star, ChevronRight, Mail, DollarSign,
@@ -34,20 +35,41 @@ const getSkillLevelColor = (level: number): string => {
   return colors[level] || 'bg-gray-200';
 };
 
+/** Compute a quick match score from candidate skills vs job required_skills */
+function computeQuickMatchScore(candidateSkills: any[], jobSkills: any[]): number {
+  if (!jobSkills || jobSkills.length === 0) return 0;
+  if (!candidateSkills || candidateSkills.length === 0) return 0;
+
+  const candidateNames = new Set(candidateSkills.map((s: any) => (s.name || '').toLowerCase().trim()));
+  let matched = 0;
+  let total = jobSkills.length;
+
+  for (const js of jobSkills) {
+    const name = (js.name || '').toLowerCase().trim();
+    if (candidateNames.has(name)) matched++;
+  }
+
+  return Math.round((matched / total) * 100);
+}
+
 const RecruiterATS: React.FC = () => {
   const { user } = useAuth();
-  
+
   // State for data management
   const [applications, setApplications] = useState<any[]>([]);
   const [filter, setFilter] = useState<ApplicationStatus | 'all'>('all');
   const [loading, setLoading] = useState(true);
-  
+
   // State for UI interactions
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const [selectedCandidateProfile, setSelectedCandidateProfile] = useState<any>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedAppForReject, setSelectedAppForReject] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState('');
+
+  // Schedule modal state
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduleTarget, setScheduleTarget] = useState<{ candidateId: string; applicationId: string; defaultType?: string } | null>(null);
 
   const actionMenuRef = useRef<HTMLDivElement>(null);
   const profilePanelRef = useRef<HTMLDivElement>(null);
@@ -94,7 +116,7 @@ const RecruiterATS: React.FC = () => {
             values_list, character_traits, location, bio,
             work_style_preferences, salary_min, salary_currency, timezone, languages
           ),
-          job:jobs!inner(id, title, company_id)
+          job:jobs!inner(id, title, company_id, required_skills, required_skills_with_levels)
         `)
         .eq('jobs.company_id', companyId)
         .order('created_at', { ascending: false });
@@ -105,8 +127,16 @@ const RecruiterATS: React.FC = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      
-      setApplications(data || []);
+
+      // Compute match scores from candidate skills vs job required_skills
+      const enriched = (data || []).map((app: any) => {
+        if (app.match_score) return app; // Already has a score
+        const jobSkills = app.job?.required_skills_with_levels || app.job?.required_skills || [];
+        const candidateSkills = app.candidate?.skills || [];
+        return { ...app, match_score: computeQuickMatchScore(candidateSkills, jobSkills) };
+      });
+
+      setApplications(enriched);
     } catch (error) {
       console.error('Failed to load applications:', error);
     } finally {
@@ -175,6 +205,17 @@ const RecruiterATS: React.FC = () => {
           console.error('Failed to start conversation:', error);
           alert('Failed to start conversation. Please try again.');
       }
+  };
+
+  const openScheduleModal = (app: any, type?: string) => {
+    setScheduleTarget({
+      candidateId: app.candidate?.id,
+      applicationId: app.id,
+      defaultType: type
+    });
+    setOpenActionMenu(null);
+    setShowScheduleModal(true);
+    setSelectedCandidateProfile(null);
   };
 
   const TABS: { id: ApplicationStatus | 'all', label: string }[] = [
@@ -323,15 +364,19 @@ const RecruiterATS: React.FC = () => {
                                                 <button onClick={() => handleStatusChange(app.id, 'reviewing')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
                                                     <Zap className="w-4 h-4 mr-3 text-blue-500"/> Move to Review
                                                 </button>
-                                                <button onClick={() => handleStatusChange(app.id, 'phone_screen_scheduled')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
+                                                <div className="px-4 py-2 border-b border-gray-50 mt-1 mb-1">
+                                                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Schedule & Advance</p>
+                                                </div>
+                                                <button onClick={() => openScheduleModal(app, 'screening')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
                                                     <Phone className="w-4 h-4 mr-3 text-purple-500"/> Phone Screen
                                                 </button>
-                                                <button onClick={() => handleStatusChange(app.id, 'technical_scheduled')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
+                                                <button onClick={() => openScheduleModal(app, 'technical_test')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
                                                     <Code className="w-4 h-4 mr-3 text-indigo-500"/> Technical Interview
                                                 </button>
-                                                <button onClick={() => handleStatusChange(app.id, 'final_round_scheduled')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
+                                                <button onClick={() => openScheduleModal(app, 'final_round')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
                                                     <Users className="w-4 h-4 mr-3 text-teal-500"/> Final Round
                                                 </button>
+                                                <div className="h-px bg-gray-100 my-1"></div>
                                                 <button onClick={() => handleStatusChange(app.id, 'offer_extended')} className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl flex items-center transition-colors">
                                                     <Gift className="w-4 h-4 mr-3 text-orange-500"/> Extend Offer
                                                 </button>
@@ -533,8 +578,8 @@ const RecruiterATS: React.FC = () => {
                 >
                   <MessageSquare className="w-4 h-4" /> Message
                 </button>
-                <button 
-                  onClick={() => {/* Mock scheduling */ alert('Redirecting to Schedule...'); }}
+                <button
+                  onClick={() => openScheduleModal(selectedCandidateProfile)}
                   className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg active:scale-95"
                 >
                   <Calendar className="w-4 h-4" /> Schedule
@@ -544,6 +589,17 @@ const RecruiterATS: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Schedule Modal */}
+      {showScheduleModal && scheduleTarget && (
+        <ScheduleCallModal
+          onClose={() => { setShowScheduleModal(false); setScheduleTarget(null); }}
+          onSchedule={async () => { loadApplications(); }}
+          candidateId={scheduleTarget.candidateId}
+          applicationId={scheduleTarget.applicationId}
+          defaultType={scheduleTarget.defaultType}
+        />
+      )}
 
       {/* Reject Modal */}
       {showRejectModal && (

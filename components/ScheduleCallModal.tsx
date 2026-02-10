@@ -22,6 +22,7 @@ interface Props {
     candidateId?: string; // Optional if pre-selected
     applicationId?: string;
     showCandidateSelector?: boolean;
+    defaultType?: string; // Pre-select interview type (e.g. from ATS action menu)
 }
 
 const DURATIONS = [
@@ -32,7 +33,7 @@ const DURATIONS = [
   { value: 90, label: '1.5 hours' }
 ];
 
-const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, applicationId, showCandidateSelector }) => {
+const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, applicationId, showCandidateSelector, defaultType }) => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [candidateEmail, setCandidateEmail] = useState('');
@@ -46,7 +47,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
 
     const [formData, setFormData] = useState({
         title: 'Interview',
-        type: 'screening',
+        type: defaultType || 'screening',
         date: '',
         time: '10:00',
         duration: 30,
@@ -56,12 +57,18 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
     useEffect(() => {
         const fetchCandidateInfo = async () => {
             if (candidateId) {
-                const { data } = await supabase.from('candidate_profiles').select('name, email, user_id').eq('id', candidateId).single();
+                // candidate_profiles.id IS the user's auth id (no separate user_id column)
+                const { data } = await supabase.from('candidate_profiles').select('id, name, email').eq('id', candidateId).single();
                 if (data) {
                     setCandidateEmail(data.email);
                     setCandidateName(data.name);
-                    setCandidateUserId(data.user_id);
-                    setFormData(prev => ({ ...prev, title: `Interview with ${data.name}` }));
+                    setCandidateUserId(data.id);
+                    const type = formData.type;
+                    let title = `Interview with ${data.name}`;
+                    if (type === 'screening') title = `Phone Screen: ${data.name}`;
+                    if (type === 'technical_test') title = `Tech Interview: ${data.name}`;
+                    if (type === 'final_round') title = `Final Round: ${data.name}`;
+                    setFormData(prev => ({ ...prev, title }));
                 }
 
                 if (!resolvedAppId) {
@@ -111,14 +118,15 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                 }
                 
                 // Get applications with candidate info for these jobs
+                // candidate_profiles.id IS the user's auth id (no separate user_id column)
                 const { data: apps, error } = await supabase
                     .from('applications')
                     .select(`
                         id,
                         candidate_id,
                         job_id,
-                        candidate_profiles:candidate_id(id, user_id, name, email),
-                        jobs:job_id(title)
+                        candidate:candidate_profiles(id, name, email),
+                        job:jobs(title)
                     `)
                     .in('job_id', jobIds)
                     .not('candidate_id', 'is', null)
@@ -134,22 +142,22 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     // Dedupe by candidate ID
                     const seen = new Set<string>();
                     const candidates: CandidateOption[] = [];
-                    
+
                     for (const app of apps) {
-                        const candidateData = app.candidate_profiles as any;
+                        const candidateData = (app as any).candidate;
                         if (candidateData && candidateData.id && !seen.has(candidateData.id)) {
                             seen.add(candidateData.id);
                             candidates.push({
                                 id: candidateData.id,
-                                userId: candidateData.user_id,
+                                userId: candidateData.id, // candidate_profiles.id IS the auth user_id
                                 name: candidateData.name || 'Unknown',
                                 email: candidateData.email || '',
                                 applicationId: app.id,
-                                jobTitle: (app.jobs as any)?.title
+                                jobTitle: (app as any).job?.title
                             });
                         }
                     }
-                    
+
                     setAvailableCandidates(candidates);
                 }
             } catch (err) {

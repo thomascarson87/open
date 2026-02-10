@@ -66,7 +66,6 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
   const jobsChildren = [
     { id: 'my-jobs', label: 'My Jobs', icon: Briefcase, description: 'Manage your postings' },
     ...(canSeePendingApprovals ? [{ id: 'pending-approvals', label: 'Pending Approvals', icon: Clock, description: 'Jobs awaiting your review' }] : []),
-    { id: 'ats', label: 'Tracker', icon: ClipboardList, description: 'Applicant pipeline' }
   ];
 
   const recruiterNav = [
@@ -83,8 +82,9 @@ const Navigation: React.FC<NavigationProps> = ({ role, currentView, setCurrentVi
       children: jobsChildren
     },
     {
-      id: 'interview-group', label: 'Interview', icon: Video,
+      id: 'interview-group', label: 'Applicants', icon: Users,
       children: [
+        { id: 'ats', label: 'Tracker', icon: ClipboardList, description: 'Applicant pipeline' },
         { id: 'messages', label: 'Chat', icon: MessageSquare, description: 'Candidate messaging' },
         { id: 'schedule', label: 'Calendar', icon: Calendar, description: 'Interview schedule' }
       ]

@@ -40,11 +40,7 @@ class ATSService {
     // Update application status
     const { error: updateError } = await supabase
       .from('applications')
-      .update({
-        status: newStatus,
-        status_updated_at: new Date().toISOString(),
-        status_updated_by: changedBy
-      })
+      .update({ status: newStatus })
       .eq('id', applicationId);
 
     if (updateError) {
