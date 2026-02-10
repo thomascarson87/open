@@ -618,6 +618,49 @@ function MainApp() {
 
     const handleUnlockCandidate = async (candidateId: string): Promise<{ success: boolean; error?: { message: string; code: UnlockErrorCode } }> => {
         try {
+            // Dev mode: bypass Vercel API (mock tokens can't authenticate)
+            if (isDevMode) {
+                const companyId = authCompanyId || user?.id;
+                if (!companyId) {
+                    return { success: false, error: { message: 'No company ID found.', code: 'UNAUTHORIZED' } };
+                }
+
+                // Check if already unlocked
+                const { data: existing } = await supabase
+                    .from('candidate_unlocks')
+                    .select('id')
+                    .eq('candidate_id', candidateId)
+                    .eq('company_id', companyId)
+                    .maybeSingle();
+
+                if (!existing) {
+                    // Create unlock record directly
+                    await supabase.from('candidate_unlocks').insert({
+                        candidate_id: candidateId,
+                        company_id: companyId,
+                        unlocked_by: user?.id,
+                        cost_credits: 0,
+                    });
+                }
+
+                // Fetch the candidate profile
+                const { data: candidateData } = await supabase
+                    .from('candidate_profiles')
+                    .select('*')
+                    .eq('id', candidateId)
+                    .single();
+
+                if (candidateData) {
+                    const unlockedCandidate = mapCandidateFromDB({ ...candidateData, is_unlocked: true });
+                    setCandidatesList(prev => prev.map(c => c.id === candidateId ? unlockedCandidate : c));
+                    if (selectedCandidate?.id === candidateId) {
+                        setSelectedCandidate(unlockedCandidate);
+                    }
+                }
+
+                return { success: true };
+            }
+
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
             if (sessionError || !session?.access_token) {

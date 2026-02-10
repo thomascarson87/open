@@ -297,6 +297,14 @@ export default async function handler(
       .select('id, candidate_id, company_id, created_at, cost_credits')
       .single();
 
+    // Also mark the candidate profile as unlocked for backwards compatibility
+    if (!insertUnlockError && unlockRecord) {
+      await supabaseServer
+        .from('candidate_profiles')
+        .update({ is_unlocked: true })
+        .eq('id', candidateId);
+    }
+
     if (insertUnlockError || !unlockRecord) {
       // Attempt to refund credits on failure
       await supabaseServer

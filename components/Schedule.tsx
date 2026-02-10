@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-// import { useSearchParams } from 'react-router-dom'; // Removed due to missing export
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Video, Users, Clock, Trash2, ExternalLink, X, MapPin } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { googleCalendar } from '../services/googleCalendar';
 import ScheduleCallModal from './ScheduleCallModal';
 import { CalendarEvent } from '../types';
+import { useSearchParams } from '../hooks/useSearchParams';
 
 type ViewMode = 'day' | 'week' | 'month';
 
@@ -20,10 +20,7 @@ const EVENT_COLORS: Record<string, string> = {
 const Schedule: React.FC = () => {
   const { user } = useAuth();
   
-  // Custom implementation of searchParams since useSearchParams is missing
-  const [searchParams] = React.useMemo(() => {
-    return [new URLSearchParams(window.location.search)] as const;
-  }, [window.location.search]);
+  const [searchParams] = useSearchParams();
 
   const [viewMode, setViewMode] = useState<ViewMode>('week');
   const [currentDate, setCurrentDate] = useState(new Date());

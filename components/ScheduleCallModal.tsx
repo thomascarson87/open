@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface CandidateOption {
     id: string;
+    userId: string;
     name: string;
     email: string;
     applicationId?: string;
@@ -36,6 +37,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
     const [loading, setLoading] = useState(false);
     const [candidateEmail, setCandidateEmail] = useState('');
     const [candidateName, setCandidateName] = useState('');
+    const [candidateUserId, setCandidateUserId] = useState<string | undefined>(undefined);
     const [resolvedAppId, setResolvedAppId] = useState(applicationId);
     
     const [availableCandidates, setAvailableCandidates] = useState<CandidateOption[]>([]);
@@ -54,10 +56,11 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
     useEffect(() => {
         const fetchCandidateInfo = async () => {
             if (candidateId) {
-                const { data } = await supabase.from('candidate_profiles').select('name, email').eq('id', candidateId).single();
+                const { data } = await supabase.from('candidate_profiles').select('name, email, user_id').eq('id', candidateId).single();
                 if (data) {
                     setCandidateEmail(data.email);
                     setCandidateName(data.name);
+                    setCandidateUserId(data.user_id);
                     setFormData(prev => ({ ...prev, title: `Interview with ${data.name}` }));
                 }
 
@@ -114,7 +117,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                         id,
                         candidate_id,
                         job_id,
-                        candidate_profiles:candidate_id(id, name, email),
+                        candidate_profiles:candidate_id(id, user_id, name, email),
                         jobs:job_id(title)
                     `)
                     .in('job_id', jobIds)
@@ -138,6 +141,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                             seen.add(candidateData.id);
                             candidates.push({
                                 id: candidateData.id,
+                                userId: candidateData.user_id,
                                 name: candidateData.name || 'Unknown',
                                 email: candidateData.email || '',
                                 applicationId: app.id,
@@ -164,6 +168,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
         if (candidate) {
             setCandidateEmail(candidate.email);
             setCandidateName(candidate.name);
+            setCandidateUserId(candidate.userId);
             setResolvedAppId(candidate.applicationId);
             
             // Update title based on interview type
@@ -190,6 +195,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
 
         const startDateTime = new Date(`${formData.date}T${formData.time}`);
         const endDateTime = new Date(startDateTime.getTime() + formData.duration * 60000);
+        const organizerTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         try {
             // 1. Create Event for Recruiter (Current User)
@@ -213,11 +219,11 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
             if (err1) throw err1;
 
             // 2. Create Event for Candidate (if known)
-            if (effectiveCandidateId) {
+            if (candidateUserId) {
                 await supabase
                     .from('calendar_events')
                     .insert([{
-                        user_id: effectiveCandidateId, // The candidate sees this
+                        user_id: candidateUserId, // The candidate's auth user_id so it appears on their calendar
                         title: formData.title,
                         description: formData.notes,
                         event_type: formData.type,
@@ -269,14 +275,20 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                 );
             }
 
-            // 5. Send Notification to Candidate
+            // 5. Send Notification to Candidate (include timezone for clarity)
+            const timeDisplayOptions: Intl.DateTimeFormatOptions = {
+                month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+            };
+            const formattedTime = startDateTime.toLocaleString('en-US', timeDisplayOptions);
+
             if (effectiveCandidateId) {
                 await notificationService.createNotification(
                     effectiveCandidateId,
                     'interview_scheduled',
                     'Interview Scheduled',
-                    `${formData.title} scheduled for ${startDateTime.toLocaleDateString()} at ${startDateTime.toLocaleTimeString()}`,
-                    '/schedule'
+                    `${formData.title} scheduled for ${formattedTime}`,
+                    '/schedule',
+                    { timezone: organizerTimezone }
                 );
             }
 
@@ -285,8 +297,8 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                 const convId = await messageService.getOrCreateConversation(user!.id, effectiveCandidateId, resolvedAppId);
                 await messageService.sendSystemMessage(
                     convId,
-                    `Interview Scheduled: ${formData.title} on ${startDateTime.toLocaleDateString()} at ${startDateTime.toLocaleTimeString()}`,
-                    { eventId: recruiterEvent.id, meetLink }
+                    `Interview Scheduled: ${formData.title} on ${formattedTime}`,
+                    { eventId: recruiterEvent.id, meetLink, timezone: organizerTimezone }
                 );
             }
 

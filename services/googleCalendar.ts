@@ -18,10 +18,8 @@ export interface CalendarEventInput {
 }
 
 class GoogleCalendarService {
-  // Using import.meta.env for Vite compatibility, casting to any to avoid TS errors if types are missing
+  // Client ID is safe to expose in frontend (it's public). Secret is now server-side only.
   private clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
-  private clientSecret = (import.meta as any).env?.VITE_GOOGLE_CLIENT_SECRET || '';
-  // Updated redirect URI to point to the new callback route
   private redirectUri = `${window.location.origin}/auth/google/callback`;
   
   /**
@@ -53,53 +51,35 @@ class GoogleCalendarService {
   }
   
   /**
-   * Step 2: Exchange code for tokens
+   * Step 2: Exchange code for tokens via server-side edge function
+   * The client secret is kept server-side only for security.
    */
-  async handleCallback(code: string): Promise<GoogleAuthResponse> {
-    if (!this.clientSecret) {
-      throw new Error('Google Client Secret not configured.');
+  async handleCallback(code: string): Promise<void> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('Not authenticated');
     }
 
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        redirect_uri: this.redirectUri,
-        grant_type: 'authorization_code'
-      })
+    const { data, error } = await supabase.functions.invoke('google-calendar-token-exchange', {
+      body: { code, redirect_uri: this.redirectUri }
     });
-    
-    if (!response.ok) {
-      const err = await response.json();
-      console.error('Token exchange error:', err);
+
+    if (error) {
+      console.error('Token exchange error:', error);
       throw new Error('Failed to exchange code for tokens');
     }
-    
-    return response.json();
+
+    if (!data?.success) {
+      throw new Error(data?.error || 'Token exchange failed');
+    }
   }
-  
+
   /**
-   * Step 3: Store tokens in Supabase
+   * Step 3: Store tokens - now handled server-side by the edge function.
+   * This method is kept for API compatibility but is a no-op.
    */
-  async storeTokens(userId: string, tokens: GoogleAuthResponse) {
-    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
-    
-    const { error } = await supabase
-      .from('google_calendar_tokens')
-      .upsert({
-        user_id: userId,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_at: expiresAt.toISOString(),
-        scope: tokens.scope,
-        token_type: tokens.token_type,
-        last_sync_at: new Date().toISOString()
-      });
-    
-    if (error) throw error;
+  async storeTokens(_userId: string, _tokens: any) {
+    // Tokens are now stored by the edge function during handleCallback
   }
   
   /**
@@ -122,36 +102,16 @@ class GoogleCalendarService {
       return data.access_token; // Still valid
     }
     
-    // Refresh token
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        refresh_token: data.refresh_token,
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        grant_type: 'refresh_token'
-      })
+    // Refresh token via server-side edge function (keeps client_secret secure)
+    const { data: refreshData, error: refreshError } = await supabase.functions.invoke('google-calendar-refresh-token', {
+      body: {}
     });
-    
-    if (!response.ok) {
-      // If refresh fails, they might need to re-auth
+
+    if (refreshError || !refreshData?.access_token) {
       throw new Error('Failed to refresh token');
     }
-    
-    const newTokens = await response.json();
-    const newExpiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
-    
-    // Update stored token
-    await supabase
-      .from('google_calendar_tokens')
-      .update({
-        access_token: newTokens.access_token,
-        expires_at: newExpiresAt.toISOString()
-      })
-      .eq('user_id', userId);
-    
-    return newTokens.access_token;
+
+    return refreshData.access_token;
   }
   
   /**

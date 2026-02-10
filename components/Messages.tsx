@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// import { useSearchParams } from 'react-router-dom'; // Removed due to missing export
 import { Search, Send, ArrowLeft, MessageSquare, Loader2, Calendar, Phone, Paperclip, Plus, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,14 +6,12 @@ import { ApplicationStatus, Conversation, Message } from '../types';
 import StatusBadge from './StatusBadge';
 import ScheduleCallModal from './ScheduleCallModal';
 import { messageService } from '../services/messageService';
+import { useSearchParams } from '../hooks/useSearchParams';
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
     
-    // Custom implementation of searchParams logic since useSearchParams is missing
-    const [searchParams] = React.useMemo(() => {
-        return [new URLSearchParams(window.location.search)] as const;
-    }, [window.location.search]);
+    const [searchParams] = useSearchParams();
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
@@ -67,8 +64,18 @@ const Messages: React.FC = () => {
                         setMessages(prev => [...prev, newMsg]);
                         scrollToBottom();
                     }
-                    // Refresh conversations list to update snippet/unread
-                    fetchConversations();
+                    // Update only the affected conversation's snippet in-place (avoids N+1 refetch)
+                    setConversations(prev => prev.map(c =>
+                        c.id === newRecord.conversation_id
+                            ? {
+                                ...c,
+                                lastMessage: { text: newRecord.text, timestamp: newRecord.created_at },
+                                unreadCount: newRecord.conversation_id === activeId
+                                    ? c.unreadCount
+                                    : (newRecord.sender_id !== user?.id ? c.unreadCount + 1 : c.unreadCount)
+                              }
+                            : c
+                    ));
                 })
                 .subscribe();
 
@@ -122,14 +129,18 @@ const Messages: React.FC = () => {
                  }
              }
              
-             // Fetch last message
-             const { data: lastMsg } = await supabase.from('messages').select('*').eq('conversation_id', c.id).order('created_at', { ascending: false }).limit(1).single();
+             // Fetch last message and unread count in parallel
+             const [lastMsgResult, unreadResult] = await Promise.all([
+                 supabase.from('messages').select('*').eq('conversation_id', c.id).order('created_at', { ascending: false }).limit(1).single(),
+                 supabase.from('messages').select('id', { count: 'exact', head: true }).eq('conversation_id', c.id).eq('is_read', false).neq('sender_id', user?.id)
+             ]);
+             const lastMsg = lastMsgResult.data;
 
              return {
                  id: c.id,
                  participants: [{ id: parts?.user_id, name, avatar }],
                  lastMessage: lastMsg ? { ...lastMsg, timestamp: lastMsg.created_at } : { text: 'No messages', timestamp: c.created_at },
-                 unreadCount: 0,
+                 unreadCount: unreadResult.count || 0,
                  applicationId: c.application_id
              };
         }));
@@ -161,10 +172,49 @@ const Messages: React.FC = () => {
     };
 
     const loadUnlockedCandidates = async () => {
-        // Fetch candidates that are unlocked
-        // IMPORTANT: Ensure we select where is_unlocked is true
-        const { data } = await supabase.from('candidate_profiles').select('id, name, headline, avatar_urls').eq('is_unlocked', true);
-        if (data) setUnlockedCandidates(data);
+        if (!user) return;
+
+        // Resolve the company ID for the current recruiter
+        const { data: teamMember } = await supabase
+            .from('team_members')
+            .select('company_id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+        const companyId = teamMember?.company_id || user.id;
+
+        const unique = new Map<string, any>();
+
+        // 1. Candidates unlocked by this company
+        const { data: unlocks } = await supabase
+            .from('candidate_unlocks')
+            .select('candidate_id')
+            .eq('company_id', companyId);
+
+        if (unlocks && unlocks.length > 0) {
+            const candidateIds = unlocks.map(u => u.candidate_id);
+            const { data: candidates } = await supabase
+                .from('candidate_profiles')
+                .select('id, name, headline, avatar_urls')
+                .in('id', candidateIds);
+            if (candidates) {
+                for (const c of candidates) unique.set(c.id, c);
+            }
+        }
+
+        // 2. Candidates who have applied to this company's jobs
+        const { data: applicants } = await supabase
+            .from('applications')
+            .select('candidate:candidate_profiles!inner(id, name, headline, avatar_urls), job:jobs!inner(company_id)')
+            .eq('jobs.company_id', companyId);
+        if (applicants) {
+            for (const a of applicants) {
+                if (a.candidate && !unique.has(a.candidate.id)) {
+                    unique.set(a.candidate.id, a.candidate);
+                }
+            }
+        }
+
+        setUnlockedCandidates(Array.from(unique.values()));
     };
 
     const startNewConversation = async (candidateId: string) => {

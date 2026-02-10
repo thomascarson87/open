@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-// import { useNavigate, useSearchParams } from 'react-router-dom'; // Removed due to missing exports
 import { googleCalendar } from '../services/googleCalendar';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSearchParams } from '../hooks/useSearchParams';
 
 const GoogleAuthCallback: React.FC = () => {
   // Custom navigation implementation since useNavigate is missing
@@ -12,10 +12,7 @@ const GoogleAuthCallback: React.FC = () => {
     window.dispatchEvent(new Event('popstate'));
   };
 
-  // Custom implementation of searchParams since useSearchParams is missing
-  const [searchParams] = React.useMemo(() => {
-    return [new URLSearchParams(window.location.search)] as const;
-  }, [window.location.search]);
+  const [searchParams] = useSearchParams();
 
   const { user, loading: authLoading } = useAuth();
   
@@ -63,15 +60,12 @@ const GoogleAuthCallback: React.FC = () => {
       }
 
       try {
-        console.log('Exchanging code for tokens...');
-        const tokens = await googleCalendar.handleCallback(code);
-        
-        console.log('Storing tokens for user:', user.id);
-        await googleCalendar.storeTokens(user.id, tokens);
-        
+        console.log('Exchanging code for tokens via edge function...');
+        await googleCalendar.handleCallback(code);
+
         setStatus('success');
         setMessage('Successfully Connected!');
-        
+
         console.log('Connection complete. Redirecting...');
         setTimeout(() => navigate('/?view=schedule'), 2000);
       } catch (err: any) {

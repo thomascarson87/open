@@ -52,7 +52,7 @@ const ATSBoard: React.FC<Props> = ({ applications, jobs, candidates }) => {
                         
                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                             <span className="text-xs text-gray-400">
-                                {app.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                {app.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                             </span>
                             {app.matchScore > 0 && (
                                 <span className={`text-xs font-bold ${app.matchScore > 80 ? 'text-green-600' : 'text-yellow-600'}`}>

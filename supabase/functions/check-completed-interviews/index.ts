@@ -18,7 +18,7 @@ serve(async (req) => {
     .select('*, application:applications(id, status)')
     .gte('end_time', oneHourAgo)
     .lte('end_time', now)
-    .eq('status', 'pending');
+    .in('status', ['pending', 'confirmed']);
 
   for (const event of completedEvents || []) {
     if (!event.application_id || !event.application) continue;
@@ -49,6 +49,7 @@ serve(async (req) => {
           application_id: event.application_id,
           old_status: app.status,
           new_status: newStatus,
+          changed_by: 'system',
           change_type: 'automatic',
           trigger_source: 'event_time_passed',
           trigger_id: event.id,

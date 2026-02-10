@@ -89,13 +89,14 @@ const RecruiterATS: React.FC = () => {
         .select(`
           *,
           candidate:candidate_profiles(
-            id, name, email, headline, avatar_urls, skills, experience, 
-            education_level, education_field, education_institution, 
-            values_list, character_traits, location, bio, 
+            id, name, email, headline, avatar_urls, skills, experience,
+            education_level, education_field, education_institution,
+            values_list, character_traits, location, bio,
             work_style_preferences, salary_min, salary_currency, timezone, languages
           ),
-          job:jobs(id, title, company_id)
+          job:jobs!inner(id, title, company_id)
         `)
+        .eq('jobs.company_id', companyId)
         .order('created_at', { ascending: false });
 
       if (filter !== 'all') {

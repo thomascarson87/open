@@ -151,16 +151,25 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
 
   const startConversation = async () => {
     if (!user) return;
-    
+
     try {
-      // Get or create conversation with the company
+      // Resolve a recruiter user_id from the company's team_members
+      const { data: recruiter } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('company_id', application.job.company_id)
+        .limit(1)
+        .maybeSingle();
+
+      const recruiterId = recruiter?.user_id || application.job.company_id;
+
       const newConvId = await messageService.getOrCreateConversation(
-        application.job.company_id,
+        recruiterId,
         user.id,
         application.id,
         application.job_id
       );
-      
+
       setConversationId(newConvId);
       onConversationCreated?.(newConvId);
       return newConvId;

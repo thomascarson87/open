@@ -126,12 +126,25 @@ class ATSService {
   ): Promise<void> {
     const lowerContent = messageContent.toLowerCase();
 
-    // Offer keywords
-    if (senderType === 'recruiter' && (
-      lowerContent.includes('offer you') ||
+    // Guard: fetch current status to prevent invalid transitions
+    const { data: app } = await supabase
+      .from('applications')
+      .select('status')
+      .eq('id', applicationId)
+      .single();
+
+    if (!app) return;
+    const currentStatus = app.status as ApplicationStatus;
+
+    // Offer keywords — only trigger from interview/final round stages
+    const offerEligibleStatuses: ApplicationStatus[] = [
+      'technical_completed', 'final_round_scheduled', 'final_round_completed'
+    ];
+    if (senderType === 'recruiter' && offerEligibleStatuses.includes(currentStatus) && (
       lowerContent.includes('pleased to offer') ||
       lowerContent.includes('we would like to offer') ||
-      lowerContent.includes('extend an offer')
+      lowerContent.includes('extend an offer') ||
+      lowerContent.includes('formal offer')
     )) {
       await this.updateApplicationStatus({
         applicationId,
@@ -140,16 +153,27 @@ class ATSService {
         changeType: 'automatic',
         triggerSource: 'chat_message',
         notes: 'Offer detected in message',
-        sendChatNotification: false 
+        sendChatNotification: false
       });
+      return; // Only one transition per message
     }
 
-    // Rejection keywords
-    if (senderType === 'recruiter' && (
-      lowerContent.includes('unfortunately') ||
+    // Rejection keywords — require specific multi-word phrases to avoid false positives
+    // "unfortunately" alone is too broad; require it paired with rejection context
+    const rejectionEligibleStatuses: ApplicationStatus[] = [
+      'applied', 'reviewing', 'phone_screen_scheduled', 'phone_screen_completed',
+      'technical_scheduled', 'technical_completed', 'final_round_scheduled', 'final_round_completed'
+    ];
+    if (senderType === 'recruiter' && rejectionEligibleStatuses.includes(currentStatus) && (
       lowerContent.includes('not moving forward') ||
-      lowerContent.includes('decided not to') ||
-      lowerContent.includes('other candidates')
+      lowerContent.includes('decided not to proceed') ||
+      lowerContent.includes('will not be moving forward') ||
+      (lowerContent.includes('unfortunately') && (
+        lowerContent.includes('not be moving') ||
+        lowerContent.includes('not selected') ||
+        lowerContent.includes('another candidate') ||
+        lowerContent.includes('position has been filled')
+      ))
     )) {
       await this.updateApplicationStatus({
         applicationId,
@@ -160,13 +184,14 @@ class ATSService {
         notes: 'Rejection detected in message',
         sendChatNotification: false
       });
+      return;
     }
 
-    // Offer acceptance
-    if (senderType === 'candidate' && (
+    // Offer acceptance — only when an offer is actually extended
+    if (senderType === 'candidate' && currentStatus === 'offer_extended' && (
       lowerContent.includes('accept the offer') ||
-      lowerContent.includes('i accept') ||
-      lowerContent.includes("i'd like to accept")
+      lowerContent.includes("i'd like to accept") ||
+      lowerContent.includes('happy to accept')
     )) {
       await this.updateApplicationStatus({
         applicationId,
