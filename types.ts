@@ -26,7 +26,8 @@ export type LanguageProficiency = 'native' | 'fluent' | 'professional' | 'conver
 
 export interface LanguageRequirement {
   language: string;
-  minProficiency: LanguageProficiency;
+  minimumLevel: LanguageProficiency;
+  required: boolean;
 }
 
 export type TimezoneOverlap = 'full_overlap' | 'overlap_4_plus' | 'overlap_2_plus' | 'async_first';
@@ -437,10 +438,10 @@ export interface CompanyProfile {
   techStack: string[];
   socialMedia?: Record<string, string>;
   companyPhotos: string[];
-  billing_plan?: string;
+  billingPlan?: string;
   credits?: number;
-  is_mock_data?: boolean;
-  mock_data_seed?: string;
+  isMockData?: boolean;
+  mockDataSeed?: string;
   workStyleCulture?: Partial<WorkStylePreferences>;
   teamStructure?: {
     teamDistribution?: string;
@@ -450,7 +451,7 @@ export interface CompanyProfile {
   companyLanguages?: string[];
   defaultTimezone?: string;
   visaSponsorshipPolicy?: VisaSponsorshipPolicy;
-  follower_count?: number;
+  followerCount?: number;
   // Company enrichment fields
   focusType?: CompanyFocusType | null;
   missionOrientation?: MissionOrientation | null;
@@ -511,29 +512,29 @@ export interface CalendarEvent {
 
 export interface CandidateProfile {
   id: string;
-  user_id: string;
+  userId: string;
   name: string;
   headline: string;
   email: string;
   location: string;
-  avatar_url?: string;
+  avatarUrl?: string;
   avatarUrls?: string[];
   videoIntroUrl?: string;
   bio: string;
   status: 'actively_looking' | 'open_to_offers' | 'happy_but_listening' | 'not_looking';
   skills: Skill[];
   totalYearsExperience?: number;
-  education_level?: string;
-  education_field?: string;
-  education_institution?: string;
-  education_graduation_year?: number;
+  educationLevel?: string;
+  educationField?: string;
+  educationInstitution?: string;
+  educationGraduationYear?: number;
   educationHistory?: Education[];
   values: string[];
   characterTraits: string[];
   personalityAssessments?: PersonalityAssessments;
-  myers_briggs?: string;
-  disc_profile?: any;
-  enneagram_type?: string;
+  myersBriggs?: string;
+  discProfile?: any;
+  enneagramType?: string;
   salaryMin: number;
   salaryMax?: number;
   salaryExpectation?: string;
@@ -560,17 +561,17 @@ export interface CandidateProfile {
   primaryRoleName?: string;
   secondaryRoles?: { id: string; name: string }[];
   interestedRoles?: { id: string; name: string; interestLevel: 'exploring' | 'actively_seeking' }[];
-  onboarding_completed: boolean;
-  created_at: string;
-  updated_at: string;
+  onboardingCompleted: boolean;
+  createdAt: string;
+  updatedAt: string;
   experience?: Experience[];
   portfolio?: any[];
   references?: any[];
   themeColor?: ThemeColor;
   themeFont?: ThemeFont;
-  assessment_completed_at?: string;
-  is_mock_data?: boolean;
-  verification_stats?: VerificationStats;
+  assessmentCompletedAt?: string;
+  isMockData?: boolean;
+  verificationStats?: VerificationStats;
   isUnlocked?: boolean;
   matchScore?: number;
   workStylePreferences?: WorkStylePreferences;
@@ -596,8 +597,8 @@ export interface CandidateProfile {
 
 export interface JobPosting {
   id: string;
-  company_id: string;
-  canonical_role_id?: string;
+  companyId: string;
+  canonicalRoleId?: string;
   companyName: string;
   companyLogo?: string;
   title: string;
@@ -619,26 +620,26 @@ export interface JobPosting {
   postedDate: string;
   status: 'draft' | 'pending_approval' | 'published' | 'closed';
   companyIndustry?: string[];
-  required_education_level?: string;
-  preferred_education_level?: string;
-  education_required?: boolean;
+  requiredEducationLevel?: string;
+  preferredEducationLevel?: string;
+  educationRequired?: boolean;
   responsibilities?: string[];
-  impact_statement?: string;
-  key_deliverables?: string[];
-  success_metrics?: string[];
-  team_structure?: string;
-  growth_opportunities?: string;
-  tech_stack?: string[];
-  desired_performance_scores?: { 
+  impactStatement?: string;
+  keyDeliverables?: string[];
+  successMetrics?: string[];
+  teamStructure?: string;
+  growthOpportunities?: string;
+  techStack?: string[];
+  desiredPerformanceScores?: {
     communication?: number; 
     problemSolving?: number; 
     reliability?: number; 
     collaboration?: number 
   };
-  required_impact_scope?: number;
+  requiredImpactScope?: number;
   approvals?: any;
-  is_mock_data?: boolean;
-  mock_data_seed?: string;
+  isMockData?: boolean;
+  mockDataSeed?: string;
   workStyleRequirements?: Partial<WorkStylePreferences>;
   workStyleDealbreakers?: string[];
   teamRequirements?: Partial<TeamCollaborationPreferences>;
@@ -647,6 +648,8 @@ export interface JobPosting {
   preferredLanguages?: LanguageRequirement[];
   timezoneRequirements?: string;
   requiredTimezoneOverlap?: TimezoneOverlap;
+  desiredMyersBriggs?: string[];
+  desiredDiscProfile?: Record<string, number> | null;
   desiredEnneagramTypes?: string[];
   visaSponsorshipAvailable?: boolean;
   equityOffered?: boolean;
@@ -686,6 +689,7 @@ export interface MatchBreakdown {
     relocation?: MatchDetails;
     managementFit?: MatchDetails;
     certifications?: MatchDetails;
+    roleAlignment?: MatchDetails;
   };
   dealBreakers: string[];
   recommendations: string[];
@@ -704,8 +708,8 @@ export interface TalentSearchCriteria {
   salaryCurrency?: string;
   contractTypes?: JobType[];
   desiredPerks?: string[];
-  required_education_level?: string;
-  education_required?: boolean;
+  requiredEducationLevel?: string;
+  educationRequired?: boolean;
   dealBreakers?: string[];
   workStyleFilters?: Partial<WorkStylePreferences>;
   teamFilters?: Partial<TeamCollaborationPreferences>;
@@ -740,7 +744,7 @@ export interface Notification {
   id: string;
   title: string;
   description: string;
-  type: 'match' | 'message' | 'system' | 'application' | 'profile_viewed' | 'interview_scheduled';
+  type: 'match' | 'new_match' | 'message' | 'system' | 'application' | 'profile_viewed' | 'interview_scheduled';
   isRead: boolean;
   timestamp: string;
   link?: string;

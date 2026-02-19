@@ -42,7 +42,7 @@ const getStatusIcon = (status: ApprovalStatus) => {
     case 'pending':
       return <Clock className="w-4 h-4 text-amber-500" />;
     default:
-      return <AlertCircle className="w-4 h-4 text-gray-400" />;
+      return <AlertCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />;
   }
 };
 
@@ -55,7 +55,7 @@ const getStatusColor = (status: ApprovalStatus) => {
     case 'pending':
       return 'border-amber-200 bg-amber-50';
     default:
-      return 'border-gray-200 bg-gray-50';
+      return 'border-border bg-gray-50 dark:bg-gray-900';
   }
 };
 
@@ -128,10 +128,10 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 overflow-hidden ${className}`}>
+    <div className={`bg-surface rounded-2xl border border-border overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-        <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">
+      <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-border">
+        <h3 className="text-sm font-black text-primary uppercase tracking-wider">
           Approval Status
         </h3>
       </div>
@@ -142,21 +142,21 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
           {/* Hiring Manager Approval */}
           <div className={`flex-1 p-4 rounded-xl border-2 transition-all ${getStatusColor(hmApproval.status)}`}>
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-white rounded-lg shadow-sm">
-                <User className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-white dark:bg-surface rounded-lg shadow-sm">
+                <User className="w-5 h-5 text-accent-coral" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900">Hiring Manager</p>
+                <p className="font-bold text-primary">Hiring Manager</p>
                 {canAssignApprovers && hmApproval.status === 'pending' ? (
                   teamMembersLoading ? (
-                    <div className="mt-1 animate-pulse h-8 bg-gray-200 rounded w-full" />
+                    <div className="mt-1 animate-pulse h-8 bg-border rounded w-full" />
                   ) : hmCandidates.length === 0 ? (
-                    <p className="mt-1 text-xs text-gray-400">No hiring managers available</p>
+                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">No hiring managers available</p>
                   ) : (
                     <select
                       value={hmApproval.assignedTo || ''}
                       onChange={(e) => onAssignApprover('hiringManager', e.target.value)}
-                      className="mt-1 text-sm p-1 border rounded bg-white w-full"
+                      className="mt-1 text-sm p-1 border rounded bg-white dark:bg-surface w-full"
                     >
                       <option value="">Unassigned</option>
                       {hmCandidates.map(m => (
@@ -165,7 +165,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
                     </select>
                   )
                 ) : (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     {hmAssignee?.name || 'Unassigned'}
                   </p>
                 )}
@@ -182,10 +182,10 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
               </span>
             </div>
             {hmApproval.date && (
-              <p className="text-xs text-gray-500 mt-1">{formatDate(hmApproval.date)}</p>
+              <p className="text-xs text-muted mt-1">{formatDate(hmApproval.date)}</p>
             )}
             {hmApproval.feedback && (
-              <div className="mt-2 p-2 bg-white rounded-lg text-sm text-gray-600 border">
+              <div className="mt-2 p-2 bg-white dark:bg-surface rounded-lg text-sm text-muted border">
                 {hmApproval.feedback}
               </div>
             )}
@@ -193,27 +193,27 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
 
           {/* Arrow */}
           <ChevronRight className={`w-6 h-6 flex-shrink-0 ${
-            hmApproval.status === 'approved' ? 'text-green-400' : 'text-gray-300'
+            hmApproval.status === 'approved' ? 'text-green-400' : 'text-gray-300 dark:text-gray-600'
           }`} />
 
           {/* Finance Approval */}
           <div className={`flex-1 p-4 rounded-xl border-2 transition-all ${getStatusColor(financeApproval.status)}`}>
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-white rounded-lg shadow-sm">
+              <div className="p-2 bg-white dark:bg-surface rounded-lg shadow-sm">
                 <DollarSign className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900">Budget Approval</p>
+                <p className="font-bold text-primary">Budget Approval</p>
                 {canAssignApprovers && financeApproval.status === 'pending' ? (
                   teamMembersLoading ? (
-                    <div className="mt-1 animate-pulse h-8 bg-gray-200 rounded w-full" />
+                    <div className="mt-1 animate-pulse h-8 bg-border rounded w-full" />
                   ) : financeCandidates.length === 0 ? (
-                    <p className="mt-1 text-xs text-gray-400">No finance approvers available</p>
+                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">No finance approvers available</p>
                   ) : (
                     <select
                       value={financeApproval.assignedTo || ''}
                       onChange={(e) => onAssignApprover('finance', e.target.value)}
-                      className="mt-1 text-sm p-1 border rounded bg-white w-full"
+                      className="mt-1 text-sm p-1 border rounded bg-white dark:bg-surface w-full"
                     >
                       <option value="">Unassigned</option>
                       {financeCandidates.map(m => (
@@ -222,7 +222,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
                     </select>
                   )
                 ) : (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     {financeAssignee?.name || 'Unassigned'}
                   </p>
                 )}
@@ -239,10 +239,10 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
               </span>
             </div>
             {financeApproval.date && (
-              <p className="text-xs text-gray-500 mt-1">{formatDate(financeApproval.date)}</p>
+              <p className="text-xs text-muted mt-1">{formatDate(financeApproval.date)}</p>
             )}
             {financeApproval.feedback && (
-              <div className="mt-2 p-2 bg-white rounded-lg text-sm text-gray-600 border">
+              <div className="mt-2 p-2 bg-white dark:bg-surface rounded-lg text-sm text-muted border">
                 {financeApproval.feedback}
               </div>
             )}
@@ -250,12 +250,12 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
 
           {/* Arrow */}
           <ChevronRight className={`w-6 h-6 flex-shrink-0 ${
-            allApproved ? 'text-green-400' : 'text-gray-300'
+            allApproved ? 'text-green-400' : 'text-gray-300 dark:text-gray-600'
           }`} />
 
           {/* Publish Status */}
           <div className={`w-24 h-24 rounded-xl flex flex-col items-center justify-center ${
-            allApproved ? 'bg-green-100 border-2 border-green-300' : 'bg-gray-100 border-2 border-gray-200'
+            allApproved ? 'bg-green-100 border-2 border-green-300' : 'bg-gray-100 dark:bg-gray-800 border-2 border-border'
           }`}>
             {allApproved ? (
               <>
@@ -264,8 +264,8 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
               </>
             ) : (
               <>
-                <Clock className="w-8 h-8 text-gray-400 mb-1" />
-                <span className="text-xs font-black text-gray-500 uppercase">Pending</span>
+                <Clock className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-1" />
+                <span className="text-xs font-black text-muted uppercase">Pending</span>
               </>
             )}
           </div>
@@ -274,16 +274,16 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
         {/* Action Buttons for Current User */}
         {((canApproveAsHM && hmApproval.status === 'pending') ||
           (canApproveAsFinance && financeApproval.status === 'pending')) && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+          <div className="mt-6 p-4 bg-accent-coral-bg rounded-xl border border-accent-coral-light">
             <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="w-5 h-5 text-blue-600" />
-              <p className="font-bold text-blue-900">Your approval is required</p>
+              <AlertCircle className="w-5 h-5 text-accent-coral" />
+              <p className="font-bold text-accent-coral">Your approval is required</p>
             </div>
 
             {/* HM Approval Actions */}
             {canApproveAsHM && hmApproval.status === 'pending' && (
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-3">As Hiring Manager:</p>
+                <p className="text-sm text-muted mb-3">As Hiring Manager:</p>
                 {showFeedbackFor === 'hiringManager' ? (
                   <div className="space-y-2">
                     <textarea
@@ -304,7 +304,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
                       </button>
                       <button
                         onClick={() => { setShowFeedbackFor(null); setFeedbackText(''); }}
-                        className="px-4 py-2 text-gray-600 font-bold text-sm hover:text-gray-900"
+                        className="px-4 py-2 text-muted font-bold text-sm hover:text-primary"
                       >
                         Cancel
                       </button>
@@ -321,7 +321,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
                     </button>
                     <button
                       onClick={() => setShowFeedbackFor('hiringManager')}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 dark:text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900"
                     >
                       <MessageSquare className="w-4 h-4" />
                       Request Changes
@@ -334,7 +334,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
             {/* Finance Approval Actions */}
             {canApproveAsFinance && financeApproval.status === 'pending' && (
               <div>
-                <p className="text-sm text-gray-600 mb-3">As Budget Approver:</p>
+                <p className="text-sm text-muted mb-3">As Budget Approver:</p>
                 {showFeedbackFor === 'finance' ? (
                   <div className="space-y-2">
                     <textarea
@@ -355,7 +355,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
                       </button>
                       <button
                         onClick={() => { setShowFeedbackFor(null); setFeedbackText(''); }}
-                        className="px-4 py-2 text-gray-600 font-bold text-sm hover:text-gray-900"
+                        className="px-4 py-2 text-muted font-bold text-sm hover:text-primary"
                       >
                         Cancel
                       </button>
@@ -372,7 +372,7 @@ const JobApprovalPanel: React.FC<JobApprovalPanelProps> = ({
                     </button>
                     <button
                       onClick={() => setShowFeedbackFor('finance')}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-bold text-sm hover:bg-gray-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 dark:text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900"
                     >
                       <MessageSquare className="w-4 h-4" />
                       Request Changes

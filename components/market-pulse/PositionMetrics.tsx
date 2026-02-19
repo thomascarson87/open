@@ -25,7 +25,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
     switch (direction) {
       case 'up': return 'text-green-600';
       case 'down': return 'text-red-500';
-      default: return 'text-gray-400';
+      default: return 'text-gray-400 dark:text-gray-500';
     }
   };
 
@@ -39,21 +39,21 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <div className="h-3 w-20 bg-gray-100 rounded animate-pulse mb-3" />
-        <div className="h-8 w-16 bg-gray-100 rounded animate-pulse mb-2" />
-        <div className="h-3 w-24 bg-gray-50 rounded animate-pulse" />
+      <div className="bg-surface rounded-xl border border-border p-5">
+        <div className="h-3 w-20 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mb-3" />
+        <div className="h-8 w-16 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mb-2" />
+        <div className="h-3 w-24 bg-gray-50 dark:bg-gray-900 rounded animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 p-5 ${isPlaceholder ? 'opacity-50' : ''}`}>
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+    <div className={`bg-surface rounded-xl border border-border p-5 ${isPlaceholder ? 'opacity-50' : ''}`}>
+      <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">
         {label}
       </p>
       <div className="flex items-baseline gap-2">
-        <span className="text-2xl font-black text-gray-900">
+        <span className="text-2xl font-black text-primary">
           {value}
         </span>
         {trend && trend.percentage > 0 && (
@@ -63,10 +63,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
         )}
       </div>
       {subtext && (
-        <p className="text-xs text-gray-400 mt-1">{subtext}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtext}</p>
       )}
       {isPlaceholder && (
-        <p className="text-xs text-gray-400 mt-1 italic">Coming soon</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 italic">Coming soon</p>
       )}
     </div>
   );

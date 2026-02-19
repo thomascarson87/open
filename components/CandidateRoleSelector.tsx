@@ -297,7 +297,7 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
     <div className="space-y-8">
       {/* Seniority Selector */}
       <div>
-        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+        <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
           Current Seniority Level
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -308,12 +308,12 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
               onClick={() => onSeniorityChange(opt.value)}
               className={`p-3 rounded-xl border-2 text-left transition-all ${
                 currentSeniority === opt.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                  : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
               }`}
             >
               <p className="font-black text-sm">{opt.label}</p>
-              <p className="text-[10px] text-gray-500">{opt.description}</p>
+              <p className="text-[10px] text-muted">{opt.description}</p>
             </button>
           ))}
         </div>
@@ -321,28 +321,28 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
 
       {/* Primary Role */}
       <div>
-        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center">
+        <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3 flex items-center">
           <Star className="w-4 h-4 mr-1 text-yellow-500" /> Primary Role *
         </label>
 
         {primaryRole ? (
-          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl">
+          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-accent-coral to-accent-green border-2 border-accent-coral-light rounded-2xl">
             <div className="flex-1">
-              <p className="font-black text-lg text-gray-900">{primaryRole.name}</p>
-              <p className="text-xs text-gray-500">Your main professional identity</p>
+              <p className="font-black text-lg text-primary">{primaryRole.name}</p>
+              <p className="text-xs text-muted">Your main professional identity</p>
             </div>
             <button
               type="button"
               onClick={handleRemovePrimaryRole}
-              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+              className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         ) : (
           <div className="relative">
-            <div className="flex items-center bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3 focus-within:border-blue-400 focus-within:bg-white transition-all">
-              <Search className="w-5 h-5 text-gray-400 mr-3" />
+            <div className="flex items-center bg-gray-50 dark:bg-gray-900 border-2 border-border rounded-2xl px-4 py-3 focus-within:border-accent-coral-light focus-within:bg-white dark:bg-surface transition-all">
+              <Search className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-3" />
               <input
                 ref={inputRef}
                 type="text"
@@ -353,21 +353,21 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
                   if (searchQuery.length >= 2) searchRoles(searchQuery);
                 }}
                 onKeyDown={handleKeyDown}
-                className="flex-1 bg-transparent outline-none font-bold text-gray-800"
+                className="flex-1 bg-transparent outline-none font-bold text-gray-800 dark:text-gray-200"
                 placeholder="Search for your role (e.g., Software Engineer, Product Manager)..."
               />
-              {isSearching && <Loader2 className="w-5 h-5 animate-spin text-gray-400" />}
+              {isSearching && <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500" />}
             </div>
 
             {/* Dropdown */}
             {isDropdownOpen && searchTarget === 'primary' && searchResults.length > 0 && (
               <div
                 ref={dropdownRef}
-                className="absolute z-50 w-full mt-2 bg-white border rounded-2xl shadow-xl max-h-80 overflow-y-auto"
+                className="absolute z-50 w-full mt-2 bg-white dark:bg-surface border rounded-2xl shadow-xl max-h-80 overflow-y-auto"
               >
                 {Object.entries(groupedResults).map(([familyName, roles]) => (
                   <div key={familyName}>
-                    <div className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider bg-gray-50 sticky top-0">
+                    <div className="px-4 py-2 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-900 sticky top-0">
                       {familyName}
                     </div>
                     {roles.map((role) => {
@@ -377,11 +377,11 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
                           key={role.id}
                           type="button"
                           onClick={() => handleSelectRole(role)}
-                          className={`w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center justify-between ${
-                            highlightedIndex === idx ? 'bg-blue-50' : ''
+                          className={`w-full px-4 py-3 text-left hover:bg-accent-coral-bg transition-colors flex items-center justify-between ${
+                            highlightedIndex === idx ? 'bg-accent-coral-bg' : ''
                           }`}
                         >
-                          <span className="font-bold text-gray-800">{role.name}</span>
+                          <span className="font-bold text-gray-800 dark:text-gray-200">{role.name}</span>
                           {role.is_emerging && (
                             <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                               emerging
@@ -400,23 +400,23 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
 
       {/* Secondary Roles */}
       <div>
-        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
-          Secondary Roles <span className="text-gray-300">(optional, up to 2)</span>
+        <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+          Secondary Roles <span className="text-gray-300 dark:text-gray-600">(optional, up to 2)</span>
         </label>
 
         <div className="space-y-3">
           {secondaryRoles.map((role) => (
             <div
               key={role.id}
-              className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl"
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl"
             >
               <div className="flex-1">
-                <p className="font-bold text-gray-800">{role.name}</p>
+                <p className="font-bold text-gray-800 dark:text-gray-200">{role.name}</p>
               </div>
               <button
                 type="button"
                 onClick={() => handleRemoveSecondaryRole(role.id)}
-                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -426,8 +426,8 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
           {secondaryRoles.length < 2 && (
             <div className="relative">
               {searchTarget === 'secondary' && !isDropdownOpen ? (
-                <div className="flex items-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl px-4 py-3 focus-within:border-blue-400 focus-within:bg-white transition-all">
-                  <Search className="w-4 h-4 text-gray-400 mr-3" />
+                <div className="flex items-center bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-border rounded-xl px-4 py-3 focus-within:border-accent-coral-light focus-within:bg-white dark:bg-surface transition-all">
+                  <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-3" />
                   <input
                     type="text"
                     value={searchTarget === 'secondary' ? searchQuery : ''}
@@ -437,18 +437,18 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
                       if (searchQuery.length >= 2) searchRoles(searchQuery);
                     }}
                     onKeyDown={handleKeyDown}
-                    className="flex-1 bg-transparent outline-none font-medium text-gray-800 text-sm"
+                    className="flex-1 bg-transparent outline-none font-medium text-gray-800 dark:text-gray-200 text-sm"
                     placeholder="Add a secondary role..."
                   />
                   {isSearching && searchTarget === 'secondary' && (
-                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-400 dark:text-gray-500" />
                   )}
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => openSearch('secondary')}
-                  className="flex items-center gap-2 px-4 py-3 text-sm font-bold text-blue-600 hover:text-blue-700 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-300 transition-all w-full"
+                  className="flex items-center gap-2 px-4 py-3 text-sm font-bold text-accent-coral hover:text-accent-coral border-2 border-dashed border-border rounded-xl hover:border-accent-coral-light transition-all w-full"
                 >
                   <Plus className="w-4 h-4" />
                   Add secondary role
@@ -457,11 +457,11 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
 
               {/* Secondary dropdown */}
               {isDropdownOpen && searchTarget === 'secondary' && searchResults.length > 0 && (
-                <div className="absolute z-50 w-full mt-2 bg-white border rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-2 bg-white dark:bg-surface border rounded-2xl shadow-xl max-h-60 overflow-y-auto">
                   {(() => { flatIndex = 0; return null; })()}
                   {Object.entries(groupedResults).map(([familyName, roles]) => (
                     <div key={familyName}>
-                      <div className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider bg-gray-50 sticky top-0">
+                      <div className="px-4 py-2 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-900 sticky top-0">
                         {familyName}
                       </div>
                       {roles.map((role) => {
@@ -477,13 +477,13 @@ const CandidateRoleSelector: React.FC<CandidateRoleSelectorProps> = ({
                               isDisabled
                                 ? 'opacity-40 cursor-not-allowed'
                                 : highlightedIndex === idx
-                                ? 'bg-blue-50'
-                                : 'hover:bg-blue-50'
+                                ? 'bg-accent-coral-bg'
+                                : 'hover:bg-accent-coral-bg'
                             }`}
                           >
-                            <span className="font-bold text-gray-800">{role.name}</span>
+                            <span className="font-bold text-gray-800 dark:text-gray-200">{role.name}</span>
                             {isDisabled && (
-                              <span className="text-[10px] text-gray-400">already selected</span>
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500">already selected</span>
                             )}
                           </button>
                         );

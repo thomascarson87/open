@@ -263,14 +263,14 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <label className="block text-sm font-bold text-gray-700">
+        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">
           Filter by Role
         </label>
         {selectedRoles.length > 0 && (
           <button
             type="button"
             onClick={() => onRolesChange([], [])}
-            className="text-xs text-gray-400 hover:text-gray-600"
+            className="text-xs text-gray-400 dark:text-gray-500 hover:text-muted"
           >
             Clear all
           </button>
@@ -283,14 +283,14 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
           {selectedRoles.map(role => (
             <span
               key={role.id}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent-coral-bg text-accent-coral rounded-lg text-sm font-medium border border-accent-coral-light"
             >
               <Users className="w-3.5 h-3.5" />
               {role.name}
               <button
                 type="button"
                 onClick={() => handleRemoveRole(role.id)}
-                className="text-blue-400 hover:text-blue-600 ml-1"
+                className="text-accent-coral-light hover:text-accent-coral ml-1"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -302,23 +302,23 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
       {/* Search input */}
       <div className="relative">
         <div
-          className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 cursor-pointer hover:border-gray-300 transition-colors"
+          className="flex items-center bg-surface border border-border rounded-xl px-4 py-3 cursor-pointer hover:border-gray-300 dark:border-gray-700 transition-colors"
           onClick={handleOpenDropdown}
         >
-          <Search className="w-4 h-4 text-gray-400 mr-3" />
+          <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-3" />
           <input
             ref={inputRef}
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
             onFocus={handleOpenDropdown}
-            className="flex-1 bg-transparent outline-none text-sm font-medium text-gray-800"
+            className="flex-1 bg-transparent outline-none text-sm font-medium text-gray-800 dark:text-gray-200"
             placeholder="Search roles (e.g., Frontend Developer, Product Manager)..."
           />
           {isLoadingRoles ? (
-            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+            <Loader2 className="w-4 h-4 animate-spin text-gray-400 dark:text-gray-500" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           )}
         </div>
 
@@ -326,12 +326,12 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
         {isDropdownOpen && !isLoadingRoles && (
           <div
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-2 bg-white border rounded-xl shadow-xl max-h-80 overflow-y-auto"
+            className="absolute z-50 w-full mt-2 bg-white dark:bg-surface border rounded-xl shadow-xl max-h-80 overflow-y-auto"
           >
             {Object.entries(groupedResults).length > 0 ? (
               Object.entries(groupedResults).map(([familyName, roles]) => (
                 <div key={familyName}>
-                  <div className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider bg-gray-50 sticky top-0">
+                  <div className="px-4 py-2 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-900 sticky top-0">
                     {familyName}
                   </div>
                   {roles.map((role) => {
@@ -341,11 +341,11 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
                         key={role.id}
                         type="button"
                         onClick={() => handleSelectRole(role)}
-                        className={`w-full px-4 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between ${
-                          isSelected ? 'bg-blue-50' : ''
+                        className={`w-full px-4 py-2.5 text-left hover:bg-accent-coral-bg transition-colors flex items-center justify-between ${
+                          isSelected ? 'bg-accent-coral-bg' : ''
                         }`}
                       >
-                        <span className={`font-medium text-sm ${isSelected ? 'text-blue-700' : 'text-gray-800'}`}>
+                        <span className={`font-medium text-sm ${isSelected ? 'text-accent-coral' : 'text-gray-800 dark:text-gray-200'}`}>
                           {role.name}
                         </span>
                         <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
                             </span>
                           )}
                           {isSelected && (
-                            <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-bold text-accent-coral bg-accent-coral-bg px-2 py-0.5 rounded-full">
                               selected
                             </span>
                           )}
@@ -366,7 +366,7 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
                 </div>
               ))
             ) : (
-              <div className="px-4 py-6 text-center text-sm text-gray-500">
+              <div className="px-4 py-6 text-center text-sm text-muted">
                 No roles found matching "{searchQuery}"
               </div>
             )}
@@ -376,13 +376,13 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
 
       {/* Include related roles toggle */}
       {selectedRoles.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-border">
           <div>
-            <p className="text-sm font-medium text-gray-700">Include related roles</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">Include related roles</p>
+            <p className="text-xs text-muted">
               Also match candidates in the same family
               {selectedFamilies.length > 0 && (
-                <span className="text-blue-600"> ({selectedFamilies.join(', ')})</span>
+                <span className="text-accent-coral"> ({selectedFamilies.join(', ')})</span>
               )}
             </p>
           </div>
@@ -390,11 +390,11 @@ const RoleFilter: React.FC<RoleFilterProps> = ({
             type="button"
             onClick={() => onIncludeRelatedChange(!includeRelatedRoles)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              includeRelatedRoles ? 'bg-blue-600' : 'bg-gray-200'
+              includeRelatedRoles ? 'bg-accent-coral' : 'bg-border'
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+              className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-surface shadow transition-transform ${
                 includeRelatedRoles ? 'translate-x-6' : 'translate-x-1'
               }`}
             />

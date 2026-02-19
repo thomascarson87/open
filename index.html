@@ -3,32 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FAF7F4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)" />
     <title>chime | Precise Technical Hiring</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
-            fontFamily: { sans: ['Inter', 'sans-serif'] },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              heading: ['Instrument Serif', 'serif'],
+              serif: ['Instrument Serif', 'serif'],
+            },
             colors: {
-              brand: {
-                black: '#0f172a',
-                accent: '#3b82f6', 
-                surface: '#ffffff',
-                subtle: '#f8fafc'
-              }
+              background: 'var(--background)',
+              surface: 'var(--surface)',
+              border: 'var(--border)',
+              primary: 'var(--text-primary)',
+              muted: 'var(--text-muted)',
+              'accent-coral': 'var(--accent-coral)',
+              'accent-coral-light': 'var(--accent-coral-light)',
+              'accent-coral-bg': 'var(--accent-coral-bg)',
+              'accent-green': 'var(--accent-green)',
+              'accent-green-light': 'var(--accent-green-light)',
+              'accent-green-bg': 'var(--accent-green-bg)',
             }
           }
         }
       }
     </script>
     <style>
-      body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+      body { font-family: 'Inter', sans-serif; background-color: #FAF7F4; }
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      ::-webkit-scrollbar-thumb { background: #C8B8AC; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #A89080; }
     </style>
   <script type="importmap">
 {

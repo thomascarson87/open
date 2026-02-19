@@ -10,10 +10,10 @@ import { useSearchParams } from '../hooks/useSearchParams';
 type ViewMode = 'day' | 'week' | 'month';
 
 const EVENT_COLORS: Record<string, string> = {
-    interview: 'bg-purple-100 text-purple-800 border-purple-200',
+    interview: 'bg-accent-green-bg text-accent-green border-accent-green-bg',
     screening: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    technical_test: 'bg-blue-100 text-blue-800 border-blue-200',
-    sync: 'bg-gray-100 text-gray-800 border-gray-200',
+    technical_test: 'bg-accent-coral-bg text-accent-coral border-accent-coral-light',
+    sync: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-border',
     other: 'bg-green-100 text-green-800 border-green-200'
 };
 
@@ -117,26 +117,26 @@ const Schedule: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="h-full flex flex-col bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 border-b border-gray-100 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 border-b border-border gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+          <h2 className="font-heading text-2xl text-primary flex items-center">
              Schedule
-             {loading && <div className="ml-3 w-4 h-4 rounded-full border-2 border-gray-300 border-t-gray-900 animate-spin"></div>}
+             {loading && <div className="ml-3 w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-700 border-t-gray-900 animate-spin"></div>}
           </h2>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-muted text-sm mt-1">
             {formatDateRange(currentDate, viewMode)}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           {isGoogleConnected ? (
-            <button onClick={disconnectGoogleCalendar} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center text-green-700">
+            <button onClick={disconnectGoogleCalendar} className="px-4 py-2 bg-surface border border-border rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 flex items-center text-green-700">
               <ExternalLink className="w-4 h-4 mr-2" /> Google Synced
             </button>
           ) : (
-            <button onClick={connectGoogleCalendar} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center shadow-sm">
+            <button onClick={connectGoogleCalendar} className="px-4 py-2 bg-accent-coral text-white rounded-lg text-sm font-medium hover:bg-accent-coral flex items-center shadow-sm">
               <ExternalLink className="w-4 h-4 mr-2" /> Connect Google
             </button>
           )}
@@ -148,21 +148,21 @@ const Schedule: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 border-b border-gray-200 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 dark:bg-gray-900 border-b border-border gap-4">
         <div className="flex gap-2">
-          <button onClick={() => navigateDate('prev')} className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 text-gray-600"><ChevronLeft className="w-5 h-5" /></button>
-          <button onClick={goToToday} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50">Today</button>
-          <button onClick={() => navigateDate('next')} className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 text-gray-600"><ChevronRight className="w-5 h-5" /></button>
+          <button onClick={() => navigateDate('prev')} className="p-2 hover:bg-white dark:bg-surface rounded-lg border border-transparent hover:border-border text-muted"><ChevronLeft className="w-5 h-5" /></button>
+          <button onClick={goToToday} className="px-4 py-2 bg-surface border border-border rounded-lg text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900">Today</button>
+          <button onClick={() => navigateDate('next')} className="p-2 hover:bg-white dark:bg-surface rounded-lg border border-transparent hover:border-border text-muted"><ChevronRight className="w-5 h-5" /></button>
         </div>
-        <div className="flex bg-gray-200/50 p-1 rounded-lg">
+        <div className="flex bg-border/50 p-1 rounded-lg">
           {(['day', 'week', 'month'] as ViewMode[]).map((mode) => (
-             <button key={mode} onClick={() => setViewMode(mode)} className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all ${viewMode === mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>{mode}</button>
+             <button key={mode} onClick={() => setViewMode(mode)} className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all ${viewMode === mode ? 'bg-white dark:bg-surface shadow-sm text-primary' : 'text-muted hover:text-gray-700 dark:text-gray-300 dark:text-gray-600'}`}>{mode}</button>
           ))}
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="flex-1 overflow-auto bg-gray-50">
+      <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
         {viewMode === 'week' && <WeekView events={events} onEventClick={setSelectedEvent} currentDate={currentDate} onSlotClick={() => setShowCreateModal(true)} />}
         {viewMode === 'day' && <DayView events={events} onEventClick={setSelectedEvent} currentDate={currentDate} />}
         {viewMode === 'month' && <MonthView events={events} onEventClick={setSelectedEvent} currentDate={currentDate} />}
@@ -191,30 +191,30 @@ const WeekView = ({ events, onEventClick, currentDate, onSlotClick }: { events: 
     const hours = Array.from({ length: 24 }, (_, i) => i);
 
     return (
-        <div className="min-w-[800px] bg-white">
-            <div className="grid grid-cols-8 border-b border-gray-200 sticky top-0 bg-white z-10">
-                <div className="p-4 border-r border-gray-100"></div>
+        <div className="min-w-[800px] bg-white dark:bg-surface">
+            <div className="grid grid-cols-8 border-b border-border sticky top-0 bg-white dark:bg-surface z-10">
+                <div className="p-4 border-r border-border"></div>
                 {days.map((d, i) => (
-                    <div key={i} className={`p-4 text-center border-r border-gray-100 ${isSameDate(d, new Date()) ? 'bg-blue-50' : ''}`}>
-                        <div className="text-xs font-bold text-gray-500 uppercase mb-1">{d.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                        <div className={`text-xl font-bold ${isSameDate(d, new Date()) ? 'text-blue-600' : 'text-gray-900'}`}>{d.getDate()}</div>
+                    <div key={i} className={`p-4 text-center border-r border-border ${isSameDate(d, new Date()) ? 'bg-accent-coral-bg' : ''}`}>
+                        <div className="text-xs font-bold text-muted uppercase mb-1">{d.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                        <div className={`text-xl font-bold ${isSameDate(d, new Date()) ? 'text-accent-coral' : 'text-primary'}`}>{d.getDate()}</div>
                     </div>
                 ))}
             </div>
             <div className="relative grid grid-cols-8">
-                <div className="border-r border-gray-100">
-                    {hours.map(h => <div key={h} className="h-14 border-b border-gray-50 text-xs text-gray-400 text-right pr-2 py-1 relative">{formatHour(h)}</div>)}
+                <div className="border-r border-border">
+                    {hours.map(h => <div key={h} className="h-14 border-b border-gray-50 text-xs text-gray-400 dark:text-gray-500 text-right pr-2 py-1 relative">{formatHour(h)}</div>)}
                 </div>
                 {days.map((d, dayIdx) => (
-                    <div key={dayIdx} className="border-r border-gray-100 relative h-[1344px]" onClick={onSlotClick}>
-                         {hours.map(h => <div key={h} className="h-14 border-b border-gray-50 hover:bg-gray-50 cursor-pointer"></div>)}
+                    <div key={dayIdx} className="border-r border-border relative h-[1344px]" onClick={onSlotClick}>
+                         {hours.map(h => <div key={h} className="h-14 border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 cursor-pointer"></div>)}
                          {events.filter(e => isSameDate(new Date(e.start_time), d)).map(event => {
                              const start = new Date(event.start_time);
                              const end = new Date(event.end_time);
                              const top = (start.getHours() + start.getMinutes() / 60) * 56;
                              const height = ((end.getTime() - start.getTime()) / (1000 * 60 * 60)) * 56;
                              return (
-                                <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className={`absolute left-1 right-1 p-2 rounded-lg text-xs border cursor-pointer hover:shadow-md transition-all overflow-hidden ${EVENT_COLORS[event.event_type] || 'bg-gray-100 border-gray-200'}`} style={{ top: `${top}px`, height: `${height}px` }}>
+                                <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className={`absolute left-1 right-1 p-2 rounded-lg text-xs border cursor-pointer hover:shadow-md transition-all overflow-hidden ${EVENT_COLORS[event.event_type] || 'bg-gray-100 dark:bg-gray-800 border-border'}`} style={{ top: `${top}px`, height: `${height}px` }}>
                                     <div className="font-bold truncate">{event.title}</div>
                                 </div>
                              );
@@ -227,25 +227,25 @@ const WeekView = ({ events, onEventClick, currentDate, onSlotClick }: { events: 
 };
 
 const DayView = ({ events, onEventClick, currentDate }: any) => {
-    return <div className="p-8 text-center text-gray-400">Day View (Implementation omitted for brevity)</div>;
+    return <div className="p-8 text-center text-gray-400 dark:text-gray-500">Day View (Implementation omitted for brevity)</div>;
 };
 
 const MonthView = ({ events, onEventClick, currentDate }: any) => {
-    return <div className="p-8 text-center text-gray-400">Month View (Implementation omitted for brevity)</div>;
+    return <div className="p-8 text-center text-gray-400 dark:text-gray-500">Month View (Implementation omitted for brevity)</div>;
 };
 
 const EventDetailModal = ({ event, onClose, onDelete }: { event: CalendarEvent, onClose: () => void, onDelete: (id: string) => void }) => {
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+             <div className="bg-surface rounded-2xl w-full max-w-md shadow-2xl p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold">{event.title}</h3>
-                    <button onClick={onClose}><X className="w-5 h-5 text-gray-500"/></button>
+                    <button onClick={onClose}><X className="w-5 h-5 text-muted"/></button>
                 </div>
                 <div className="space-y-4">
-                    <p className="text-gray-600 text-sm">{event.description}</p>
+                    <p className="text-muted text-sm">{event.description}</p>
                     <div className="flex gap-2">
-                        {event.video_link && <a href={event.video_link} target="_blank" rel="noreferrer" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">Join Meet</a>}
+                        {event.video_link && <a href={event.video_link} target="_blank" rel="noreferrer" className="px-4 py-2 bg-accent-coral text-white rounded-lg text-sm font-bold">Join Meet</a>}
                         <button onClick={() => onDelete(event.id)} className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-bold border border-red-200">Delete</button>
                     </div>
                 </div>

@@ -1,0 +1,48 @@
+/* ── Warm Precision Brand — CSS Custom Properties ── */
+
+:root {
+  /* Backgrounds */
+  --background: #FAF7F4;
+  --surface: #FFFFFF;
+  --border: #EBE5DF;
+
+  /* Text */
+  --text-primary: #1A1412;
+  --text-muted: #7A6E64;
+
+  /* Accent: Burnt Coral — CTAs, active states, match %, badges */
+  --accent-coral: #C85A3A;
+  --accent-coral-light: #E8845E;
+  --accent-coral-bg: rgba(200, 90, 58, 0.10);
+
+  /* Accent: Forest Green — trust, success, verified, secondary CTAs */
+  --accent-green: #2D5A3D;
+  --accent-green-light: #4A8A5E;
+  --accent-green-bg: rgba(45, 90, 61, 0.10);
+}
+
+.dark {
+  --background: #141210;
+  --surface: #1E1C19;
+  --border: #2A2722;
+  --text-primary: #F0ECE4;
+  --text-muted: #8A8578;
+  --accent-coral: #C85A3A;
+  --accent-coral-light: #E8845E;
+  --accent-coral-bg: rgba(200, 90, 58, 0.15);
+  --accent-green: #4A8A5E;
+  --accent-green-light: #6AAE7E;
+  --accent-green-bg: rgba(74, 138, 94, 0.15);
+}
+
+/* Dark mode activates only via explicit .dark class (applied by CHI-105 toggle). */
+.dark ::-webkit-scrollbar-thumb { background: #3A3530; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #504840; }
+
+/* Selection highlight */
+::selection { background-color: #C85A3A; color: #FFFFFF; }
+.dark ::selection { background-color: #C85A3A; color: #FFFFFF; }
+
+/* Warm placeholder text */
+::placeholder { color: var(--text-muted); opacity: 0.7; }
+::-webkit-input-placeholder { color: var(--text-muted); opacity: 0.7; }

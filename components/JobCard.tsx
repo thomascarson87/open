@@ -26,22 +26,22 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
   return (
     <div 
         onClick={() => onViewDetails(job)}
-        className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col h-full relative overflow-hidden"
+        className="bg-white dark:bg-surface rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col h-full relative overflow-hidden"
     >
       {isInternal && (
-          <div className="absolute top-0 right-0 bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
+          <div className="absolute top-0 right-0 bg-accent-coral-bg text-accent-coral text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
               INTERNAL ROLE
           </div>
       )}
 
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+            <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-muted">
                {job.companyLogo ? <img src={job.companyLogo} className="w-full h-full object-cover rounded-lg" /> : <Building2 className="w-6 h-6" />}
             </div>
             <div>
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{job.title}</h3>
-                <p className="text-sm font-medium text-gray-500">{job.companyName}</p>
+                <h3 className="text-lg font-bold text-primary group-hover:text-accent-coral transition-colors">{job.title}</h3>
+                <p className="text-sm font-medium text-muted">{job.companyName}</p>
             </div>
         </div>
         
@@ -53,21 +53,21 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
                 }`}>
                     {matchResult.overallScore}%
                 </span>
-                <span className="text-[10px] text-gray-400 uppercase tracking-wide">Match</span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Match</span>
             </div>
         )}
       </div>
 
       <div className="space-y-3 mb-6 flex-grow">
-         <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-gray-600">
-            <span className="flex items-center"><MapPin className="w-4 h-4 mr-1 text-gray-400"/> {job.location}</span>
-            <span className="flex items-center"><DollarSign className="w-4 h-4 mr-1 text-gray-400"/> {job.salaryRange}</span>
-            <span className="flex items-center"><Clock className="w-4 h-4 mr-1 text-gray-400"/> {job.workMode}</span>
+         <div className="flex flex-wrap gap-y-2 gap-x-4 text-sm text-muted">
+            <span className="flex items-center"><MapPin className="w-4 h-4 mr-1 text-gray-400 dark:text-gray-500"/> {job.location}</span>
+            <span className="flex items-center"><DollarSign className="w-4 h-4 mr-1 text-gray-400 dark:text-gray-500"/> {job.salaryRange}</span>
+            <span className="flex items-center"><Clock className="w-4 h-4 mr-1 text-gray-400 dark:text-gray-500"/> {job.workMode}</span>
          </div>
          
          <div className="flex flex-wrap gap-2 pt-2">
             {job.requiredSkills.slice(0, 3).map((s, i) => (
-                <span key={i} className={`px-2 py-1 border rounded text-xs font-medium ${s.weight === 'required' ? 'bg-gray-50 border-gray-200 text-gray-700' : 'bg-white border-dashed border-gray-300 text-gray-500'}`}>
+                <span key={i} className={`px-2 py-1 border rounded text-xs font-medium ${s.weight === 'required' ? 'bg-gray-50 dark:bg-gray-900 border-border text-gray-700 dark:text-gray-300 dark:text-gray-600' : 'bg-white dark:bg-surface border-dashed border-gray-300 dark:border-gray-700 text-muted'}`}>
                     {s.name}
                 </span>
             ))}
@@ -77,7 +77,7 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
          {job.companyIndustry && (
             <div className="flex flex-wrap gap-2 mt-2">
                 {job.companyIndustry.slice(0, 2).map(ind => (
-                <span key={ind} className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full border border-purple-200">
+                <span key={ind} className="text-xs bg-accent-green-bg text-accent-green px-2 py-1 rounded-full border border-accent-green-bg">
                     {ind}
                 </span>
                 ))}
@@ -88,7 +88,7 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
          {job.values.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
                 {job.values.slice(0, 2).map(val => (
-                <span key={val} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                <span key={val} className="text-xs bg-accent-coral-bg text-accent-coral px-2 py-1 rounded-full">
                     {val}
                 </span>
                 ))}
@@ -105,7 +105,7 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
                   </span>
                 )}
                 {(job.regulatoryDomains?.length || 0) > 0 && (
-                  <span className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-full border border-gray-200">
+                  <span className="text-xs bg-gray-50 dark:bg-gray-900 text-muted px-2 py-1 rounded-full border border-border">
                     Regulated industry
                   </span>
                 )}
@@ -114,21 +114,21 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
 
          {/* Match Breakdown Snippet */}
          <div className={`grid gap-1 mt-2 ${matchResult.details.certifications && matchResult.details.certifications.reason !== 'No certification requirements' ? 'grid-cols-5' : 'grid-cols-4'}`}>
-             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
-                 <span className="block text-gray-400">Skills</span>
-                 <span className="font-bold text-gray-700">{matchResult.details.skills.score}%</span>
+             <div className="text-[10px] text-center bg-gray-50 dark:bg-gray-900 rounded py-1">
+                 <span className="block text-gray-400 dark:text-gray-500">Skills</span>
+                 <span className="font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{matchResult.details.skills.score}%</span>
              </div>
-             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
-                 <span className="block text-gray-400">Values</span>
-                 <span className="font-bold text-gray-700">{matchResult.details.culture.score}%</span>
+             <div className="text-[10px] text-center bg-gray-50 dark:bg-gray-900 rounded py-1">
+                 <span className="block text-gray-400 dark:text-gray-500">Values</span>
+                 <span className="font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{matchResult.details.culture.score}%</span>
              </div>
-             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
-                 <span className="block text-gray-400">Perks</span>
-                 <span className="font-bold text-gray-700">{matchResult.details.perks.score}%</span>
+             <div className="text-[10px] text-center bg-gray-50 dark:bg-gray-900 rounded py-1">
+                 <span className="block text-gray-400 dark:text-gray-500">Perks</span>
+                 <span className="font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{matchResult.details.perks.score}%</span>
              </div>
-             <div className="text-[10px] text-center bg-gray-50 rounded py-1">
-                 <span className="block text-gray-400">Traits</span>
-                 <span className="font-bold text-gray-700">{matchResult.details.traits.score}%</span>
+             <div className="text-[10px] text-center bg-gray-50 dark:bg-gray-900 rounded py-1">
+                 <span className="block text-gray-400 dark:text-gray-500">Traits</span>
+                 <span className="font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{matchResult.details.traits.score}%</span>
              </div>
              {matchResult.details.certifications && matchResult.details.certifications.reason !== 'No certification requirements' && (
                <div className="text-[10px] text-center bg-amber-50 rounded py-1">
@@ -145,25 +145,25 @@ const JobCard: React.FC<Props> = ({ job, candidateProfile, onApply, onViewDetail
          )}
 
          {hasReferral && !isInternal && (
-             <div className="mt-3 bg-purple-50 border border-purple-100 p-2 rounded-lg flex items-center text-xs text-purple-700">
-                 <Users className="w-3 h-3 mr-2 text-purple-600" />
+             <div className="mt-3 bg-accent-green-bg border border-accent-green-bg p-2 rounded-lg flex items-center text-xs text-accent-green">
+                 <Users className="w-3 h-3 mr-2 text-accent-green" />
                  <b>1 Connection</b> works here.
              </div>
          )}
       </div>
 
-      <div className="flex items-center space-x-3 pt-4 border-t border-gray-100 mt-auto">
+      <div className="flex items-center space-x-3 pt-4 border-t border-border mt-auto">
         <button 
             onClick={(e) => { e.stopPropagation(); onApply(job.id); }}
             className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isInternal 
-                ? 'bg-white border border-blue-600 text-blue-600 hover:bg-blue-50' 
+                ? 'bg-white dark:bg-surface border border-accent-coral text-accent-coral hover:bg-accent-coral-bg' 
                 : 'bg-gray-900 text-white hover:bg-black'
             }`}
         >
             {isInternal ? 'Apply Internally' : (hasReferral ? 'Ask for Referral' : 'Apply Now')}
         </button>
-         <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors flex items-center">
+         <button className="px-4 py-2 text-sm font-medium text-muted hover:text-primary transition-colors flex items-center">
             Details <ArrowRight className="w-4 h-4 ml-1" />
         </button>
       </div>

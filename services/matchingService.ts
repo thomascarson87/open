@@ -14,7 +14,7 @@ interface VerificationBoost {
 }
 
 function calculateVerificationBoost(candidate: CandidateProfile): VerificationBoost {
-  const stats = candidate.verification_stats;
+  const stats = candidate.verificationStats;
   if (!stats || stats.total_verifications === 0) {
     return {
       skillsMultiplier: 1.0,
@@ -519,7 +519,7 @@ export const calculateMatch = (job: JobPosting, candidate: CandidateProfile, com
     managementFit: 0.09
   };
 
-  const perfMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desired_performance_scores);
+  const perfMatch = calculatePerformanceMatch(verificationBoost.performanceScores, job.desiredPerformanceScores);
 
   const weightedScore = (
       (blendedSkillsScore * DIMENSION_WEIGHTS.skills) +
@@ -578,7 +578,8 @@ export const calculateCandidateMatch = (
   criteria: TalentSearchCriteria,
   candidate: CandidateProfile,
   company?: CompanyProfile,
-  candidateCertIds?: string[]
+  candidateCertIds?: string[],
+  hmPrefs?: any
 ): MatchBreakdown => {
     // Wrapper for search criteria matching
     return calculateMatch({
@@ -591,6 +592,7 @@ export const calculateCandidateMatch = (
         requiredCertifications: criteria.requiredCertifications || [],
         preferredCertifications: criteria.preferredCertifications || [],
         regulatoryDomains: criteria.regulatoryDomains || [],
+        hiringManagerPreferences: hmPrefs || undefined,
     } as any, candidate, company, candidateCertIds);
 };
 

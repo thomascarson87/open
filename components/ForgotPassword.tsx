@@ -34,30 +34,30 @@ const ForgotPassword: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+      <div className="min-h-screen bg-background flex flex-col font-sans text-primary">
         <header className="px-6 py-6 max-w-7xl mx-auto w-full flex items-center relative">
           <div className="flex items-center space-x-2 mx-auto">
             <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg">c</div>
-            <span className="text-xl font-bold tracking-tight">chime</span>
+            <span className="font-heading text-xl font-normal tracking-tight">chime</span>
           </div>
         </header>
 
         <main className="flex-grow flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md animate-in fade-in zoom-in duration-300">
+          <div className="bg-white dark:bg-surface p-8 rounded-2xl shadow-xl border border-border w-full max-w-md animate-in fade-in zoom-in duration-300">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight mb-2">Check your email</h1>
-              <p className="text-gray-500 mb-6">
-                We've sent a password reset link to <span className="font-medium text-gray-900">{email}</span>
+              <h1 className="font-heading text-2xl tracking-tight mb-2">Check your email</h1>
+              <p className="text-muted mb-6">
+                We've sent a password reset link to <span className="font-medium text-primary">{email}</span>
               </p>
-              <p className="text-sm text-gray-400 mb-8">
+              <p className="text-sm text-gray-400 dark:text-gray-500 mb-8">
                 Didn't receive the email? Check your spam folder or try again.
               </p>
               <button
                 onClick={() => navigate('/')}
-                className="text-sm text-gray-500 hover:text-gray-700 underline"
+                className="text-sm text-muted hover:text-gray-700 dark:text-gray-300 dark:text-gray-600 underline"
               >
                 Back to login
               </button>
@@ -69,28 +69,28 @@ const ForgotPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+    <div className="min-h-screen bg-background flex flex-col font-sans text-primary">
       <header className="px-6 py-6 max-w-7xl mx-auto w-full flex items-center relative">
         <button
           onClick={() => navigate('/')}
-          className="absolute left-6 p-2 rounded-full hover:bg-gray-200 transition-colors"
+          className="absolute left-6 p-2 rounded-full hover:bg-border transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-muted" />
         </button>
         <div className="flex items-center space-x-2 mx-auto">
           <div className="w-8 h-8 bg-black rounded-lg text-white flex items-center justify-center font-bold text-lg">c</div>
-          <span className="text-xl font-bold tracking-tight">chime</span>
+          <span className="font-heading text-xl font-normal tracking-tight">chime</span>
         </div>
       </header>
 
       <main className="flex-grow flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md animate-in fade-in zoom-in duration-300">
+        <div className="bg-white dark:bg-surface p-8 rounded-2xl shadow-xl border border-border w-full max-w-md animate-in fade-in zoom-in duration-300">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Mail className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Mail className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-2">Forgot password?</h1>
-            <p className="text-gray-500">
+            <h1 className="font-heading text-3xl tracking-tight mb-2">Forgot password?</h1>
+            <p className="text-muted">
               Enter your email and we'll send you a link to reset your password.
             </p>
           </div>
@@ -103,13 +103,13 @@ const ForgotPassword: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
+              <label className="block text-xs font-bold text-muted uppercase mb-1">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
+                className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl focus:ring-2 focus:ring-accent-coral outline-none transition-all"
                 placeholder="name@company.com"
               />
             </div>
@@ -121,11 +121,11 @@ const ForgotPassword: React.FC = () => {
             </button>
           </form>
 
-          <p className="text-center mt-8 text-sm text-gray-500">
+          <p className="text-center mt-8 text-sm text-muted">
             Remember your password?
             <button
               onClick={() => navigate('/')}
-              className="ml-1 font-bold text-gray-900 hover:underline"
+              className="ml-1 font-bold text-primary hover:underline"
             >
               Sign in
             </button>

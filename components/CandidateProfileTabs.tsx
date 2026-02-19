@@ -73,11 +73,11 @@ function getPrimaryEducation(education: Education[]): Education | null {
 
 const NonNegotiableToggle = ({ fieldName, isChecked, onToggle }: { fieldName: string; isChecked: boolean; onToggle: () => void; }) => {
   return (
-    <div className="flex items-center gap-3 mt-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-      <button type="button" onClick={onToggle} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isChecked ? 'bg-red-500' : 'bg-blue-500'}`} role="switch" aria-checked={isChecked}>
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${isChecked ? 'translate-x-6' : 'translate-x-1'}`} />
+    <div className="flex items-center gap-3 mt-3 bg-white dark:bg-surface p-3 rounded-xl border border-border shadow-sm">
+      <button type="button" onClick={onToggle} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-coral ${isChecked ? 'bg-red-500' : 'bg-accent-coral'}`} role="switch" aria-checked={isChecked}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-surface shadow transition-transform ${isChecked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
-      <span className={`text-sm font-bold ${isChecked ? 'text-red-700' : 'text-blue-700'}`}>{isChecked ? 'Non-negotiable' : 'Flexible'}</span>
+      <span className={`text-sm font-bold ${isChecked ? 'text-red-700' : 'text-accent-coral'}`}>{isChecked ? 'Non-negotiable' : 'Flexible'}</span>
     </div>
   );
 };
@@ -90,12 +90,12 @@ const LanguageManager: React.FC<{ languages: LanguageEntry[], onChange: (l: Lang
     <div className="space-y-3">
       {languages.map((l, i) => (
         <div key={i} className="flex gap-2 items-center">
-          <select value={l.language} onChange={e => update(i, { language: e.target.value })} className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium"><option value="">Select language...</option>{LANGUAGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-          <select value={l.proficiency} onChange={e => update(i, { proficiency: e.target.value as any })} className="w-32 p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium">{LANGUAGE_PROFICIENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-          <button type="button" onClick={() => remove(i)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>
+          <select value={l.language} onChange={e => update(i, { language: e.target.value })} className="flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-border rounded-lg text-sm font-medium"><option value="">Select language...</option>{LANGUAGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+          <select value={l.proficiency} onChange={e => update(i, { proficiency: e.target.value as any })} className="w-32 p-2 bg-gray-50 dark:bg-gray-900 border border-border rounded-lg text-sm font-medium">{LANGUAGE_PROFICIENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+          <button type="button" onClick={() => remove(i)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>
         </div>
       ))}
-      <button type="button" onClick={add} className="flex items-center gap-2 text-xs font-black text-blue-600 uppercase tracking-wider hover:text-blue-700"><Plus className="w-3.5 h-3.5" /> Add Language</button>
+      <button type="button" onClick={add} className="flex items-center gap-2 text-xs font-black text-accent-coral uppercase tracking-wider hover:text-accent-coral"><Plus className="w-3.5 h-3.5" /> Add Language</button>
     </div>
   );
 };
@@ -418,47 +418,47 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
   };
 
   const TabButton = ({ id, label, icon: Icon }: any) => (
-    <button onClick={() => setActiveTab(id)} className={`flex items-center px-6 py-4 font-black text-xs uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${activeTab === id ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-400 hover:text-gray-900 hover:bg-gray-50'}`}><Icon className="w-4 h-4 mr-2" />{label}</button>
+    <button onClick={() => setActiveTab(id)} className={`flex items-center px-6 py-4 font-black text-xs uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${activeTab === id ? 'border-accent-coral text-accent-coral bg-accent-coral-bg/50' : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900'}`}><Icon className="w-4 h-4 mr-2" />{label}</button>
   );
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 animate-in fade-in duration-500">
       {/* Header */}
       <div className="bg-gray-900 rounded-[2.5rem] p-8 md:p-12 text-white mb-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-48 bg-blue-600 rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute top-0 right-0 p-48 bg-accent-coral rounded-full blur-[120px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-4xl font-black shadow-inner border-4 border-white/10">{profile.name?.charAt(0) || '?'}</div>
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-accent-coral to-accent-green flex items-center justify-center text-4xl font-black shadow-inner border-4 border-white/10">{profile.name?.charAt(0) || '?'}</div>
             <div>
               <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
-                <h1 className="text-4xl font-black tracking-tight">{profile.name}</h1>
+                <h1 className="font-heading text-4xl tracking-tight">{profile.name}</h1>
                 {profile.status && profile.status !== 'not_looking' && (
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                     profile.status === 'actively_looking' ? 'bg-green-500 text-white' :
-                    profile.status === 'open_to_offers' ? 'bg-blue-500 text-white' :
-                    profile.status === 'casually_browsing' ? 'bg-yellow-500 text-gray-900' :
-                    'bg-white/10 text-blue-400'
+                    profile.status === 'open_to_offers' ? 'bg-accent-coral text-white' :
+                    profile.status === 'casually_browsing' ? 'bg-yellow-500 text-primary' :
+                    'bg-white dark:bg-surface/10 text-accent-coral-light'
                   }`}>
                     {getStatusOption(profile.status)?.label || profile.status?.replace('_', ' ')}
                   </span>
                 )}
               </div>
-              <p className="text-gray-400 text-xl font-medium max-w-lg">
+              <p className="text-gray-400 dark:text-gray-500 text-xl font-medium max-w-lg">
                 {profile.headline || 'Add a headline to stand out'}
               </p>
             </div>
           </div>
           <div className="flex flex-col items-center gap-4">
-            <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2rem] border border-white/10 flex items-center gap-6 shadow-2xl">
+            <div className="bg-white dark:bg-surface/5 backdrop-blur-xl p-6 rounded-[2rem] border border-white/10 flex items-center gap-6 shadow-2xl">
               <div className="relative w-24 h-24">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                   <path className="text-white/5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
-                  <path className="text-blue-500 transition-all duration-1000 ease-out" strokeDasharray={`${completion}, 100`} strokeLinecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
+                  <path className="text-accent-coral transition-all duration-1000 ease-out" strokeDasharray={`${completion}, 100`} strokeLinecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center font-black text-2xl tabular-nums">{completion}%</div>
               </div>
               <div>
-                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 mb-1">Strength</h3>
+                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1">Strength</h3>
                 <p className={`text-sm font-bold ${completeness.strengthColor.replace('text-', 'text-')}`}>
                   {completeness.strengthLabel}
                 </p>
@@ -466,7 +466,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
             </div>
             <button
               onClick={() => exportProfileAsCV(profile)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/10 transition-colors text-sm font-bold"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface/10 hover:bg-white dark:bg-surface/20 text-white rounded-xl border border-white/10 transition-colors text-sm font-bold"
             >
               <Download className="w-4 h-4" />
               Export CV
@@ -475,12 +475,12 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
         </div>
         {/* Profile completion tips */}
         {completion < 80 && completeness.tips.length > 0 && (
-          <div className="mt-6 p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-            <p className="text-sm font-bold text-blue-300 mb-2">Complete your profile to improve matches:</p>
-            <ul className="text-sm text-blue-200/80 space-y-1">
+          <div className="mt-6 p-4 bg-accent-coral/10 rounded-2xl border border-accent-coral/20">
+            <p className="text-sm font-bold text-accent-coral-light mb-2">Complete your profile to improve matches:</p>
+            <ul className="text-sm text-accent-coral-light/80 space-y-1">
               {completeness.tips.map((tip, i) => (
                 <li key={i} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-accent-coral-light rounded-full" />
                   {tip}
                 </li>
               ))}
@@ -489,8 +489,8 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
         )}
       </div>
 
-      <div className="bg-white rounded-[2rem] shadow-xl border border-gray-200 overflow-hidden min-h-[700px] flex flex-col">
-        <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar scroll-smooth"><TabButton id="overview" label="Basics" icon={Layout} /><TabButton id="career" label="Career" icon={Briefcase} /><TabButton id="preferences" label="Logistics" icon={DollarSign} /><TabButton id="values" label="Culture & Dynamics" icon={Heart} /><TabButton id="verifications" label="Verified" icon={ShieldCheck} /></div>
+      <div className="bg-white dark:bg-surface rounded-[2rem] shadow-xl border border-border overflow-hidden min-h-[700px] flex flex-col">
+        <div className="flex border-b border-border overflow-x-auto no-scrollbar scroll-smooth"><TabButton id="overview" label="Basics" icon={Layout} /><TabButton id="career" label="Career" icon={Briefcase} /><TabButton id="preferences" label="Logistics" icon={DollarSign} /><TabButton id="values" label="Culture & Dynamics" icon={Heart} /><TabButton id="verifications" label="Verified" icon={ShieldCheck} /></div>
         <div className="flex-1 p-8 md:p-12 overflow-y-auto">
           
           {activeTab === 'overview' && (
@@ -498,7 +498,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               {/* Name & Headline Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                  <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                     Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -506,12 +506,12 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                     value={profile.name || ''}
                     onChange={e => onUpdate({ name: e.target.value })}
                     placeholder="Your full name"
-                    className="w-full p-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none font-bold text-gray-800"
+                    className="w-full p-5 bg-gray-50 dark:bg-gray-900 rounded-2xl border-2 border-transparent focus:border-accent-coral/20 focus:bg-white dark:bg-surface transition-all outline-none font-bold text-gray-800 dark:text-gray-200"
                   />
-                  <p className="text-xs text-gray-400 mt-2">This is how you'll appear to recruiters</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">This is how you'll appear to recruiters</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                  <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                     Professional Headline
                   </label>
                   <input
@@ -520,15 +520,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                     onChange={e => onUpdate({ headline: e.target.value })}
                     placeholder="e.g., Senior Product Designer | B2B SaaS Specialist"
                     maxLength={100}
-                    className="w-full p-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none font-bold text-gray-800"
+                    className="w-full p-5 bg-gray-50 dark:bg-gray-900 rounded-2xl border-2 border-transparent focus:border-accent-coral/20 focus:bg-white dark:bg-surface transition-all outline-none font-bold text-gray-800 dark:text-gray-200"
                   />
-                  <p className="text-xs text-gray-400 mt-2">Summarize your role and expertise</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Summarize your role and expertise</p>
                 </div>
               </div>
 
               {/* Status Section */}
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                   Job Search Status
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -538,15 +538,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                       onClick={() => onUpdate({ status: option.value })}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
                         profile.status === option.value
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                          ? 'border-accent-coral bg-accent-coral-bg'
+                          : 'border-border hover:border-gray-300 dark:border-gray-700 bg-white dark:bg-surface'
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${option.badgeColor}`} />
                         <span className="font-bold text-sm">{option.label}</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">{option.description}</p>
+                      <p className="text-xs text-muted mt-1">{option.description}</p>
                     </button>
                   ))}
                 </div>
@@ -555,17 +555,17 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div className="space-y-8">
                   <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Bio</label>
+                    <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Bio</label>
                     <textarea
                       value={profile.bio || ''}
                       onChange={e => onUpdate({ bio: e.target.value })}
-                      className="w-full p-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none h-48 text-gray-700 font-medium"
+                      className="w-full p-5 bg-gray-50 dark:bg-gray-900 rounded-2xl border-2 border-transparent focus:border-accent-coral/20 focus:bg-white dark:bg-surface transition-all outline-none h-48 text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium"
                       placeholder="Describe your journey, what drives you, and what you're looking for..."
                     />
-                    <p className="text-xs text-gray-400 mt-2">{(profile.bio?.length || 0)}/500 characters</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{(profile.bio?.length || 0)}/500 characters</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Location</label>
+                    <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Location</label>
                     <LocationAutocomplete
                       value={profile.location || ''}
                       onChange={(value) => onUpdate({ location: value })}
@@ -574,27 +574,27 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                    <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                       <Globe className="w-4 h-4 inline mr-2" />Timezone
                     </label>
                     <select
                       value={profile.timezone || ''}
                       onChange={e => onUpdate({ timezone: e.target.value })}
-                      className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500/20 focus:bg-white transition-all outline-none font-bold text-gray-800"
+                      className="w-full p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border-2 border-transparent focus:border-accent-coral/20 focus:bg-white dark:bg-surface transition-all outline-none font-bold text-gray-800 dark:text-gray-200"
                     >
                       <option value="">Select timezone...</option>
                       {TIMEZONE_OPTIONS.map(tz => (
                         <option key={tz.value} value={tz.value}>{tz.label} ({tz.offset})</option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-400 mt-2">Important for remote work matching</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Important for remote work matching</p>
                   </div>
                 </div>
                 <div className="space-y-8">
-                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-accent-coral to-accent-green rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden">
                     <Zap className="absolute top-4 right-4 w-12 h-12 opacity-10" />
                     <h3 className="font-black text-lg mb-4 flex items-center"><Zap className="w-5 h-5 mr-2" /> Optimization</h3>
-                    <p className="text-blue-50 leading-relaxed font-medium mb-6">Detailed skills increase match accuracy by 40%.</p>
+                    <p className="text-accent-coral-bg leading-relaxed font-medium mb-6">Detailed skills increase match accuracy by 40%.</p>
                   </div>
                 </div>
               </div>
@@ -604,11 +604,11 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
           {activeTab === 'career' && (
             <div className="space-y-16 animate-in slide-in-from-bottom-4 duration-500">
               {/* Role & Seniority Section */}
-              <section className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[2.5rem] p-8 border border-blue-100">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="w-6 h-6 mr-2 text-blue-600" /> Your Role & Seniority
+              <section className="bg-gradient-to-br from-accent-coral to-accent-green rounded-[2.5rem] p-8 border border-accent-coral-bg">
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center">
+                  <Briefcase className="w-6 h-6 mr-2 text-accent-coral" /> Your Role & Seniority
                 </h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">
+                <p className="text-muted text-sm font-medium mb-8">
                   Select your primary role to auto-populate relevant skills. Skill levels adjust based on seniority.
                 </p>
                 <CandidateRoleSelector
@@ -625,24 +625,24 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               <section>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center">
+                    <h3 className="text-2xl font-black text-primary mb-1 flex items-center">
                       <Award className="w-6 h-6 mr-2 text-yellow-500" /> Technical Skills
                     </h3>
-                    <p className="text-gray-500 text-sm font-medium">
+                    <p className="text-muted text-sm font-medium">
                       {profile.primaryRoleName ? `Skills for ${profile.primaryRoleName}. ` : ''}
                       Click any skill to adjust level and years.
                     </p>
                   </div>
                   <button
                     onClick={() => setIsSkillSelectorOpen(true)}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="bg-accent-coral text-white px-6 py-3 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-accent-coral transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     <Plus className="w-4 h-4 inline mr-2" /> Add Skill
                   </button>
                 </div>
                 {profile.primaryRoleId && skillsAsJobSkills.length > 0 && (
-                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6">
-                    <p className="text-sm text-blue-700">
+                  <div className="bg-accent-coral-bg border border-accent-coral-bg rounded-2xl p-4 mb-6">
+                    <p className="text-sm text-accent-coral">
                       <span className="font-bold">Skills auto-populated from {profile.primaryRoleName}.</span> Levels set based on your seniority. Click any skill to customize.
                     </p>
                   </div>
@@ -657,10 +657,10 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               {/* Impact Scope */}
               <section>
                 <div>
-                  <h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center">
-                    <Target className="w-6 h-6 mr-2 text-blue-500" /> Impact Scope
+                  <h3 className="text-2xl font-black text-primary mb-1 flex items-center">
+                    <Target className="w-6 h-6 mr-2 text-accent-coral" /> Impact Scope
                   </h3>
-                  <p className="text-gray-500 text-sm font-medium mb-8">
+                  <p className="text-muted text-sm font-medium mb-8">
                     Role-agnostic influence breadth. {profile.currentSeniority ? `Auto-set based on ${profile.currentSeniority} level.` : ''}
                   </p>
                 </div>
@@ -674,9 +674,9 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               
               {/* Languages Section */}
               <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Globe className="w-6 h-6 mr-2 text-indigo-500" /> Languages</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">Languages you speak - important for international teams and global roles.</p>
-                <div className="bg-gray-50 p-6 rounded-2xl border">
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center"><Globe className="w-6 h-6 mr-2 text-accent-green" /> Languages</h3>
+                <p className="text-muted text-sm font-medium mb-8">Languages you speak - important for international teams and global roles.</p>
+                <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-2xl border">
                   <LanguageManager languages={profile.languages || []} onChange={l => onUpdate({ languages: l })} />
                 </div>
               </section>
@@ -699,9 +699,9 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                   onAdd={handleAddEducation}
                   isEditable={true}
                 />
-                <div className="mt-6 bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-center gap-4">
-                  <GraduationCap className="w-10 h-10 text-blue-500"/>
-                  <p className="text-xs font-bold text-blue-800">Highlight bootcamps or self-taught paths—many Open partners value non-traditional excellence.</p>
+                <div className="mt-6 bg-accent-coral-bg p-6 rounded-3xl border border-accent-coral-bg flex items-center gap-4">
+                  <GraduationCap className="w-10 h-10 text-accent-coral"/>
+                  <p className="text-xs font-bold text-accent-coral">Highlight bootcamps or self-taught paths—many Open partners value non-traditional excellence.</p>
                 </div>
               </section>
 
@@ -709,10 +709,10 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               <section className="pt-12 border-t">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-2xl font-black text-gray-900 mb-1 flex items-center">
+                    <h3 className="text-2xl font-black text-primary mb-1 flex items-center">
                       <Shield className="w-6 h-6 mr-2 text-amber-500" /> My Certifications
                     </h3>
-                    <p className="text-gray-500 text-sm font-medium">Professional credentials that verify your expertise.</p>
+                    <p className="text-muted text-sm font-medium">Professional credentials that verify your expertise.</p>
                   </div>
                   <button
                     onClick={openAddCertModal}
@@ -724,37 +724,37 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 {!certDataLoaded ? (
                   <div className="flex items-center justify-center py-16">
-                    <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
-                    <span className="ml-3 text-sm text-gray-400 font-bold">Loading certifications...</span>
+                    <Loader2 className="w-6 h-6 text-gray-400 dark:text-gray-500 animate-spin" />
+                    <span className="ml-3 text-sm text-gray-400 dark:text-gray-500 font-bold">Loading certifications...</span>
                   </div>
                 ) : candidateCerts.length === 0 ? (
-                  <div className="text-center py-16 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
-                    <Shield className="w-10 h-10 text-gray-300 mx-auto mb-3 opacity-50" />
-                    <h4 className="text-lg font-bold text-gray-400">No certifications added yet</h4>
-                    <p className="text-sm text-gray-400 max-w-xs mx-auto mt-1">
+                  <div className="text-center py-16 bg-gray-50 dark:bg-gray-900 rounded-[2rem] border-2 border-dashed border-border">
+                    <Shield className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3 opacity-50" />
+                    <h4 className="text-lg font-bold text-gray-400 dark:text-gray-500">No certifications added yet</h4>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs mx-auto mt-1">
                       Add your first certification to show employers your verified credentials.
                     </p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {candidateCerts.map(cert => (
-                      <div key={cert.id} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all group">
+                      <div key={cert.id} className="bg-surface rounded-2xl border border-border p-5 hover:shadow-md transition-all group">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-black text-gray-900 truncate">{cert.certification?.name || 'Unknown Certification'}</h4>
+                            <h4 className="font-black text-primary truncate">{cert.certification?.name || 'Unknown Certification'}</h4>
                             {cert.certification?.provider && (
-                              <p className="text-xs text-gray-400 font-medium">{cert.certification.provider}</p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">{cert.certification.provider}</p>
                             )}
                           </div>
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ml-3 flex-shrink-0 ${
                             cert.status === 'active' ? 'bg-green-100 text-green-700' :
-                            cert.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-500'
+                            cert.status === 'in_progress' ? 'bg-accent-coral-bg text-accent-coral' :
+                            'bg-gray-100 dark:bg-gray-800 text-muted'
                           }`}>
                             {cert.status === 'in_progress' ? 'In Progress' : cert.status}
                           </span>
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 font-medium mb-3">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 dark:text-gray-500 font-medium mb-3">
                           {cert.issueDate && (
                             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Issued {cert.issueDate}</span>
                           )}
@@ -768,13 +768,13 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => openEditCertModal(cert)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-muted hover:text-accent-coral hover:bg-accent-coral-bg rounded-lg transition-colors"
                           >
                             <Edit2 className="w-3 h-3" /> Edit
                           </button>
                           <button
                             onClick={() => handleDeleteCert(cert.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           >
                             <Trash2 className="w-3 h-3" /> Remove
                           </button>
@@ -790,11 +790,11 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
           {activeTab === 'preferences' && (
             <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500 max-w-4xl">
               {/* Work Modes */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Work Modes</label>
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">Work Modes</label>
                 <div className="flex flex-wrap gap-3">
                   {Object.values(WorkMode).map(m => (
-                    <button key={m} onClick={() => { const c = profile.preferredWorkMode || []; onUpdate({ preferredWorkMode: c.includes(m) ? c.filter(x => x !== m) : [...c, m] }); }} className={`px-6 py-3 rounded-2xl text-sm font-black transition-all border-2 ${profile.preferredWorkMode?.includes(m) ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'}`}>{m}</button>
+                    <button key={m} onClick={() => { const c = profile.preferredWorkMode || []; onUpdate({ preferredWorkMode: c.includes(m) ? c.filter(x => x !== m) : [...c, m] }); }} className={`px-6 py-3 rounded-2xl text-sm font-black transition-all border-2 ${profile.preferredWorkMode?.includes(m) ? 'bg-gray-900 text-white border-gray-900 shadow-xl' : 'bg-white dark:bg-surface text-muted border-border hover:border-border'}`}>{m}</button>
                   ))}
                 </div>
                 <div className="mt-8 pt-8 border-t">
@@ -803,36 +803,36 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               </div>
 
               {/* Compensation */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><DollarSign className="w-4 h-4 mr-2" />Compensation</label>
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6 flex items-center"><DollarSign className="w-4 h-4 mr-2" />Compensation</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2">Minimum Salary</label>
-                    <div className="flex items-center gap-2 bg-white p-2 rounded-xl border">
-                      <div className="bg-blue-600 text-white px-3 py-2 rounded-lg font-black text-sm">{profile.salaryCurrency || 'USD'}</div>
-                      <input type="number" value={profile.salaryMin || ''} onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) || undefined })} className="w-full bg-transparent p-2 text-xl font-black text-gray-900 outline-none" placeholder="80000" />
+                    <label className="block text-xs font-bold text-muted mb-2">Minimum Salary</label>
+                    <div className="flex items-center gap-2 bg-white dark:bg-surface p-2 rounded-xl border">
+                      <div className="bg-accent-coral text-white px-3 py-2 rounded-lg font-black text-sm">{profile.salaryCurrency || 'USD'}</div>
+                      <input type="number" value={profile.salaryMin || ''} onChange={e => onUpdate({ salaryMin: parseInt(e.target.value) || undefined })} className="w-full bg-transparent p-2 text-xl font-black text-primary outline-none" placeholder="80000" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2">Target/Max Salary</label>
-                    <div className="flex items-center gap-2 bg-white p-2 rounded-xl border">
+                    <label className="block text-xs font-bold text-muted mb-2">Target/Max Salary</label>
+                    <div className="flex items-center gap-2 bg-white dark:bg-surface p-2 rounded-xl border">
                       <div className="bg-green-600 text-white px-3 py-2 rounded-lg font-black text-sm">{profile.salaryCurrency || 'USD'}</div>
-                      <input type="number" value={profile.salaryMax || ''} onChange={e => onUpdate({ salaryMax: parseInt(e.target.value) || undefined })} className="w-full bg-transparent p-2 text-xl font-black text-gray-900 outline-none" placeholder="120000" />
+                      <input type="number" value={profile.salaryMax || ''} onChange={e => onUpdate({ salaryMax: parseInt(e.target.value) || undefined })} className="w-full bg-transparent p-2 text-xl font-black text-primary outline-none" placeholder="120000" />
                     </div>
                   </div>
                 </div>
                 {/* Equity Toggle */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl border mt-6">
+                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border mt-6">
                   <div>
-                    <p className="font-bold text-gray-800">Open to Equity</p>
-                    <p className="text-sm text-gray-500">Accept stock options as compensation</p>
+                    <p className="font-bold text-gray-800 dark:text-gray-200">Open to Equity</p>
+                    <p className="text-sm text-muted">Accept stock options as compensation</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => onUpdate({ openToEquity: !profile.openToEquity })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.openToEquity ? 'bg-green-500' : 'bg-gray-200'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.openToEquity ? 'bg-green-500' : 'bg-border'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${profile.openToEquity ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-surface shadow transition-transform ${profile.openToEquity ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
                 <div className="mt-6 pt-6 border-t">
@@ -841,27 +841,27 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               </div>
 
               {/* Location & Relocation */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><Plane className="w-4 h-4 mr-2" />Location & Relocation</label>
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl border">
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6 flex items-center"><Plane className="w-4 h-4 mr-2" />Location & Relocation</label>
+                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border">
                   <div>
-                    <p className="font-bold text-gray-800">Open to Relocation</p>
-                    <p className="text-sm text-gray-500">Would consider moving for the right role</p>
+                    <p className="font-bold text-gray-800 dark:text-gray-200">Open to Relocation</p>
+                    <p className="text-sm text-muted">Would consider moving for the right role</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => onUpdate({ willingToRelocate: !profile.willingToRelocate })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.willingToRelocate ? 'bg-blue-500' : 'bg-gray-200'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.willingToRelocate ? 'bg-accent-coral' : 'bg-border'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${profile.willingToRelocate ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-surface shadow transition-transform ${profile.willingToRelocate ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
                 <div className="mt-6">
-                  <label className="block text-xs font-bold text-gray-500 mb-2">Preferred Timezone (if different from current)</label>
+                  <label className="block text-xs font-bold text-muted mb-2">Preferred Timezone (if different from current)</label>
                   <select
                     value={profile.preferredTimezone || ''}
                     onChange={e => onUpdate({ preferredTimezone: e.target.value || undefined })}
-                    className="w-full p-4 bg-white border rounded-xl font-bold"
+                    className="w-full p-4 bg-white dark:bg-surface border rounded-xl font-bold"
                   >
                     <option value="">Same as current</option>
                     {COMMON_TIMEZONES.map(tz => (
@@ -872,8 +872,8 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               </div>
 
               {/* Company Size Preferences */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><Building2 className="w-4 h-4 mr-2" />Preferred Company Size</label>
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6 flex items-center"><Building2 className="w-4 h-4 mr-2" />Preferred Company Size</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {COMPANY_SIZE_OPTIONS.map(size => {
                     const isSelected = (profile.preferredCompanySize || []).includes(size.value);
@@ -890,12 +890,12 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                         }}
                         className={`p-4 rounded-xl border-2 text-left transition-all ${
                           isSelected
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
+                            ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                            : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
                         }`}
                       >
                         <p className="font-black text-sm">{size.label}</p>
-                        <p className="text-xs text-gray-500">{size.description}</p>
+                        <p className="text-xs text-muted">{size.description}</p>
                       </button>
                     );
                   })}
@@ -903,13 +903,13 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               </div>
 
               {/* Company Preferences */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center"><Target className="w-4 h-4 mr-2" />Company Preferences</label>
-                <p className="text-xs text-gray-400 mb-6">What type of companies do you want to work for? Select all that apply.</p>
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 flex items-center"><Target className="w-4 h-4 mr-2" />Company Preferences</label>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">What type of companies do you want to work for? Select all that apply.</p>
 
                 {/* Company Focus Type */}
                 <div className="mb-8">
-                  <label className="block text-xs font-bold text-gray-500 mb-3">Company Focus</label>
+                  <label className="block text-xs font-bold text-muted mb-3">Company Focus</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {COMPANY_FOCUS_TYPES.map(opt => {
                       const isSelected = (profile.preferredCompanyFocus || []).includes(opt.value);
@@ -924,15 +924,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                           }}
                           className={`p-4 rounded-xl border-2 text-left transition-all ${
                             isSelected
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
+                              ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                              : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            {isSelected && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                            {isSelected && <CheckCircle className="w-4 h-4 text-accent-coral" />}
                             <span className="font-black text-sm">{opt.label}</span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
+                          <p className="text-xs text-muted mt-1">{opt.description}</p>
                         </button>
                       );
                     })}
@@ -941,7 +941,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 {/* Mission Orientation */}
                 <div className="mb-8">
-                  <label className="block text-xs font-bold text-gray-500 mb-3">Mission Orientation</label>
+                  <label className="block text-xs font-bold text-muted mb-3">Mission Orientation</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {MISSION_ORIENTATIONS.map(opt => {
                       const isSelected = (profile.preferredMissionOrientation || []).includes(opt.value);
@@ -956,15 +956,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                           }}
                           className={`p-4 rounded-xl border-2 text-left transition-all ${
                             isSelected
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
+                              ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                              : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            {isSelected && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                            {isSelected && <CheckCircle className="w-4 h-4 text-accent-coral" />}
                             <span className="font-black text-sm">{opt.label}</span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
+                          <p className="text-xs text-muted mt-1">{opt.description}</p>
                         </button>
                       );
                     })}
@@ -973,7 +973,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 {/* Work Style */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-3">Work Style</label>
+                  <label className="block text-xs font-bold text-muted mb-3">Work Style</label>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {WORK_STYLES.map(opt => {
                       const isSelected = (profile.preferredWorkStyle || []).includes(opt.value);
@@ -988,15 +988,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                           }}
                           className={`p-4 rounded-xl border-2 text-left transition-all ${
                             isSelected
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
+                              ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                              : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            {isSelected && <CheckCircle className="w-4 h-4 text-blue-500" />}
+                            {isSelected && <CheckCircle className="w-4 h-4 text-accent-coral" />}
                             <span className="font-black text-sm">{opt.label}</span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
+                          <p className="text-xs text-muted mt-1">{opt.description}</p>
                         </button>
                       );
                     })}
@@ -1005,16 +1005,16 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               </div>
 
               {/* Regulatory Experience */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center"><Shield className="w-4 h-4 mr-2" />Regulatory Experience</label>
-                <p className="text-xs text-gray-400 mb-6">Select industries where you understand compliance requirements. This helps match you with regulated industry roles.</p>
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 flex items-center"><Shield className="w-4 h-4 mr-2" />Regulatory Experience</label>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">Select industries where you understand compliance requirements. This helps match you with regulated industry roles.</p>
                 {!certDataLoaded ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-                    <span className="ml-2 text-sm text-gray-400 font-bold">Loading...</span>
+                    <Loader2 className="w-5 h-5 text-gray-400 dark:text-gray-500 animate-spin" />
+                    <span className="ml-2 text-sm text-gray-400 dark:text-gray-500 font-bold">Loading...</span>
                   </div>
                 ) : regulatoryDomainsList.length === 0 ? (
-                  <p className="text-sm text-gray-400 italic">No regulatory domains available</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 italic">No regulatory domains available</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {regulatoryDomainsList.map(domain => {
@@ -1024,8 +1024,8 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                           key={domain.id}
                           className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all border-2 ${
                             isSelected
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
+                              ? 'border-accent-coral bg-accent-coral-bg'
+                              : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
                           }`}
                         >
                           <input
@@ -1036,11 +1036,11 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                               const updated = isSelected ? current.filter(id => id !== domain.id) : [...current, domain.id];
                               onUpdate({ regulatoryExperience: updated });
                             }}
-                            className="w-4 h-4 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="w-4 h-4 mt-0.5 rounded border-gray-300 dark:border-gray-700 text-accent-coral focus:ring-accent-coral"
                           />
                           <div>
-                            <span className={`text-sm font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{domain.name}</span>
-                            {domain.description && <p className="text-xs text-gray-400 mt-0.5">{domain.description}</p>}
+                            <span className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-muted'}`}>{domain.name}</span>
+                            {domain.description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{domain.description}</p>}
                           </div>
                         </label>
                       );
@@ -1050,30 +1050,30 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               </div>
 
               {/* Call Availability */}
-              <div className="bg-gray-50 p-8 rounded-[2.5rem] border">
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center"><Phone className="w-4 h-4 mr-2" />Call Availability</label>
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl border">
+              <div className="bg-gray-50 dark:bg-gray-900 p-8 rounded-[2.5rem] border">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6 flex items-center"><Phone className="w-4 h-4 mr-2" />Call Availability</label>
+                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border">
                   <div>
-                    <p className="font-bold text-gray-800">Available for Quick Calls</p>
-                    <p className="text-sm text-gray-500">Show recruiters you're ready to chat</p>
+                    <p className="font-bold text-gray-800 dark:text-gray-200">Available for Quick Calls</p>
+                    <p className="text-sm text-muted">Show recruiters you're ready to chat</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => onUpdate({ callReady: !profile.callReady })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.callReady ? 'bg-green-500' : 'bg-gray-200'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${profile.callReady ? 'bg-green-500' : 'bg-border'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${profile.callReady ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-surface shadow transition-transform ${profile.callReady ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
                 {profile.callReady && (
                   <div className="mt-4">
-                    <label className="block text-xs font-bold text-gray-500 mb-2">Scheduling Link</label>
+                    <label className="block text-xs font-bold text-muted mb-2">Scheduling Link</label>
                     <input
                       type="url"
                       value={profile.callLink || ''}
                       onChange={e => onUpdate({ callLink: e.target.value || undefined })}
                       placeholder="https://calendly.com/your-link"
-                      className="w-full p-4 bg-white border rounded-xl font-medium"
+                      className="w-full p-4 bg-white dark:bg-surface border rounded-xl font-medium"
                     />
                   </div>
                 )}
@@ -1085,34 +1085,34 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
             <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
               {/* Cultural Values */}
               <section>
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Heart className="w-6 h-6 mr-2 text-pink-500" /> Cultural Values</h3>
-                <p className="text-gray-500 font-medium mb-8">Principles guiding your work - select up to 5 that resonate most.</p>
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center"><Heart className="w-6 h-6 mr-2 text-pink-500" /> Cultural Values</h3>
+                <p className="text-muted font-medium mb-8">Principles guiding your work - select up to 5 that resonate most.</p>
                 <GroupedMultiSelect label="" options={CULTURAL_VALUES} selected={profile.values || []} onChange={v => onUpdate({ values: v })} maxSelections={5} />
               </section>
 
               {/* Character Traits */}
               <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Smile className="w-6 h-6 mr-2 text-purple-500" /> Character Traits</h3>
-                <p className="text-gray-500 font-medium mb-8">How colleagues would describe your personality.</p>
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center"><Smile className="w-6 h-6 mr-2 text-accent-green" /> Character Traits</h3>
+                <p className="text-muted font-medium mb-8">How colleagues would describe your personality.</p>
                 <GroupedMultiSelect label="" options={CHARACTER_TRAITS_CATEGORIES} selected={profile.characterTraits || []} onChange={v => onUpdate({ characterTraits: v })} grouped={true} maxSelections={8} />
               </section>
 
               {/* Work Style Preferences */}
               <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Clock className="w-6 h-6 mr-2 text-blue-500" /> Work Style Preferences</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">How you prefer to work day-to-day. These help match you with compatible teams.</p>
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center"><Clock className="w-6 h-6 mr-2 text-accent-coral" /> Work Style Preferences</h3>
+                <p className="text-muted text-sm font-medium mb-8">How you prefer to work day-to-day. These help match you with compatible teams.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Work Schedule</label>
-                    <select value={profile.workStylePreferences?.workHours || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workHours: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Work Schedule</label>
+                    <select value={profile.workStylePreferences?.workHours || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workHours: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {WORK_HOURS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Work Intensity</label>
-                    <select value={profile.workStylePreferences?.workIntensity || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workIntensity: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Work Intensity</label>
+                    <select value={profile.workStylePreferences?.workIntensity || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, workIntensity: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {WORK_INTENSITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1121,15 +1121,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Autonomy Level</label>
-                    <select value={profile.workStylePreferences?.autonomyLevel || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, autonomyLevel: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Autonomy Level</label>
+                    <select value={profile.workStylePreferences?.autonomyLevel || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, autonomyLevel: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {AUTONOMY_LEVEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Decision Making</label>
-                    <select value={profile.workStylePreferences?.decisionMaking || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, decisionMaking: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Decision Making</label>
+                    <select value={profile.workStylePreferences?.decisionMaking || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, decisionMaking: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {DECISION_MAKING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1138,15 +1138,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Project Duration</label>
-                    <select value={profile.workStylePreferences?.projectDuration || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, projectDuration: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Project Duration</label>
+                    <select value={profile.workStylePreferences?.projectDuration || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, projectDuration: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {PROJECT_DURATION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Context Switching</label>
-                    <select value={profile.workStylePreferences?.contextSwitching || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, contextSwitching: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Context Switching</label>
+                    <select value={profile.workStylePreferences?.contextSwitching || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, contextSwitching: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {CONTEXT_SWITCHING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1155,15 +1155,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Change Frequency</label>
-                    <select value={profile.workStylePreferences?.changeFrequency || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, changeFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Change Frequency</label>
+                    <select value={profile.workStylePreferences?.changeFrequency || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, changeFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {CHANGE_FREQUENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Risk Tolerance</label>
-                    <select value={profile.workStylePreferences?.riskTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, riskTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Risk Tolerance</label>
+                    <select value={profile.workStylePreferences?.riskTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, riskTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {RISK_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1172,15 +1172,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Innovation vs Stability</label>
-                    <select value={profile.workStylePreferences?.innovationStability || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, innovationStability: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Innovation vs Stability</label>
+                    <select value={profile.workStylePreferences?.innovationStability || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, innovationStability: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {INNOVATION_STABILITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ambiguity Tolerance</label>
-                    <select value={profile.workStylePreferences?.ambiguityTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, ambiguityTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Ambiguity Tolerance</label>
+                    <select value={profile.workStylePreferences?.ambiguityTolerance || ''} onChange={e => onUpdate({ workStylePreferences: {...profile.workStylePreferences, ambiguityTolerance: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {AMBIGUITY_TOLERANCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1190,20 +1190,20 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
               {/* Team & Collaboration */}
               <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Users className="w-6 h-6 mr-2 text-green-500" /> Team & Collaboration</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">What team environment helps you thrive? These preferences improve culture fit matching.</p>
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center"><Users className="w-6 h-6 mr-2 text-green-500" /> Team & Collaboration</h3>
+                <p className="text-muted text-sm font-medium mb-8">What team environment helps you thrive? These preferences improve culture fit matching.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ideal Team Size</label>
-                    <select value={profile.teamCollaborationPreferences?.teamSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Ideal Team Size</label>
+                    <select value={profile.teamCollaborationPreferences?.teamSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {TEAM_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Ideal Org Size</label>
-                    <select value={profile.teamCollaborationPreferences?.orgSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, orgSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Ideal Org Size</label>
+                    <select value={profile.teamCollaborationPreferences?.orgSizePreference || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, orgSizePreference: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {ORG_SIZE_PREF_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1212,15 +1212,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Reporting Structure</label>
-                    <select value={profile.teamCollaborationPreferences?.reportingStructure || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, reportingStructure: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Reporting Structure</label>
+                    <select value={profile.teamCollaborationPreferences?.reportingStructure || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, reportingStructure: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {REPORTING_STRUCTURE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Team Distribution</label>
-                    <select value={profile.teamCollaborationPreferences?.teamDistribution || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamDistribution: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Team Distribution</label>
+                    <select value={profile.teamCollaborationPreferences?.teamDistribution || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, teamDistribution: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {TEAM_DISTRIBUTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1229,15 +1229,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Collaboration Frequency</label>
-                    <select value={profile.teamCollaborationPreferences?.collaborationFrequency || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, collaborationFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Collaboration Frequency</label>
+                    <select value={profile.teamCollaborationPreferences?.collaborationFrequency || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, collaborationFrequency: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {COLLABORATION_FREQ_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Timezone Overlap</label>
-                    <select value={profile.teamCollaborationPreferences?.timezoneOverlap || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, timezoneOverlap: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Timezone Overlap</label>
+                    <select value={profile.teamCollaborationPreferences?.timezoneOverlap || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, timezoneOverlap: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {TIMEZONE_OVERLAP_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1246,15 +1246,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pair Programming</label>
-                    <select value={profile.teamCollaborationPreferences?.pairProgramming || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, pairProgramming: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Pair Programming</label>
+                    <select value={profile.teamCollaborationPreferences?.pairProgramming || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, pairProgramming: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {PAIR_PROGRAMMING_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Cross-Functional Work</label>
-                    <select value={profile.teamCollaborationPreferences?.crossFunctional || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, crossFunctional: e.target.value as any }})} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Cross-Functional Work</label>
+                    <select value={profile.teamCollaborationPreferences?.crossFunctional || ''} onChange={e => onUpdate({ teamCollaborationPreferences: {...profile.teamCollaborationPreferences, crossFunctional: e.target.value as any }})} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {CROSS_FUNCTIONAL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
@@ -1264,88 +1264,88 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
 
               {/* Manager & Growth Preferences */}
               <section className="pt-12 border-t">
-                <h3 className="text-2xl font-black text-gray-900 mb-2 flex items-center"><Sparkles className="w-6 h-6 mr-2 text-purple-500" /> Manager & Growth Preferences</h3>
-                <p className="text-gray-500 text-sm font-medium mb-8">Help us match you with managers whose style fits your preferences.</p>
+                <h3 className="text-2xl font-black text-primary mb-2 flex items-center"><Sparkles className="w-6 h-6 mr-2 text-accent-green" /> Manager & Growth Preferences</h3>
+                <p className="text-muted text-sm font-medium mb-8">Help us match you with managers whose style fits your preferences.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Preferred Leadership Style</label>
-                    <select value={profile.preferredLeadershipStyle || ''} onChange={e => onUpdate({ preferredLeadershipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Preferred Leadership Style</label>
+                    <select value={profile.preferredLeadershipStyle || ''} onChange={e => onUpdate({ preferredLeadershipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {LEADERSHIP_STYLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{LEADERSHIP_STYLE_OPTIONS.find(o => o.value === profile.preferredLeadershipStyle)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{LEADERSHIP_STYLE_OPTIONS.find(o => o.value === profile.preferredLeadershipStyle)?.description}</p>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Preferred Feedback Frequency</label>
-                    <select value={profile.preferredFeedbackFrequency || ''} onChange={e => onUpdate({ preferredFeedbackFrequency: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Preferred Feedback Frequency</label>
+                    <select value={profile.preferredFeedbackFrequency || ''} onChange={e => onUpdate({ preferredFeedbackFrequency: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {FEEDBACK_FREQUENCY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{FEEDBACK_FREQUENCY_OPTIONS.find(o => o.value === profile.preferredFeedbackFrequency)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{FEEDBACK_FREQUENCY_OPTIONS.find(o => o.value === profile.preferredFeedbackFrequency)?.description}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Communication Style</label>
-                    <select value={profile.preferredCommunicationStyle || ''} onChange={e => onUpdate({ preferredCommunicationStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Communication Style</label>
+                    <select value={profile.preferredCommunicationStyle || ''} onChange={e => onUpdate({ preferredCommunicationStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {COMMUNICATION_PREFERENCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{COMMUNICATION_PREFERENCE_OPTIONS.find(o => o.value === profile.preferredCommunicationStyle)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{COMMUNICATION_PREFERENCE_OPTIONS.find(o => o.value === profile.preferredCommunicationStyle)?.description}</p>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Meeting Culture</label>
-                    <select value={profile.preferredMeetingCulture || ''} onChange={e => onUpdate({ preferredMeetingCulture: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Meeting Culture</label>
+                    <select value={profile.preferredMeetingCulture || ''} onChange={e => onUpdate({ preferredMeetingCulture: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {MEETING_CULTURE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{MEETING_CULTURE_OPTIONS.find(o => o.value === profile.preferredMeetingCulture)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{MEETING_CULTURE_OPTIONS.find(o => o.value === profile.preferredMeetingCulture)?.description}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Conflict Resolution</label>
-                    <select value={profile.preferredConflictResolution || ''} onChange={e => onUpdate({ preferredConflictResolution: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Conflict Resolution</label>
+                    <select value={profile.preferredConflictResolution || ''} onChange={e => onUpdate({ preferredConflictResolution: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {CONFLICT_RESOLUTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{CONFLICT_RESOLUTION_OPTIONS.find(o => o.value === profile.preferredConflictResolution)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{CONFLICT_RESOLUTION_OPTIONS.find(o => o.value === profile.preferredConflictResolution)?.description}</p>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Mentorship Style</label>
-                    <select value={profile.preferredMentorshipStyle || ''} onChange={e => onUpdate({ preferredMentorshipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Mentorship Style</label>
+                    <select value={profile.preferredMentorshipStyle || ''} onChange={e => onUpdate({ preferredMentorshipStyle: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {MENTORSHIP_APPROACH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{MENTORSHIP_APPROACH_OPTIONS.find(o => o.value === profile.preferredMentorshipStyle)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{MENTORSHIP_APPROACH_OPTIONS.find(o => o.value === profile.preferredMentorshipStyle)?.description}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Growth Goals</label>
-                    <select value={profile.growthGoals || ''} onChange={e => onUpdate({ growthGoals: e.target.value as any })} className="w-full p-4 bg-gray-50 border rounded-xl font-bold">
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Growth Goals</label>
+                    <select value={profile.growthGoals || ''} onChange={e => onUpdate({ growthGoals: e.target.value as any })} className="w-full p-4 bg-gray-50 dark:bg-gray-900 border rounded-xl font-bold">
                       <option value="">Not Specified</option>
                       {GROWTH_EXPECTATION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">{GROWTH_EXPECTATION_OPTIONS.find(o => o.value === profile.growthGoals)?.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{GROWTH_EXPECTATION_OPTIONS.find(o => o.value === profile.growthGoals)?.description}</p>
                   </div>
-                  <div className="bg-purple-50 p-6 rounded-3xl border border-purple-100 flex items-center gap-4">
-                    <Sparkles className="w-10 h-10 text-purple-500 flex-shrink-0"/>
-                    <p className="text-xs font-bold text-purple-800">These preferences help match you with hiring managers whose leadership style complements how you work best.</p>
+                  <div className="bg-accent-green-bg p-6 rounded-3xl border border-accent-green-bg flex items-center gap-4">
+                    <Sparkles className="w-10 h-10 text-accent-green flex-shrink-0"/>
+                    <p className="text-xs font-bold text-accent-green">These preferences help match you with hiring managers whose leadership style complements how you work best.</p>
                   </div>
                 </div>
               </section>
             </div>
           )}
 
-          {activeTab === 'verifications' && <VerificationDashboard candidateId={profile.id} stats={profile.verification_stats} skills={profile.skills} />}
+          {activeTab === 'verifications' && <VerificationDashboard candidateId={profile.id} stats={profile.verificationStats} skills={profile.skills} />}
         </div>
-        <div className="bg-gray-50 px-12 py-8 border-t flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest">
+        <div className="bg-gray-50 dark:bg-gray-900 px-12 py-8 border-t flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             <Clock className="w-4 h-4"/> Syncing to Open Market
           </div>
           <button 
@@ -1361,11 +1361,11 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
       {/* Certification Add/Edit Modal */}
       {isCertModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsCertModalOpen(false)}>
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="px-8 pt-8 pb-4 border-b border-gray-100">
+          <div className="bg-white dark:bg-surface rounded-[2rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-8 pt-8 pb-4 border-b border-border">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-black text-gray-900">{editingCert ? 'Edit Certification' : 'Add Certification'}</h3>
-                <button onClick={() => setIsCertModalOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                <h3 className="text-xl font-black text-primary">{editingCert ? 'Edit Certification' : 'Add Certification'}</h3>
+                <button onClick={() => setIsCertModalOpen(false)} className="p-2 text-gray-400 dark:text-gray-500 hover:text-muted hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-xl transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1375,21 +1375,21 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               {/* Certification Selector (only for new) */}
               {!editingCert && (
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                  <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                     Certification <span className="text-red-500">*</span>
                   </label>
                   {certTaxonomy.length > 10 && (
                     <div className="relative mb-3">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                       <input
                         value={certModalSearch}
                         onChange={e => setCertModalSearch(e.target.value)}
                         placeholder="Search certifications..."
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none border border-gray-200"
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl text-sm font-bold focus:bg-white dark:bg-surface focus:ring-2 focus:ring-accent-coral outline-none border border-border"
                       />
                     </div>
                   )}
-                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl">
+                  <div className="max-h-48 overflow-y-auto border border-border rounded-xl">
                     {Object.entries(groupCertificationsByCategory(
                       certModalSearch
                         ? certTaxonomy.filter(c => c.name.toLowerCase().includes(certModalSearch.toLowerCase()))
@@ -1401,7 +1401,7 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                       if (availableCerts.length === 0) return null;
                       return (
                         <div key={category}>
-                          <div className="px-4 py-2 bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest sticky top-0">{categoryLabel}</div>
+                          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest sticky top-0">{categoryLabel}</div>
                           {availableCerts.map(cert => (
                             <button
                               key={cert.id}
@@ -1409,12 +1409,12 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                               onClick={() => setCertModalData(prev => ({ ...prev, certificationId: cert.id }))}
                               className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors ${
                                 certModalData.certificationId === cert.id
-                                  ? 'bg-blue-50 text-blue-700'
-                                  : 'text-gray-700 hover:bg-gray-50'
+                                  ? 'bg-accent-coral-bg text-accent-coral'
+                                  : 'text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900'
                               }`}
                             >
                               {cert.name}
-                              {cert.provider && <span className="text-xs text-gray-400 ml-2">({cert.provider})</span>}
+                              {cert.provider && <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">({cert.provider})</span>}
                             </button>
                           ))}
                         </div>
@@ -1425,15 +1425,15 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               )}
 
               {editingCert && (
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Certification</p>
-                  <p className="font-bold text-gray-900">{editingCert.certification?.name || 'Unknown'}</p>
+                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl">
+                  <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Certification</p>
+                  <p className="font-bold text-primary">{editingCert.certification?.name || 'Unknown'}</p>
                 </div>
               )}
 
               {/* Status */}
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                   Status <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-3">
@@ -1449,9 +1449,9 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
                       className={`flex-1 py-3 rounded-xl text-sm font-black border-2 transition-all ${
                         certModalData.status === opt.value
                           ? opt.color === 'green' ? 'border-green-500 bg-green-50 text-green-700'
-                            : opt.color === 'blue' ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-400 bg-gray-50 text-gray-600'
-                          : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                            : opt.color === 'blue' ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                            : 'border-gray-400 bg-gray-50 dark:bg-gray-900 text-muted'
+                          : 'border-border bg-white dark:bg-surface text-muted hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       {opt.label}
@@ -1463,42 +1463,42 @@ const CandidateProfileTabs: React.FC<Props> = ({ profile, onUpdate, onSave, isSa
               {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Issue Date</label>
+                  <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Issue Date</label>
                   <input
                     type="date"
                     value={certModalData.issueDate}
                     onChange={e => setCertModalData(prev => ({ ...prev, issueDate: e.target.value }))}
-                    className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800 focus:ring-2 focus:ring-blue-100 outline-none"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-border font-bold text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-accent-coral outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Expiry Date</label>
+                  <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Expiry Date</label>
                   <input
                     type="date"
                     value={certModalData.expiryDate}
                     onChange={e => setCertModalData(prev => ({ ...prev, expiryDate: e.target.value }))}
-                    className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800 focus:ring-2 focus:ring-blue-100 outline-none"
+                    className="w-full p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-border font-bold text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-accent-coral outline-none"
                   />
                 </div>
               </div>
 
               {/* Credential ID */}
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Credential ID</label>
+                <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Credential ID</label>
                 <input
                   type="text"
                   value={certModalData.credentialId}
                   onChange={e => setCertModalData(prev => ({ ...prev, credentialId: e.target.value }))}
                   placeholder="e.g., ABC-123-XYZ"
-                  className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 font-bold text-gray-800 focus:ring-2 focus:ring-blue-100 outline-none"
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-border font-bold text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-accent-coral outline-none"
                 />
               </div>
             </div>
 
-            <div className="px-8 py-6 border-t border-gray-100 flex gap-3">
+            <div className="px-8 py-6 border-t border-border flex gap-3">
               <button
                 onClick={() => setIsCertModalOpen(false)}
-                className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-black text-sm uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                className="flex-1 py-3 rounded-xl border-2 border-border text-muted font-black text-sm uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 transition-colors"
               >
                 Cancel
               </button>

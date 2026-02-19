@@ -66,7 +66,7 @@ const PoolBar: React.FC<{ result: TalentPoolResult }> = ({ result }) => {
   return (
     <div className="space-y-3">
       {/* Bar */}
-      <div className="h-8 rounded-full overflow-hidden flex bg-gray-100">
+      <div className="h-8 rounded-full overflow-hidden flex bg-gray-100 dark:bg-gray-800">
         {segments.map(seg => {
           const width = (seg.count / total) * 100;
           if (width === 0) return null;
@@ -87,8 +87,8 @@ const PoolBar: React.FC<{ result: TalentPoolResult }> = ({ result }) => {
         {segments.map(seg => (
           <div key={seg.key} className="flex items-center gap-1.5">
             <div className={`w-3 h-3 rounded ${seg.color}`} />
-            <span className="text-gray-600">{seg.label}</span>
-            <span className="font-bold text-gray-900">{seg.count}</span>
+            <span className="text-muted">{seg.label}</span>
+            <span className="font-bold text-primary">{seg.count}</span>
           </div>
         ))}
       </div>
@@ -100,9 +100,9 @@ const PoolBar: React.FC<{ result: TalentPoolResult }> = ({ result }) => {
 const CandidatePreviewCard: React.FC<{ candidate: AnonymizedCandidate }> = ({ candidate }) => {
   const statusColors: Record<string, string> = {
     actively_looking: 'bg-green-100 text-green-700',
-    open_to_offers: 'bg-blue-100 text-blue-700',
+    open_to_offers: 'bg-accent-coral-bg text-accent-coral',
     happy_but_listening: 'bg-yellow-100 text-yellow-700',
-    not_looking: 'bg-gray-100 text-gray-600'
+    not_looking: 'bg-gray-100 dark:bg-gray-800 text-muted'
   };
 
   const statusLabels: Record<string, string> = {
@@ -113,11 +113,11 @@ const CandidatePreviewCard: React.FC<{ candidate: AnonymizedCandidate }> = ({ ca
   };
 
   return (
-    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-border">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <p className="font-bold text-gray-900 text-sm">{candidate.headline}</p>
-          <p className="text-xs text-gray-500">{candidate.seniority} · {candidate.location}</p>
+          <p className="font-bold text-primary text-sm">{candidate.headline}</p>
+          <p className="text-xs text-muted">{candidate.seniority} · {candidate.location}</p>
         </div>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[candidate.status] || statusColors.open_to_offers}`}>
           {statusLabels[candidate.status] || 'Open'}
@@ -125,12 +125,12 @@ const CandidatePreviewCard: React.FC<{ candidate: AnonymizedCandidate }> = ({ ca
       </div>
       <div className="flex flex-wrap gap-1 mt-2">
         {candidate.topSkills.map((skill, i) => (
-          <span key={i} className="text-xs bg-white border border-gray-200 px-2 py-0.5 rounded-full text-gray-600">
+          <span key={i} className="text-xs bg-surface border border-border px-2 py-0.5 rounded-full text-muted">
             {skill}
           </span>
         ))}
       </div>
-      <p className="text-xs text-gray-400 mt-2">
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
         {candidate.yearsExperience} years experience
       </p>
     </div>
@@ -317,13 +317,13 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
   // No jobs state
   if (!isLoadingJobs && jobs.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8">
+      <div className="bg-surface rounded-xl border border-border p-8">
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">No Jobs Yet</h3>
-          <p className="text-gray-500 text-sm max-w-md mx-auto">
+          <h3 className="text-lg font-bold text-primary mb-2">No Jobs Yet</h3>
+          <p className="text-muted text-sm max-w-md mx-auto">
             Post your first job to analyze your talent pool and see how many candidates match your requirements.
           </p>
         </div>
@@ -334,16 +334,16 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
   return (
     <div className="space-y-6">
       {/* Job Selector */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-surface rounded-xl border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-gray-900">Talent Pool Analysis</h3>
+          <h3 className="text-base font-bold text-primary">Talent Pool Analysis</h3>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
                 setIsCustomMode(false);
                 if (jobs.length > 0) setSelectedJobId(jobs[0].id);
               }}
-              className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${!isCustomMode ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${!isCustomMode ? 'bg-gray-900 text-white' : 'text-muted hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'}`}
             >
               From Job
             </button>
@@ -352,7 +352,7 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
                 setIsCustomMode(true);
                 setSelectedJobId(null);
               }}
-              className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${isCustomMode ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${isCustomMode ? 'bg-gray-900 text-white' : 'text-muted hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'}`}
             >
               Custom
             </button>
@@ -363,12 +363,12 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-left"
+              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-border text-left"
             >
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-primary">
                 {selectedJob?.title || 'Select a job'}
               </span>
-              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             <AnimatePresence>
@@ -377,7 +377,7 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
+                  className="absolute top-full left-0 right-0 mt-2 bg-surface border border-border rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
                 >
                   {jobs.map(job => (
                     <button
@@ -386,10 +386,10 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
                         setSelectedJobId(job.id);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${selectedJobId === job.id ? 'bg-blue-50' : ''}`}
+                      className={`w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 transition-colors ${selectedJobId === job.id ? 'bg-accent-coral-bg' : ''}`}
                     >
-                      <p className="font-medium text-gray-900">{job.title}</p>
-                      <p className="text-xs text-gray-500">{job.location} · {job.workMode}</p>
+                      <p className="font-medium text-primary">{job.title}</p>
+                      <p className="text-xs text-muted">{job.location} · {job.workMode}</p>
                     </button>
                   ))}
                 </motion.div>
@@ -399,41 +399,41 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
         ) : (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Skills (comma-separated)</label>
+              <label className="block text-xs font-medium text-muted mb-1">Skills (comma-separated)</label>
               <input
                 type="text"
                 value={customSkills}
                 onChange={(e) => setCustomSkills(e.target.value)}
                 placeholder="React, TypeScript, Node.js"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+              <label className="block text-xs font-medium text-muted mb-1">Location</label>
               <input
                 type="text"
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
                 placeholder="San Francisco, CA"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Max Salary</label>
+              <label className="block text-xs font-medium text-muted mb-1">Max Salary</label>
               <input
                 type="text"
                 value={customSalary}
                 onChange={(e) => setCustomSalary(e.target.value)}
                 placeholder="150000"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Work Mode</label>
+              <label className="block text-xs font-medium text-muted mb-1">Work Mode</label>
               <select
                 value={customWorkMode}
                 onChange={(e) => setCustomWorkMode(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white dark:bg-surface"
               >
                 <option value="">Any</option>
                 <option value="Remote">Remote</option>
@@ -447,29 +447,29 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
 
       {/* Pool Overview */}
       {(selectedJobId || isCustomMode) && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-surface rounded-xl border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Total Reachable Candidates</p>
+              <p className="text-sm text-muted mb-1">Total Reachable Candidates</p>
               {isLoadingPool ? (
-                <div className="h-10 w-24 bg-gray-100 rounded animate-pulse" />
+                <div className="h-10 w-24 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
               ) : (
                 <AnimatedNumber
                   value={poolResult?.total || 0}
-                  className="text-4xl font-black text-gray-900"
+                  className="text-4xl font-black text-primary"
                 />
               )}
             </div>
             <button
               onClick={handleViewCandidates}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="text-sm font-medium text-accent-coral hover:text-accent-coral"
             >
               {showCandidates ? 'Hide samples' : 'View sample candidates'}
             </button>
           </div>
 
           {isLoadingPool ? (
-            <div className="h-20 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-20 bg-gray-50 dark:bg-gray-900 rounded-xl animate-pulse" />
           ) : poolResult ? (
             <>
               <PoolBar result={poolResult} />
@@ -495,11 +495,11 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <p className="text-sm font-bold text-gray-900 mb-3">Sample Candidates</p>
+                <div className="mt-6 pt-6 border-t border-border">
+                  <p className="text-sm font-bold text-primary mb-3">Sample Candidates</p>
                   {isLoadingCandidates ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500" />
                     </div>
                   ) : sampleCandidates.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -508,7 +508,7 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-400 text-center py-4">
+                    <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
                       No matching candidates found
                     </p>
                   )}
@@ -521,9 +521,9 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
 
       {/* Requirements Panel */}
       {!isCustomMode && selectedJob && requirements.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-base font-bold text-gray-900 mb-4">Requirements Impact</h3>
-          <p className="text-sm text-gray-500 mb-4">
+        <div className="bg-surface rounded-xl border border-border p-6">
+          <h3 className="text-base font-bold text-primary mb-4">Requirements Impact</h3>
+          <p className="text-sm text-muted mb-4">
             Toggle requirements off to see how your talent pool expands
           </p>
 
@@ -535,7 +535,7 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
                 className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${
                   req.enabled
                     ? 'bg-gray-900 text-white border-gray-900'
-                    : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                    : 'bg-white dark:bg-surface text-muted border-border hover:border-gray-300 dark:border-gray-700'
                 }`}
               >
                 <span className="text-sm font-medium">
@@ -549,7 +549,7 @@ const TalentPoolAnalysis: React.FC<TalentPoolAnalysisProps> = ({
           {requirements.some(r => !r.enabled) && (
             <button
               onClick={() => setRequirements(prev => prev.map(r => ({ ...r, enabled: true })))}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              className="mt-4 text-sm text-accent-coral hover:text-accent-coral font-medium"
             >
               Reset all requirements
             </button>

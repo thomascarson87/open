@@ -233,11 +233,11 @@ const Messages: React.FC = () => {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-[calc(100vh-8rem)] flex overflow-hidden">
+        <div className="bg-surface rounded-xl shadow-sm border border-border h-[calc(100vh-8rem)] flex overflow-hidden">
             {/* Sidebar */}
-            <div className={`flex flex-col border-r border-gray-200 w-full md:w-80 h-full ${activeId ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                    <h2 className="text-lg font-bold text-gray-900">Messages</h2>
+            <div className={`flex flex-col border-r border-border w-full md:w-80 h-full ${activeId ? 'hidden md:flex' : 'flex'}`}>
+                <div className="p-4 border-b border-border flex justify-between items-center">
+                    <h2 className="font-heading text-lg text-primary">Messages</h2>
                     <button 
                         onClick={() => { loadUnlockedCandidates(); setShowNewMessageModal(true); }}
                         className="p-2 bg-gray-900 text-white rounded-full hover:bg-black transition-colors"
@@ -248,17 +248,17 @@ const Messages: React.FC = () => {
                 </div>
                 {/* Conversation List */}
                 <div className="flex-1 overflow-y-auto">
-                    {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin mx-auto text-gray-400"/></div> : 
-                     conversations.length === 0 ? <div className="p-4 text-center text-gray-500 text-sm">No conversations yet.</div> :
+                    {loading ? <div className="p-4 text-center"><Loader2 className="animate-spin mx-auto text-gray-400 dark:text-gray-500"/></div> : 
+                     conversations.length === 0 ? <div className="p-4 text-center text-muted text-sm">No conversations yet.</div> :
                      conversations.map(c => (
-                        <div key={c.id} onClick={() => selectConversation(c.id)} className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${activeId === c.id ? 'bg-blue-50' : ''}`}>
+                        <div key={c.id} onClick={() => selectConversation(c.id)} className={`p-4 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 ${activeId === c.id ? 'bg-accent-coral-bg' : ''}`}>
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-xs text-gray-600 overflow-hidden">
+                                <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-xs text-muted overflow-hidden">
                                     {c.participants[0]?.avatar ? <img src={c.participants[0].avatar} className="w-full h-full object-cover"/> : c.participants[0]?.name.charAt(0)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="font-bold text-sm text-gray-900 truncate">{c.participants[0]?.name}</div>
-                                    <div className="text-xs text-gray-500 truncate">{c.lastMessage.text}</div>
+                                    <div className="font-bold text-sm text-primary truncate">{c.participants[0]?.name}</div>
+                                    <div className="text-xs text-muted truncate">{c.lastMessage.text}</div>
                                 </div>
                             </div>
                         </div>
@@ -270,20 +270,20 @@ const Messages: React.FC = () => {
             <div className={`flex-1 flex-col h-full ${activeId ? 'flex' : 'hidden md:flex'}`}>
                 {activeId ? (
                     <>
-                        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <div className="p-4 border-b border-border flex justify-between items-center">
                             <div className="flex items-center gap-2">
                                 <button onClick={() => { setActiveId(null); setActiveCandidateId(null); }} className="md:hidden"><ArrowLeft className="w-5 h-5"/></button>
                                 <span className="font-bold">{conversations.find(c => c.id === activeId)?.participants[0]?.name}</span>
                             </div>
-                            <button onClick={() => setShowScheduleModal(true)} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200" title="Schedule Interview"><Calendar className="w-4 h-4"/></button>
+                            <button onClick={() => setShowScheduleModal(true)} className="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg hover:bg-border" title="Schedule Interview"><Calendar className="w-4 h-4"/></button>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
                             {messages.map(msg => (
                                 <div key={msg.id} className={`flex ${msg.isSystemMessage ? 'justify-center' : (msg.senderId === user?.id ? 'justify-end' : 'justify-start')}`}>
                                     <div className={`p-3 rounded-xl max-w-xs text-sm ${
                                         msg.isSystemMessage 
-                                            ? 'bg-gray-200 text-center text-xs text-gray-600 w-full max-w-sm rounded-full' 
-                                            : (msg.senderId === user?.id ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none')
+                                            ? 'bg-border text-center text-xs text-muted w-full max-w-sm rounded-full' 
+                                            : (msg.senderId === user?.id ? 'bg-accent-coral text-white rounded-br-none' : 'bg-white dark:bg-surface border text-gray-800 dark:text-gray-200 rounded-bl-none')
                                     }`}>
                                         {msg.text}
                                     </div>
@@ -291,13 +291,13 @@ const Messages: React.FC = () => {
                             ))}
                             <div ref={messagesEndRef} />
                         </div>
-                        <div className="p-4 border-t flex gap-2 bg-white">
-                            <input value={inputText} onChange={e => setInputText(e.target.value)} className="flex-1 p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Type a message..." onKeyDown={e => e.key === 'Enter' && handleSendMessage()}/>
-                            <button onClick={handleSendMessage} className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition-colors"><Send className="w-4 h-4"/></button>
+                        <div className="p-4 border-t flex gap-2 bg-white dark:bg-surface">
+                            <input value={inputText} onChange={e => setInputText(e.target.value)} className="flex-1 p-3 bg-gray-50 dark:bg-gray-900 border-none rounded-xl focus:ring-2 focus:ring-accent-coral outline-none" placeholder="Type a message..." onKeyDown={e => e.key === 'Enter' && handleSendMessage()}/>
+                            <button onClick={handleSendMessage} className="bg-accent-coral text-white p-3 rounded-xl hover:bg-accent-coral transition-colors"><Send className="w-4 h-4"/></button>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                         <MessageSquare className="w-12 h-12 mb-2 opacity-20"/>
                         <p>Select a conversation to start chatting</p>
                     </div>
@@ -307,26 +307,26 @@ const Messages: React.FC = () => {
             {/* New Message Modal */}
             {showNewMessageModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 h-[60vh] flex flex-col shadow-2xl">
+                    <div className="bg-surface rounded-2xl w-full max-w-md p-6 h-[60vh] flex flex-col shadow-2xl">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="font-bold text-lg">New Message</h3>
-                            <button onClick={() => setShowNewMessageModal(false)}><X className="w-5 h-5 text-gray-400 hover:text-gray-900"/></button>
+                            <button onClick={() => setShowNewMessageModal(false)}><X className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-primary"/></button>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
                             {unlockedCandidates.length > 0 ? (
                                 unlockedCandidates.map(c => (
-                                    <button key={c.id} onClick={() => startNewConversation(c.id)} className="w-full text-left p-3 hover:bg-gray-50 rounded-xl flex items-center gap-3 transition-colors border border-transparent hover:border-gray-100">
-                                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600 overflow-hidden">
+                                    <button key={c.id} onClick={() => startNewConversation(c.id)} className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 rounded-xl flex items-center gap-3 transition-colors border border-transparent hover:border-border">
+                                        <div className="w-10 h-10 bg-border rounded-full flex items-center justify-center font-bold text-muted overflow-hidden">
                                             {c.avatar_urls?.[0] ? <img src={c.avatar_urls[0]} className="w-full h-full object-cover"/> : c.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <div className="font-bold text-sm text-gray-900">{c.name}</div>
-                                            <div className="text-xs text-gray-500 truncate max-w-[200px]">{c.headline}</div>
+                                            <div className="font-bold text-sm text-primary">{c.name}</div>
+                                            <div className="text-xs text-muted truncate max-w-[200px]">{c.headline}</div>
                                         </div>
                                     </button>
                                 ))
                             ) : (
-                                <div className="text-center text-gray-500 mt-8">
+                                <div className="text-center text-muted mt-8">
                                     <p className="mb-2">No unlocked candidates.</p>
                                     <p className="text-xs">Unlock a candidate from the dashboard first.</p>
                                 </div>

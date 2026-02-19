@@ -112,7 +112,7 @@ const ApplicationDetailPanel: React.FC<ApplicationDetailPanelProps> = ({
         className={`
           fixed inset-y-0 right-0 z-50
           w-full sm:w-[480px] lg:w-[560px]
-          bg-white shadow-2xl
+          bg-white dark:bg-surface shadow-2xl
           transform transition-transform duration-300 ease-out
           flex flex-col
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
@@ -121,18 +121,18 @@ const ApplicationDetailPanel: React.FC<ApplicationDetailPanelProps> = ({
         aria-modal="true"
         aria-labelledby="panel-title"
       >
-        <div className="sticky top-0 bg-white border-b border-gray-100 z-10 flex-shrink-0">
+        <div className="sticky top-0 bg-white dark:bg-surface border-b border-border z-10 flex-shrink-0">
           <div className="flex items-center gap-3 p-4">
             <button
               onClick={onClose}
-              className="p-2 -ml-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-900"
+              className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-xl transition-colors text-gray-400 dark:text-gray-500 hover:text-primary"
               aria-label="Close panel"
             >
               <X className="w-5 h-5" />
             </button>
             
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-gray-50 overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100">
+              <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-900 overflow-hidden flex-shrink-0 flex items-center justify-center border border-border">
                 {application.job.company_logo ? (
                   <img
                     src={application.job.company_logo}
@@ -140,15 +140,15 @@ const ApplicationDetailPanel: React.FC<ApplicationDetailPanelProps> = ({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Briefcase className="w-5 h-5 text-gray-400" />
+                  <Briefcase className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
               
               <div className="min-w-0">
-                <h2 id="panel-title" className="font-bold text-gray-900 truncate text-base leading-tight">
+                <h2 id="panel-title" className="font-heading text-primary truncate text-base leading-tight">
                   {application.job.title}
                 </h2>
-                <p className="text-xs font-bold text-gray-400 truncate uppercase tracking-wider mt-0.5">
+                <p className="text-xs font-bold text-gray-400 dark:text-gray-500 truncate uppercase tracking-wider mt-0.5">
                   {application.job.company_name}
                 </p>
               </div>
@@ -157,7 +157,7 @@ const ApplicationDetailPanel: React.FC<ApplicationDetailPanelProps> = ({
             <StatusBadge status={application.status} size="sm" />
           </div>
 
-          <div className="flex border-b border-gray-100 px-2 overflow-x-auto no-scrollbar">
+          <div className="flex border-b border-border px-2 overflow-x-auto no-scrollbar">
             {tabs.map(tab => (
               <button
                 key={tab.id}
@@ -166,8 +166,8 @@ const ApplicationDetailPanel: React.FC<ApplicationDetailPanelProps> = ({
                   flex items-center gap-2 px-5 py-4 text-xs font-black uppercase tracking-widest
                   border-b-2 -mb-px transition-all whitespace-nowrap
                   ${activeTab === tab.id
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-400 hover:text-gray-900 hover:border-gray-200'
+                    ? 'border-accent-coral text-accent-coral'
+                    : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-primary hover:border-border'
                   }
                 `}
               >
@@ -177,8 +177,8 @@ const ApplicationDetailPanel: React.FC<ApplicationDetailPanelProps> = ({
                   <span className={`
                     text-[10px] px-1.5 py-0.5 rounded-full font-black
                     ${activeTab === tab.id
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-500'
+                      ? 'bg-accent-coral text-white shadow-sm'
+                      : 'bg-gray-100 dark:bg-gray-800 text-muted'
                     }
                   `}>
                     {tab.badge}

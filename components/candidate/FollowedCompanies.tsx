@@ -18,7 +18,7 @@ interface FollowedCompany {
     fundingStage: string | null;
     teamSize: string | null;
     location: string | null;
-    follower_count: number;
+    followerCount: number;
   };
 }
 
@@ -142,7 +142,7 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-accent-coral animate-spin" />
       </div>
     );
   }
@@ -155,28 +155,28 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
           <div className="bg-pink-100 p-2.5 rounded-xl">
             <Heart className="w-6 h-6 text-pink-600 fill-current" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">Saved & Following</h1>
+          <h1 className="font-heading text-2xl text-primary">Saved & Following</h1>
         </div>
-        <p className="text-gray-500">
+        <p className="text-muted">
           Jobs you've saved and companies you're following
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-100 pb-4">
+      <div className="flex gap-2 mb-6 border-b border-border pb-4">
         <button
           onClick={() => setActiveTab('saved-jobs')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${
             activeTab === 'saved-jobs'
               ? 'bg-gray-900 text-white'
-              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              : 'bg-gray-50 dark:bg-gray-900 text-muted hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'
           }`}
         >
           <Bookmark className="w-4 h-4" />
           Saved Jobs
           {savedJobs.length > 0 && (
             <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
-              activeTab === 'saved-jobs' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
+              activeTab === 'saved-jobs' ? 'bg-white dark:bg-surface/20 text-white' : 'bg-border text-muted'
             }`}>
               {savedJobs.length}
             </span>
@@ -187,14 +187,14 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${
             activeTab === 'companies'
               ? 'bg-gray-900 text-white'
-              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              : 'bg-gray-50 dark:bg-gray-900 text-muted hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'
           }`}
         >
           <Building2 className="w-4 h-4" />
           Following
           {followedCompanies.length > 0 && (
             <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
-              activeTab === 'companies' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
+              activeTab === 'companies' ? 'bg-white dark:bg-surface/20 text-white' : 'bg-border text-muted'
             }`}>
               {followedCompanies.length}
             </span>
@@ -206,12 +206,12 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
       {activeTab === 'saved-jobs' && (
         <>
           {savedJobs.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bookmark className="w-8 h-8 text-gray-400" />
+            <div className="bg-surface rounded-2xl border border-border p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bookmark className="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No saved jobs yet</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
+              <h3 className="text-lg font-bold text-primary mb-2">No saved jobs yet</h3>
+              <p className="text-muted max-w-md mx-auto">
                 When you find jobs you're interested in, click the heart icon to save them here for later.
               </p>
             </div>
@@ -222,23 +222,23 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                 return (
                   <div
                     key={saved.id}
-                    className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg transition-all group cursor-pointer"
+                    className="bg-surface rounded-2xl border border-border p-6 hover:shadow-lg transition-all group cursor-pointer"
                     onClick={() => onViewJob?.(job)}
                   >
                     <div className="flex items-start gap-4">
                       {/* Company Logo */}
-                      <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg font-black flex-shrink-0">
+                      <div className="w-12 h-12 bg-accent-coral rounded-xl flex items-center justify-center text-white text-lg font-black flex-shrink-0">
                         {job.companyName?.charAt(0) || 'C'}
                       </div>
 
                       {/* Job Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
+                        <h3 className="font-bold text-primary group-hover:text-accent-coral transition-colors mb-1">
                           {job.title}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-2">{job.companyName}</p>
+                        <p className="text-sm text-muted mb-2">{job.companyName}</p>
 
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                           {(job.salaryMin || job.salaryMax) && (
                             <span className="flex items-center gap-1">
                               <DollarSign className="w-3.5 h-3.5" />
@@ -252,7 +252,7 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                             </span>
                           )}
                           {job.workMode && (
-                            <span className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">
+                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-medium">
                               {job.workMode}
                             </span>
                           )}
@@ -261,7 +261,7 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           Saved {getRelativeTime(saved.created_at)}
                         </span>
                         <button
@@ -270,7 +270,7 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                             handleUnsaveJob(saved.job_id);
                           }}
                           disabled={actionLoading === `job-${saved.job_id}`}
-                          className="p-2 rounded-lg text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-all"
+                          className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-pink-600 hover:bg-pink-50 transition-all"
                           title="Remove from saved"
                         >
                           {actionLoading === `job-${saved.job_id}` ? (
@@ -293,12 +293,12 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
       {activeTab === 'companies' && (
         <>
           {followedCompanies.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-8 h-8 text-gray-400" />
+            <div className="bg-surface rounded-2xl border border-border p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No companies followed yet</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
+              <h3 className="text-lg font-bold text-primary mb-2">No companies followed yet</h3>
+              <p className="text-muted max-w-md mx-auto">
                 Follow companies you're interested in to get notified about new job opportunities.
               </p>
             </div>
@@ -309,7 +309,7 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                 return (
                   <div
                     key={follow.id}
-                    className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg transition-all group"
+                    className="bg-surface rounded-2xl border border-border p-6 hover:shadow-lg transition-all group"
                   >
                     {/* Company Header */}
                     <div className="flex items-start gap-4 mb-4">
@@ -317,17 +317,17 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                         <img
                           src={company.logoUrl}
                           alt={company.companyName}
-                          className="w-14 h-14 rounded-xl object-cover border border-gray-100"
+                          className="w-14 h-14 rounded-xl object-cover border border-border"
                         />
                       ) : (
-                        <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-black">
+                        <div className="w-14 h-14 bg-accent-coral rounded-xl flex items-center justify-center text-white text-xl font-black">
                           {company.companyName.charAt(0)}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 truncate">{company.companyName}</h3>
+                        <h3 className="font-bold text-primary truncate">{company.companyName}</h3>
                         {company.industry && (
-                          <p className="text-sm text-gray-500 truncate">{company.industry}</p>
+                          <p className="text-sm text-muted truncate">{company.industry}</p>
                         )}
                       </div>
                     </div>
@@ -335,13 +335,13 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                     {/* Company Details */}
                     <div className="space-y-2 mb-4">
                       {company.location && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-muted">
                           <MapPin className="w-4 h-4" />
                           <span className="truncate">{company.location}</span>
                         </div>
                       )}
                       {(company.teamSize || company.fundingStage) && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-muted">
                           <Users className="w-4 h-4" />
                           <span>
                             {company.teamSize && `${company.teamSize} employees`}
@@ -350,14 +350,14 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                           </span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                         <Heart className="w-3 h-3" />
-                        <span>{company.follower_count || 0} followers</span>
+                        <span>{company.followerCount || 0} followers</span>
                       </div>
                     </div>
 
                     {/* Following Since */}
-                    <p className="text-xs text-gray-400 mb-4">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
                       Following since {formatDate(follow.created_at)}
                     </p>
 
@@ -368,8 +368,8 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                         disabled={actionLoading === `notify-${follow.company_id}`}
                         className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                           follow.notification_enabled
-                            ? 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100'
-                            : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100'
+                            ? 'bg-accent-coral-bg text-accent-coral border border-accent-coral-light hover:bg-accent-coral-bg'
+                            : 'bg-gray-50 dark:bg-gray-900 text-muted border border-border hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'
                         } ${actionLoading === `notify-${follow.company_id}` ? 'opacity-50' : ''}`}
                         title={follow.notification_enabled ? 'Disable job alerts' : 'Enable job alerts'}
                       >
@@ -390,7 +390,7 @@ const FollowedCompanies: React.FC<FollowedCompaniesProps> = ({ initialTab = 'sav
                       <button
                         onClick={() => handleUnfollowCompany(follow.company_id)}
                         disabled={actionLoading === follow.company_id}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-bold bg-gray-50 text-gray-500 border border-gray-200 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-all flex items-center justify-center gap-2 ${
+                        className={`px-4 py-2.5 rounded-xl text-sm font-bold bg-gray-50 dark:bg-gray-900 text-muted border border-border hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-all flex items-center justify-center gap-2 ${
                           actionLoading === follow.company_id ? 'opacity-50' : ''
                         }`}
                         title="Unfollow company"

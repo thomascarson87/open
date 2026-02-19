@@ -41,15 +41,15 @@ const UpcomingEventsBanner: React.FC<UpcomingEventsBannerProps> = ({ events }) =
   const isImminent = (new Date(nextEvent.start_time).getTime() - Date.now()) < (1000 * 60 * 60); // < 1 hour
 
   return (
-    <div className={`sticky top-0 z-30 px-4 py-3 ${isImminent ? 'bg-purple-600' : 'bg-gray-900'} text-white`}>
+    <div className={`sticky top-0 z-30 px-4 py-3 ${isImminent ? 'bg-accent-coral' : 'bg-gray-900'} text-white`}>
       <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-10 h-10 ${isImminent ? 'bg-white/20' : 'bg-white/10'} rounded-full flex items-center justify-center flex-shrink-0`}>
+          <div className={`w-10 h-10 ${isImminent ? 'bg-white dark:bg-surface/20' : 'bg-white dark:bg-surface/10'} rounded-full flex items-center justify-center flex-shrink-0`}>
             {isImminent ? <Video className="w-5 h-5" /> : <Calendar className="w-5 h-5" />}
           </div>
           <div className="min-w-0">
             <div className="font-bold truncate">{nextEvent.title}</div>
-            <div className={`text-sm ${isImminent ? 'text-purple-200' : 'text-gray-400'}`}>
+            <div className={`text-sm ${isImminent ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
               {formatCountdown(nextEvent.start_time)}
             </div>
           </div>
@@ -59,7 +59,7 @@ const UpcomingEventsBanner: React.FC<UpcomingEventsBannerProps> = ({ events }) =
             href={nextEvent.video_link}
             target="_blank"
             rel="noreferrer"
-            className={`px-4 py-2 ${isImminent ? 'bg-white text-purple-600' : 'bg-white text-gray-900'} font-bold rounded-lg text-sm flex-shrink-0 hover:opacity-90 transition-opacity`}
+            className={`px-4 py-2 ${isImminent ? 'bg-white dark:bg-surface text-accent-green' : 'bg-white dark:bg-surface text-primary'} font-bold rounded-lg text-sm flex-shrink-0 hover:opacity-90 transition-opacity`}
           >
             {isImminent ? 'Join Now' : 'Join'}
           </a>

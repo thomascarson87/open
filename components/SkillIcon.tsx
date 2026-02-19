@@ -38,7 +38,7 @@ const SkillIcon: React.FC<SkillIconProps> = ({
           target.style.display = 'none';
           
           const fallback = document.createElement('div');
-          fallback.className = `inline-flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold rounded-lg flex-shrink-0 ${className}`;
+          fallback.className = `inline-flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 dark:text-gray-300 dark:text-gray-600 font-bold rounded-lg flex-shrink-0 ${className}`;
           fallback.style.width = `${size}px`;
           fallback.style.height = `${size}px`;
           fallback.style.fontSize = `${size * 0.35}px`;
@@ -54,7 +54,7 @@ const SkillIcon: React.FC<SkillIconProps> = ({
   
   return (
     <div 
-      className={`inline-flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold rounded-lg flex-shrink-0 ${className}`}
+      className={`inline-flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 dark:text-gray-300 dark:text-gray-600 font-bold rounded-lg flex-shrink-0 ${className}`}
       style={{ 
         width: size, 
         height: size,

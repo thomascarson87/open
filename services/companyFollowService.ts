@@ -17,7 +17,7 @@ interface FollowedCompanyWithProfile extends CompanyFollow {
     fundingStage: string | null;
     teamSize: string | null;
     location: string | null;
-    follower_count: number;
+    followerCount: number;
   };
 }
 
@@ -111,19 +111,26 @@ class CompanyFollowService {
     }
 
     // Map snake_case DB columns to camelCase for frontend
-    const mapped = data?.map(item => ({
-      ...item,
-      company_profiles: item.company_profiles ? {
-        id: item.company_profiles.id,
-        companyName: item.company_profiles.company_name,
-        logoUrl: item.company_profiles.logo_url,
-        industry: item.company_profiles.industry,
-        fundingStage: item.company_profiles.funding_stage,
-        teamSize: item.company_profiles.team_size,
-        location: item.company_profiles.headquarters_location,
-        follower_count: item.company_profiles.follower_count
-      } : null
-    })) || [];
+    // Supabase returns company_profiles as single object for FK relations,
+    // but TS may infer it as array — use 'as any' to handle both cases
+    const mapped = data?.map(item => {
+      const cp: any = Array.isArray(item.company_profiles)
+        ? item.company_profiles[0]
+        : item.company_profiles;
+      return {
+        ...item,
+        company_profiles: cp ? {
+          id: cp.id,
+          companyName: cp.company_name,
+          logoUrl: cp.logo_url,
+          industry: cp.industry,
+          fundingStage: cp.funding_stage,
+          teamSize: cp.team_size,
+          location: cp.headquarters_location,
+          followerCount: cp.follower_count
+        } : null
+      };
+    }) || [];
 
     return mapped as FollowedCompanyWithProfile[];
   }

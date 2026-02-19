@@ -23,7 +23,7 @@ export const DEV_ACCOUNTS: DevAccount[] = [
     email: 'thomascarson87@gmail.com',
     profileRole: 'candidate',
     teamRole: null,
-    badgeColor: 'bg-gray-100 text-gray-700',
+    badgeColor: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600',
     label: 'Candidate',
   },
   // Company Accounts
@@ -33,7 +33,7 @@ export const DEV_ACCOUNTS: DevAccount[] = [
     email: 'thomas.carson@heuristik.tech',
     profileRole: 'recruiter',
     teamRole: 'admin',
-    badgeColor: 'bg-purple-100 text-purple-700',
+    badgeColor: 'bg-accent-green-bg text-accent-green',
     label: 'Admin',
   },
   {
@@ -42,7 +42,7 @@ export const DEV_ACCOUNTS: DevAccount[] = [
     email: 'hm@test.com',
     profileRole: 'recruiter',
     teamRole: 'hiring_manager',
-    badgeColor: 'bg-blue-100 text-blue-700',
+    badgeColor: 'bg-accent-coral-bg text-accent-coral',
     label: 'Hiring Manager',
   },
   {

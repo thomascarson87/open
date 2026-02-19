@@ -125,18 +125,18 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
   const getTrendIcon = (change: number) => {
     if (change > 5) return <TrendingUp className="w-3.5 h-3.5 text-green-500" />;
     if (change < -5) return <TrendingDown className="w-3.5 h-3.5 text-red-500" />;
-    return <Minus className="w-3.5 h-3.5 text-gray-400" />;
+    return <Minus className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />;
   };
 
   const getConversionColor = (value: number, benchmark: number) => {
     if (value >= benchmark * 1.2) return 'text-green-600';
-    if (value >= benchmark * 0.8) return 'text-gray-700';
+    if (value >= benchmark * 0.8) return 'text-gray-700 dark:text-gray-300 dark:text-gray-600';
     return 'text-orange-600';
   };
 
   const getConversionBg = (value: number, benchmark: number) => {
     if (value >= benchmark * 1.2) return 'bg-green-500';
-    if (value >= benchmark * 0.8) return 'bg-blue-500';
+    if (value >= benchmark * 0.8) return 'bg-accent-coral';
     return 'bg-orange-500';
   };
 
@@ -152,9 +152,9 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
-          <div className="h-40 bg-gray-100 rounded-xl" />
+        <div className="bg-surface rounded-2xl border border-border p-6 animate-pulse">
+          <div className="h-6 bg-border rounded w-48 mb-4" />
+          <div className="h-40 bg-gray-100 dark:bg-gray-800 rounded-xl" />
         </div>
       </div>
     );
@@ -163,12 +163,12 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
   // No jobs state
   if (activeJobs.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <FileText className="w-8 h-8 text-gray-400" />
+      <div className="bg-surface rounded-2xl border border-border shadow-sm p-12 text-center">
+        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <FileText className="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">No Jobs Found</h3>
-        <p className="text-sm text-gray-500 max-w-md mx-auto">
+        <h3 className="text-lg font-bold text-primary mb-2">No Jobs Found</h3>
+        <p className="text-sm text-muted max-w-md mx-auto">
           {jobs.length === 0
             ? 'Create a job posting to start tracking performance.'
             : `Found ${jobs.length} jobs but none with trackable status. Jobs statuses: ${jobs.map(j => j.status || 'none').join(', ')}`
@@ -187,7 +187,7 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
           <select
             value={selectedJobId || ''}
             onChange={(e) => setSelectedJobId(e.target.value)}
-            className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-w-[240px]"
+            className="appearance-none bg-surface border border-border rounded-xl px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-coral focus:border-transparent cursor-pointer min-w-[240px]"
           >
             {activeJobs.map(job => (
               <option key={job.id} value={job.id}>
@@ -195,19 +195,19 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
         </div>
 
         {/* Date Range Selector */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {DATE_RANGE_OPTIONS.map(option => (
             <button
               key={option.value}
               onClick={() => setDateRange(option.value)}
               className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
                 dateRange === option.value
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white dark:bg-surface text-primary shadow-sm'
+                  : 'text-muted hover:text-gray-700 dark:text-gray-300 dark:text-gray-600'
               }`}
             >
               {option.label}
@@ -217,15 +217,15 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
       </div>
 
       {/* Section A: Funnel Visualization */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-xl">
-              <Target className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-accent-coral-bg rounded-xl">
+              <Target className="w-5 h-5 text-accent-coral" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Performance Funnel</h3>
-              <p className="text-sm text-gray-500">Track how candidates move through your hiring process</p>
+              <h3 className="text-lg font-bold text-primary">Performance Funnel</h3>
+              <p className="text-sm text-muted">Track how candidates move through your hiring process</p>
             </div>
           </div>
         </div>
@@ -234,21 +234,21 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
           {isLoadingPerf ? (
             <div className="animate-pulse space-y-4">
               <div className="flex items-center justify-between gap-4">
-                <div className="h-24 bg-gray-100 rounded-xl flex-1" />
-                <div className="h-24 bg-gray-100 rounded-xl flex-1" />
-                <div className="h-24 bg-gray-100 rounded-xl flex-1" />
+                <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl flex-1" />
+                <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl flex-1" />
+                <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl flex-1" />
               </div>
             </div>
           ) : !performance ? (
             <div className="text-center py-8">
-              <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">Unable to load performance data</p>
+              <Clock className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm text-muted">Unable to load performance data</p>
             </div>
           ) : performance.views === 0 ? (
             <div className="text-center py-8">
-              <Clock className="w-10 h-10 text-blue-200 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">Check back soon!</p>
-              <p className="text-sm text-gray-500 max-w-sm mx-auto">
+              <Clock className="w-10 h-10 text-accent-coral-light mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">Check back soon!</p>
+              <p className="text-sm text-muted max-w-sm mx-auto">
                 Your job was recently published. Performance data will appear once candidates start viewing it.
               </p>
             </div>
@@ -258,15 +258,15 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
               <div className="grid grid-cols-3 gap-4">
                 {/* Views */}
                 <div className="relative">
-                  <div className="bg-gray-50 rounded-xl p-4 text-center">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <Eye className="w-5 h-5 text-gray-400" />
-                      <span className="text-xs font-bold text-gray-400 uppercase">Views</span>
+                      <Eye className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                      <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Views</span>
                     </div>
                     <motion.div
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="text-3xl font-black text-gray-900"
+                      className="text-3xl font-black text-primary"
                     >
                       {formatNumber(performance.views)}
                     </motion.div>
@@ -281,22 +281,22 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                   </div>
                   {/* Arrow */}
                   <div className="absolute -right-2 top-1/2 -translate-y-1/2 z-10">
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600" />
                   </div>
                 </div>
 
                 {/* Saves */}
                 <div className="relative">
-                  <div className="bg-gray-50 rounded-xl p-4 text-center">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <Bookmark className="w-5 h-5 text-gray-400" />
-                      <span className="text-xs font-bold text-gray-400 uppercase">Saves</span>
+                      <Bookmark className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                      <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Saves</span>
                     </div>
                     <motion.div
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1 }}
-                      className="text-3xl font-black text-gray-900"
+                      className="text-3xl font-black text-primary"
                     >
                       {formatNumber(performance.saves)}
                     </motion.div>
@@ -310,22 +310,22 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                     )}
                   </div>
                   <div className="absolute -right-2 top-1/2 -translate-y-1/2 z-10">
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600" />
                   </div>
                 </div>
 
                 {/* Applications */}
                 <div>
-                  <div className="bg-blue-50 rounded-xl p-4 text-center">
+                  <div className="bg-accent-coral-bg rounded-xl p-4 text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <FileText className="w-5 h-5 text-blue-500" />
-                      <span className="text-xs font-bold text-blue-500 uppercase">Applications</span>
+                      <FileText className="w-5 h-5 text-accent-coral" />
+                      <span className="text-xs font-bold text-accent-coral uppercase">Applications</span>
                     </div>
                     <motion.div
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.2 }}
-                      className="text-3xl font-black text-blue-600"
+                      className="text-3xl font-black text-accent-coral"
                     >
                       {formatNumber(performance.applications)}
                     </motion.div>
@@ -342,19 +342,19 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
               </div>
 
               {/* Conversion Rates */}
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3">
                   Conversion Rates
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   {/* View to Save */}
                   <div className="text-center">
-                    <div className={`text-lg font-black ${benchmarks ? getConversionColor(performance.conversions.viewToSave, benchmarks.avgViewToSave) : 'text-gray-900'}`}>
+                    <div className={`text-lg font-black ${benchmarks ? getConversionColor(performance.conversions.viewToSave, benchmarks.avgViewToSave) : 'text-primary'}`}>
                       {performance.conversions.viewToSave}%
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">View → Save</div>
+                    <div className="text-xs text-muted mt-1">View → Save</div>
                     {benchmarks && (
-                      <div className="text-[10px] text-gray-400 mt-0.5">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                         Avg: {benchmarks.avgViewToSave}%
                       </div>
                     )}
@@ -362,12 +362,12 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
 
                   {/* Save to Apply */}
                   <div className="text-center">
-                    <div className={`text-lg font-black ${benchmarks ? getConversionColor(performance.conversions.saveToApply, benchmarks.avgSaveToApply) : 'text-gray-900'}`}>
+                    <div className={`text-lg font-black ${benchmarks ? getConversionColor(performance.conversions.saveToApply, benchmarks.avgSaveToApply) : 'text-primary'}`}>
                       {performance.conversions.saveToApply}%
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">Save → Apply</div>
+                    <div className="text-xs text-muted mt-1">Save → Apply</div>
                     {benchmarks && (
-                      <div className="text-[10px] text-gray-400 mt-0.5">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                         Avg: {benchmarks.avgSaveToApply}%
                       </div>
                     )}
@@ -375,12 +375,12 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
 
                   {/* View to Apply (Overall) */}
                   <div className="text-center">
-                    <div className={`text-lg font-black ${benchmarks ? getConversionColor(performance.conversions.viewToApply, benchmarks.avgViewToApply) : 'text-gray-900'}`}>
+                    <div className={`text-lg font-black ${benchmarks ? getConversionColor(performance.conversions.viewToApply, benchmarks.avgViewToApply) : 'text-primary'}`}>
                       {performance.conversions.viewToApply}%
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">View → Apply</div>
+                    <div className="text-xs text-muted mt-1">View → Apply</div>
                     {benchmarks && (
-                      <div className="text-[10px] text-gray-400 mt-0.5">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                         Avg: {benchmarks.avgViewToApply}%
                       </div>
                     )}
@@ -389,14 +389,14 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
 
                 {/* Visual comparison bar */}
                 {benchmarks && performance.views >= 10 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-4 pt-4 border-t border-border">
                     <div className="flex items-center gap-4">
                       <div className="flex-1">
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="text-gray-500">Your conversion</span>
-                          <span className="font-bold text-gray-700">{performance.conversions.viewToApply}%</span>
+                          <span className="text-muted">Your conversion</span>
+                          <span className="font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{performance.conversions.viewToApply}%</span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-border rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${Math.min(100, (performance.conversions.viewToApply / Math.max(benchmarks.avgViewToApply * 2, performance.conversions.viewToApply)) * 100)}%` }}
@@ -405,7 +405,7 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                           />
                         </div>
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-400 dark:text-gray-500">
                         Platform avg: {benchmarks.avgViewToApply}%
                       </div>
                     </div>
@@ -418,15 +418,15 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
       </div>
 
       {/* Section B: Attractiveness Score */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 rounded-xl">
-              <Sparkles className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-accent-green-bg rounded-xl">
+              <Sparkles className="w-5 h-5 text-accent-green" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Attractiveness Score</h3>
-              <p className="text-sm text-gray-500">How appealing is this job to candidates?</p>
+              <h3 className="text-lg font-bold text-primary">Attractiveness Score</h3>
+              <p className="text-sm text-muted">How appealing is this job to candidates?</p>
             </div>
           </div>
         </div>
@@ -435,17 +435,17 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
           {isLoadingAttr ? (
             <div className="animate-pulse space-y-4">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-gray-100 rounded-full" />
+                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-100 rounded w-32" />
-                  <div className="h-3 bg-gray-100 rounded w-48" />
+                  <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-32" />
+                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-48" />
                 </div>
               </div>
             </div>
           ) : !attractiveness ? (
             <div className="text-center py-8">
-              <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">Unable to calculate attractiveness score</p>
+              <AlertCircle className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm text-muted">Unable to calculate attractiveness score</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -458,7 +458,7 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                       cy="56"
                       r="48"
                       fill="none"
-                      stroke="#f3f4f6"
+                      stroke="var(--border)"
                       strokeWidth="10"
                     />
                     <motion.circle
@@ -466,7 +466,7 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                       cy="56"
                       r="48"
                       fill="none"
-                      stroke={attractiveness.score >= 70 ? '#22c55e' : attractiveness.score >= 40 ? '#3b82f6' : '#f97316'}
+                      stroke={attractiveness.score >= 70 ? '#22c55e' : attractiveness.score >= 40 ? 'var(--accent-coral)' : '#f97316'}
                       strokeWidth="10"
                       strokeLinecap="round"
                       initial={{ strokeDasharray: '0 301.6' }}
@@ -475,17 +475,17 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black text-gray-900">{attractiveness.score}</span>
-                    <span className="text-xs text-gray-500">/ 100</span>
+                    <span className="text-3xl font-black text-primary">{attractiveness.score}</span>
+                    <span className="text-xs text-muted">/ 100</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-gray-900 mb-1">
+                  <div className="text-lg font-bold text-primary mb-1">
                     {attractiveness.score >= 80 ? 'Excellent' :
                      attractiveness.score >= 60 ? 'Good' :
                      attractiveness.score >= 40 ? 'Needs Improvement' : 'Low Attractiveness'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted">
                     {attractiveness.score >= 60
                       ? 'This job is well-positioned to attract quality candidates'
                       : 'There are opportunities to make this job more appealing'}
@@ -501,14 +501,14 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                     <div key={i} className={`rounded-xl p-4 ${colors.bg}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-gray-900">{factor.factor}</span>
-                          <span className="text-xs text-gray-400">{factor.weight}% weight</span>
+                          <span className="text-sm font-bold text-primary">{factor.factor}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{factor.weight}% weight</span>
                         </div>
                         <span className={`text-sm font-black ${colors.text}`}>
                           {factor.score}
                         </span>
                       </div>
-                      <div className="h-1.5 bg-white/50 rounded-full overflow-hidden mb-2">
+                      <div className="h-1.5 bg-white dark:bg-surface/50 rounded-full overflow-hidden mb-2">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${factor.score}%` }}
@@ -516,7 +516,7 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                           className={`h-full rounded-full ${colors.bar}`}
                         />
                       </div>
-                      <p className="text-xs text-gray-600">{factor.insight}</p>
+                      <p className="text-xs text-muted">{factor.insight}</p>
                     </div>
                   );
                 })}
@@ -528,15 +528,15 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
 
       {/* Section C: Recommendations */}
       {attractiveness && attractiveness.topRecommendations.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
+        <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-50 rounded-xl">
                 <Lightbulb className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Top Recommendations</h3>
-                <p className="text-sm text-gray-500">Actions to improve your job's attractiveness</p>
+                <h3 className="text-lg font-bold text-primary">Top Recommendations</h3>
+                <p className="text-sm text-muted">Actions to improve your job's attractiveness</p>
               </div>
             </div>
           </div>
@@ -549,22 +549,22 @@ const JobPerformance: React.FC<JobPerformanceProps> = ({
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer group"
+                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors cursor-pointer group"
                   onClick={() => onEditJob?.(selectedJobId!, rec.editSection)}
                 >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
                     rec.impact === 'high' ? 'bg-red-100 text-red-600' :
                     rec.impact === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                    'bg-gray-100 text-gray-600'
+                    'bg-gray-100 dark:bg-gray-800 text-muted'
                   }`}>
                     {i + 1}
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{rec.action}</div>
-                    <div className="text-xs text-gray-500 capitalize">{rec.impact} impact</div>
+                    <div className="text-sm font-medium text-primary">{rec.action}</div>
+                    <div className="text-xs text-muted capitalize">{rec.impact} impact</div>
                   </div>
                   {onEditJob && (
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    <ArrowRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-muted transition-colors" />
                   )}
                 </motion.div>
               ))}

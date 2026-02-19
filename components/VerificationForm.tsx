@@ -6,17 +6,17 @@ import { ProfessionalVerification, CandidateProfile, Skill, VerifiedSkill } from
 import { SKILL_LEVEL_METADATA } from '../constants/matchingData';
 
 const RatingGroup = ({ title, icon, items, onChange }: any) => (
-    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-border">
         <div className="flex items-center gap-2 mb-6">
             {icon}
-            <h3 className="font-bold text-gray-900">{title}</h3>
+            <h3 className="font-bold text-primary">{title}</h3>
         </div>
         <div className="space-y-6">
             {items.map((item: any) => (
                 <div key={item.key}>
                     <div className="flex justify-between mb-2">
-                        <label className="text-sm font-bold text-gray-700">{item.label}</label>
-                        <span className="text-sm font-bold text-blue-600">{item.value}/10</span>
+                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{item.label}</label>
+                        <span className="text-sm font-bold text-accent-coral">{item.value}/10</span>
                     </div>
                     <input 
                         type="range" 
@@ -24,9 +24,9 @@ const RatingGroup = ({ title, icon, items, onChange }: any) => (
                         max="10" 
                         value={item.value} 
                         onChange={(e) => onChange(item.key, parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer accent-[var(--accent-coral)]"
                     />
-                    <div className="flex justify-between mt-1 text-[10px] font-bold text-gray-400 uppercase">
+                    <div className="flex justify-between mt-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">
                         <span>Entry</span>
                         <span>Expert</span>
                     </div>
@@ -151,13 +151,13 @@ const VerificationForm = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="bg-surface rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-4">Thank You!</h2>
-          <p className="text-gray-600 mb-8 text-lg">
+          <h2 className="font-heading text-3xl text-primary mb-4">Thank You!</h2>
+          <p className="text-muted mb-8 text-lg">
             Your verification has been secured. {candidate?.name} has been notified and their profile boosted.
           </p>
           <a href="/" className="block bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold">
@@ -170,13 +170,13 @@ const VerificationForm = () => {
 
   if (isExpired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="bg-surface rounded-3xl shadow-xl p-10 max-w-md w-full text-center">
           <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Clock className="w-12 h-12 text-orange-600" />
           </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-4">Link Expired</h2>
-          <p className="text-gray-600 mb-8">
+          <h2 className="font-heading text-3xl text-primary mb-4">Link Expired</h2>
+          <p className="text-muted mb-8">
             This verification link has expired. Please ask {candidate?.name} to resend the invitation.
           </p>
         </div>
@@ -187,48 +187,48 @@ const VerificationForm = () => {
   if (!verification || !candidate) return <div className="p-10 text-center">Invalid Link</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 font-sans">
+    <div className="min-h-screen bg-background py-10 px-4 font-sans">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 mb-6">
+        <div className="bg-surface rounded-3xl shadow-sm border border-border p-8 mb-6">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-tr from-accent-coral to-accent-green rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg">
               {candidate.name.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-2xl font-bold text-gray-900">{candidate.name}</h1>
-                  <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Candidate</span>
+                  <h1 className="font-heading text-2xl text-primary">{candidate.name}</h1>
+                  <span className="bg-accent-coral-bg text-accent-coral text-xs font-bold px-2 py-1 rounded">Candidate</span>
               </div>
-              <p className="text-gray-500 font-medium mb-2">{candidate.headline}</p>
-              <div className="flex gap-4 text-sm text-gray-400">
+              <p className="text-muted font-medium mb-2">{candidate.headline}</p>
+              <div className="flex gap-4 text-sm text-gray-400 dark:text-gray-500">
                   <span className="flex items-center"><Briefcase className="w-4 h-4 mr-1"/> {verification.referee_company}</span>
               </div>
             </div>
           </div>
           
           <div className="mt-8 relative pt-1">
-            <div className="flex mb-2 items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="flex mb-2 items-center justify-between text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               <span>Step {step} of 3</span>
               <span>{Math.round((step/3)*100)}%</span>
             </div>
-            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-100">
+            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-100 dark:bg-gray-800">
               <div style={{ width: `${(step/3)*100}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gray-900 transition-all duration-500"></div>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-8 md:p-10">
+        <div className="bg-surface rounded-3xl shadow-lg border border-border p-8 md:p-10">
           
           {step === 1 && (
              <div className="space-y-6 animate-in slide-in-from-right duration-300">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
+                <div className="bg-gradient-to-r from-accent-coral to-accent-green rounded-xl p-5 border border-accent-coral-bg">
                   <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Info className="w-5 h-5 text-accent-coral mt-0.5 flex-shrink-0" />
                     <div>
-                      <h4 className="font-bold text-blue-900 mb-1">How Skill Assessment Works</h4>
-                      <p className="text-sm text-blue-800 leading-relaxed">
+                      <h4 className="font-bold text-accent-coral mb-1">How Skill Assessment Works</h4>
+                      <p className="text-sm text-accent-coral leading-relaxed">
                         <strong>{verification?.referee_name || 'The candidate'}</strong> has indicated their skill levels. 
                         Please verify which skills you worked with them on, and assess their <strong>actual proficiency</strong> 
                         based on observable behaviors.
@@ -247,7 +247,7 @@ const VerificationForm = () => {
                         className={`border-2 rounded-xl p-5 transition-all ${
                           verifiedSkill.confirmed 
                             ? 'border-green-200 bg-green-50/50' 
-                            : 'border-gray-200 bg-white'
+                            : 'border-border bg-white dark:bg-surface'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-4">
@@ -257,19 +257,19 @@ const VerificationForm = () => {
                                 type="checkbox"
                                 checked={verifiedSkill.confirmed}
                                 onChange={(e) => updateVerifiedSkill(idx, { confirmed: e.target.checked })}
-                                className="w-5 h-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                className="w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-700 text-accent-coral focus:ring-2 focus:ring-accent-coral"
                               />
-                              <span className="ml-3 font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">
+                              <span className="ml-3 font-bold text-lg text-primary group-hover:text-accent-coral transition-colors">
                                 {verifiedSkill.skill}
                               </span>
                             </label>
                           </div>
                           
-                          <div className="bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
-                            <div className="text-xs text-blue-600 font-semibold uppercase tracking-wide mb-0.5">They claimed</div>
+                          <div className="bg-accent-coral-bg px-3 py-1.5 rounded-lg border border-accent-coral-light">
+                            <div className="text-xs text-accent-coral font-semibold uppercase tracking-wide mb-0.5">They claimed</div>
                             <div className="flex items-center gap-2">
                               <span className="text-xl">{claimedMeta?.icon || ''}</span>
-                              <span className="text-sm font-bold text-blue-900">{claimedMeta?.label || 'Applying'}</span>
+                              <span className="text-sm font-bold text-accent-coral">{claimedMeta?.label || 'Applying'}</span>
                             </div>
                           </div>
                         </div>
@@ -277,7 +277,7 @@ const VerificationForm = () => {
                         {verifiedSkill.confirmed && (
                           <div className="space-y-4 animate-in fade-in duration-200">
                             <div>
-                              <label className="block text-sm font-bold text-gray-700 mb-3">What level did you observe? *</label>
+                              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-3">What level did you observe? *</label>
                               <div className="grid grid-cols-5 gap-2">
                                 {[1, 2, 3, 4, 5].map((level) => {
                                   const meta = SKILL_LEVEL_METADATA[level as 1|2|3|4|5];
@@ -288,25 +288,25 @@ const VerificationForm = () => {
                                       type="button"
                                       onClick={() => updateVerifiedSkill(idx, { referee_assessed_level: level as any })}
                                       className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center ${
-                                        isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                                        isSelected ? 'border-green-500 bg-green-50' : 'border-border bg-white dark:bg-surface hover:border-gray-300 dark:border-gray-700'
                                       }`}
                                     >
                                       <div className="text-xl mb-1">{meta?.icon || level}</div>
-                                      <div className="text-[10px] font-bold text-gray-500">{meta?.label || 'Level'}</div>
+                                      <div className="text-[10px] font-bold text-muted">{meta?.label || 'Level'}</div>
                                     </button>
                                   );
                                 })}
                               </div>
                             </div>
                             <div>
-                              <label className="block text-xs font-bold text-gray-600 mb-1">Optional: Add context</label>
+                              <label className="block text-xs font-bold text-muted mb-1">Optional: Add context</label>
                               <input
                                 type="text"
                                 maxLength={50}
                                 value={verifiedSkill.notes || ''}
                                 onChange={(e) => updateVerifiedSkill(idx, { notes: e.target.value })}
                                 placeholder="e.g., Led major projects using this"
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:ring-2 focus:ring-accent-coral outline-none"
                               />
                             </div>
                           </div>
@@ -331,14 +331,14 @@ const VerificationForm = () => {
           {step === 2 && (
               <div className="animate-in fade-in slide-in-from-right duration-300 space-y-8">
                   <div>
-                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Performance Ratings</h2>
-                     <p className="text-gray-500">Rate {candidate.name}'s performance in these key areas.</p>
+                     <h2 className="font-heading text-2xl text-primary mb-2">Performance Ratings</h2>
+                     <p className="text-muted">Rate {candidate.name}'s performance in these key areas.</p>
                  </div>
 
                  <div className="space-y-8">
                      <RatingGroup 
                         title="Communication"
-                        icon={<Layout className="w-5 h-5 text-blue-500"/>}
+                        icon={<Layout className="w-5 h-5 text-accent-coral"/>}
                         items={[
                             { label: "Written Communication", value: formData.communication_written, key: 'communication_written' },
                             { label: "Verbal Communication", value: formData.communication_verbal, key: 'communication_verbal' }
@@ -356,7 +356,7 @@ const VerificationForm = () => {
                      />
                      <RatingGroup 
                         title="Teamwork"
-                        icon={<Users className="w-5 h-5 text-purple-500"/>}
+                        icon={<Users className="w-5 h-5 text-accent-green"/>}
                         items={[
                             { label: "Collaboration", value: formData.collaboration_quality, key: 'collaboration_quality' }
                         ]}
@@ -365,7 +365,7 @@ const VerificationForm = () => {
                  </div>
 
                  <div className="flex justify-between pt-4">
-                     <button onClick={() => setStep(1)} className="text-gray-500 font-bold hover:text-gray-900">Back</button>
+                     <button onClick={() => setStep(1)} className="text-muted font-bold hover:text-primary">Back</button>
                      <button onClick={() => setStep(3)} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black shadow-lg">Next Step</button>
                  </div>
               </div>
@@ -374,14 +374,14 @@ const VerificationForm = () => {
           {step === 3 && (
               <div className="animate-in fade-in slide-in-from-right duration-300 space-y-8">
                   <div>
-                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Character Traits</h2>
-                     <p className="text-gray-500">How much do you agree that {candidate.name} exhibits these traits?</p>
+                     <h2 className="font-heading text-2xl text-primary mb-2">Character Traits</h2>
+                     <p className="text-muted">How much do you agree that {candidate.name} exhibits these traits?</p>
                  </div>
 
                  <div className="space-y-4">
                      {formData.verified_traits.length > 0 ? formData.verified_traits.map((trait, idx) => (
-                         <div key={idx} className="bg-gray-50 p-6 rounded-2xl">
-                             <h3 className="font-bold text-lg text-gray-900 mb-4 text-center">"{trait.trait}"</h3>
+                         <div key={idx} className="bg-gray-50 dark:bg-gray-900 p-6 rounded-2xl">
+                             <h3 className="font-bold text-lg text-primary mb-4 text-center">"{trait.trait}"</h3>
                              <div className="flex justify-between gap-2">
                                  {[1, 2, 3, 4, 5].map(rating => (
                                      <button
@@ -393,26 +393,26 @@ const VerificationForm = () => {
                                         }}
                                         className={`flex-1 py-3 rounded-lg font-bold text-sm transition-all ${
                                             trait.agreement === rating 
-                                            ? 'bg-blue-600 text-white shadow-lg transform scale-105' 
-                                            : 'bg-white text-gray-400 hover:bg-gray-100 border'
+                                            ? 'bg-accent-coral text-white shadow-lg transform scale-105' 
+                                            : 'bg-white dark:bg-surface text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 border'
                                         }`}
                                      >
                                          {rating === 1 ? 'Disagree' : rating === 5 ? 'Agree' : rating}
                                      </button>
                                  ))}
                              </div>
-                             <div className="flex justify-between mt-2 text-xs font-bold text-gray-400 uppercase">
+                             <div className="flex justify-between mt-2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">
                                  <span>Disagree</span>
                                  <span>Agree</span>
                              </div>
                          </div>
                      )) : (
-                        <div className="p-8 text-center text-gray-400 italic">No specific traits requested for verification.</div>
+                        <div className="p-8 text-center text-gray-400 dark:text-gray-500 italic">No specific traits requested for verification.</div>
                      )}
                  </div>
 
                  <div className="flex justify-between pt-4">
-                     <button onClick={() => setStep(2)} className="text-gray-500 font-bold hover:text-gray-900">Back</button>
+                     <button onClick={() => setStep(2)} className="text-muted font-bold hover:text-primary">Back</button>
                      <button onClick={handleSubmit} className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg flex items-center">
                          <CheckCircle className="w-5 h-5 mr-2"/> Submit Verification
                      </button>

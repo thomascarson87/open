@@ -12,52 +12,8 @@ import {
   SkillsMarketData,
   SkillUnlockOpportunity
 } from '../../services/marketIntelligence';
+import { mapCandidateFromDB } from '../../services/dataMapperService';
 import { PositionMetrics, SkillsLandscape, CultureFitInsights } from '../../components/market-pulse';
-
-// Map database response to CandidateProfile
-const mapCandidateFromDB = (data: any): CandidateProfile => {
-  if (!data) return {} as CandidateProfile;
-  const skillsSource = data.skills_with_levels || data.skills || [];
-  return {
-    ...data,
-    id: data.id,
-    name: data.name,
-    headline: data.headline,
-    email: data.email,
-    location: data.location,
-    avatarUrls: data.avatar_urls || [],
-    videoIntroUrl: data.video_intro_url,
-    themeColor: data.theme_color,
-    themeFont: data.theme_font,
-    bio: data.bio,
-    status: data.status,
-    skills: skillsSource.map((s: any) => ({
-      name: s.name,
-      years: s.years !== undefined ? s.years : (s.minimumYears || 0),
-      level: s.level || (s.years >= 8 ? 5 : s.years >= 5 ? 4 : s.years >= 3 ? 3 : s.years >= 1 ? 2 : 1),
-      description: s.description
-    })),
-    contractTypes: data.contract_types || [],
-    preferredWorkMode: data.preferred_work_mode || [],
-    desiredPerks: data.desired_perks || [],
-    interestedIndustries: data.interested_industries || [],
-    characterTraits: data.character_traits || [],
-    values: data.values_list || [],
-    nonNegotiables: data.non_negotiables || [],
-    portfolio: data.portfolio || [],
-    references: data.references_list || [],
-    experience: data.experience || [],
-    desiredSeniority: data.desired_seniority || [],
-    salaryExpectation: data.salary_expectation,
-    salaryMin: data.salary_min,
-    salaryCurrency: data.salary_currency,
-    education_level: data.education_level,
-    education_field: data.education_field,
-    education_institution: data.education_institution,
-    workStylePreferences: data.work_style_preferences || {},
-    teamCollaborationPreferences: data.team_collaboration_preferences || {},
-  };
-};
 
 const MarketPulse: React.FC = () => {
   const { user } = useAuth();
@@ -175,8 +131,8 @@ const MarketPulse: React.FC = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-black text-gray-900">Market Pulse</h1>
-        <p className="text-gray-500 mt-1">Know your signal strength.</p>
+        <h1 className="font-heading text-2xl text-primary">Market Pulse</h1>
+        <p className="text-muted mt-1">Know your signal strength.</p>
       </div>
 
       {/* Error State */}
@@ -188,7 +144,7 @@ const MarketPulse: React.FC = () => {
 
       {/* Your Position Section */}
       <section className="mb-8">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Your Position
         </h2>
         <PositionMetrics
@@ -200,7 +156,7 @@ const MarketPulse: React.FC = () => {
 
       {/* Skills Landscape Section */}
       <section className="mb-8">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Skills Landscape
         </h2>
         <SkillsLandscape
@@ -212,8 +168,8 @@ const MarketPulse: React.FC = () => {
       </section>
 
       {/* Culture Fit Insights Section */}
-      <section className="mb-8 pt-8 border-t border-gray-100">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+      <section className="mb-8 pt-8 border-t border-border">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Culture Fit
         </h2>
         <CultureFitInsights
@@ -225,12 +181,12 @@ const MarketPulse: React.FC = () => {
       </section>
 
       {/* Coming Soon Sections */}
-      <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm p-12 flex flex-col items-center justify-center min-h-[200px]">
+      <div className="bg-white dark:bg-surface rounded-[2.5rem] border border-border shadow-sm p-12 flex flex-col items-center justify-center min-h-[200px]">
         <div className="text-center max-w-md">
-          <p className="text-gray-400 text-sm font-medium mb-4">More insights coming soon</p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+          <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mb-4">More insights coming soon</p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full">
             <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
-            <span className="text-sm font-bold text-gray-500">Salary Benchmarks, Role Trends</span>
+            <span className="text-sm font-bold text-muted">Salary Benchmarks, Role Trends</span>
           </div>
         </div>
       </div>

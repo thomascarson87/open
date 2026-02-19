@@ -2,6 +2,7 @@
 import { supabase } from './supabaseClient';
 import { TalentSearchCriteria, TalentSearchResult, CandidateProfile, CompanyProfile, SavedSearch } from '../types';
 import { calculateCandidateMatch, calculateRoleAlignment } from './matchingService';
+import { mapCandidateFromDB, mapCompanyFromDB } from './dataMapperService';
 
 interface CandidateRole {
   candidate_id: string;
@@ -87,16 +88,22 @@ class TalentMatcherService {
       .eq('id', companyId)
       .maybeSingle();
 
+    // 2a. Fetch default HM preferences for this company (for management fit scoring)
+    let companyHmPrefs: any = null;
+    const { data: hmPrefsData } = await supabase
+      .from('hiring_manager_preferences')
+      .select('*')
+      .eq('company_id', companyId)
+      .eq('is_default', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (hmPrefsData) {
+      companyHmPrefs = hmPrefsData;
+    }
+
     if (companyData) {
-      companyProfile = {
-        ...companyData,
-        companyName: companyData.company_name,
-        focusType: companyData.focus_type || null,
-        missionOrientation: companyData.mission_orientation || null,
-        workStyle: companyData.work_style || null,
-        industry: companyData.industry || [],
-        companySizeRange: companyData.company_size_range,
-      } as CompanyProfile;
+      companyProfile = mapCompanyFromDB(companyData);
     }
 
     // 2b. Fetch candidates
@@ -127,34 +134,13 @@ class TalentMatcherService {
       });
     }
 
-    // 3. Map to profiles with role data
-    const profiles = candidates.map((c: any) => ({
-      ...c,
-      avatarUrls: c.avatar_urls || [],
-      skills: c.skills || [],
-      contractTypes: c.contract_types || [],
-      preferredWorkMode: c.preferred_work_mode || [],
-      desiredPerks: c.desired_perks || [],
-      interestedIndustries: c.interested_industries || [],
-      characterTraits: c.character_traits || [],
-      values: c.values_list || [],
-      nonNegotiables: c.non_negotiables || [],
-      experience: c.experience || [],
-      desiredSeniority: c.desired_seniority || [],
-      // Role data from our mapping
-      primaryRoleId: c.primary_role_id,
-      primaryRoleName: c.primary_role_name,
-      secondaryRoles: c.secondary_roles || [],
-      regulatoryExperience: c.regulatory_experience || [],
-      preferredCompanyFocus: c.preferred_company_focus || [],
-      preferredMissionOrientation: c.preferred_mission_orientation || [],
-      preferredWorkStyle: c.preferred_work_style || [],
-    })) as CandidateProfile[];
+    // 3. Map to profiles using canonical mapper
+    const profiles = candidates.map((c: any) => mapCandidateFromDB(c));
 
     // 4. Run matching algorithm on each (pass company + cert data for sub-factor scoring)
     const results: TalentSearchResult[] = profiles.map(candidate => {
       const candCertIds = candidateCertMap.get(candidate.id) || [];
-      const breakdown = calculateCandidateMatch(criteria, candidate, companyProfile, candCertIds);
+      const breakdown = calculateCandidateMatch(criteria, candidate, companyProfile, candCertIds, companyHmPrefs);
 
       // Calculate role alignment if role filter is active
       let roleAlignmentScore = 100; // Default if no role filter

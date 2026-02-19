@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { JobPosting } from '../types';
+import { mapJobFromDB } from './dataMapperService';
 
 interface SavedJob {
   id: string;
@@ -92,7 +93,16 @@ class SavedJobService {
       return [];
     }
 
-    return (data as SavedJobWithDetails[]) || [];
+    // Map snake_case job data to camelCase JobPosting
+    const mapped = (data || []).map((item: any) => {
+      const rawJob = Array.isArray(item.jobs) ? item.jobs[0] : item.jobs;
+      return {
+        ...item,
+        jobs: rawJob ? mapJobFromDB(rawJob) : rawJob
+      };
+    });
+
+    return mapped as SavedJobWithDetails[];
   }
 
   /**

@@ -18,7 +18,7 @@ const GravitySparkline: React.FC<GravitySparklineProps> = ({
   return (
     <div
       className={`
-        bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl
+        bg-white dark:bg-surface/80 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl
         px-4 py-3
         flex items-center gap-4
         cursor-pointer hover:shadow-xl transition-all duration-200
@@ -36,8 +36,8 @@ const GravitySparkline: React.FC<GravitySparklineProps> = ({
       aria-label="Open match priority filter"
     >
       {/* Icon */}
-      <div className="bg-blue-100 p-2 rounded-lg flex-shrink-0">
-        <Sliders className="w-4 h-4 text-blue-600" />
+      <div className="bg-accent-coral-bg p-2 rounded-lg flex-shrink-0">
+        <Sliders className="w-4 h-4 text-accent-coral" />
       </div>
 
       {/* Mini circle preview */}
@@ -82,8 +82,8 @@ const GravitySparkline: React.FC<GravitySparklineProps> = ({
       </div>
 
       {/* Expand indicator */}
-      <div className="flex-shrink-0 p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-        <ChevronDown className="w-5 h-5 text-gray-400" />
+      <div className="flex-shrink-0 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-lg transition-colors">
+        <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />
       </div>
     </div>
   );

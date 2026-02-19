@@ -96,15 +96,15 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
   const getRatingConfig = (rating: CompanySalaryPosition['competitiveRating']) => {
     switch (rating) {
       case 'premium':
-        return { label: 'Premium', color: 'text-purple-600', bg: 'bg-purple-50', icon: Sparkles };
+        return { label: 'Premium', color: 'text-accent-green', bg: 'bg-accent-green-bg', icon: Sparkles };
       case 'above_market':
         return { label: 'Above Market', color: 'text-green-600', bg: 'bg-green-50', icon: TrendingUp };
       case 'competitive':
-        return { label: 'Competitive', color: 'text-blue-600', bg: 'bg-blue-50', icon: Minus };
+        return { label: 'Competitive', color: 'text-accent-coral', bg: 'bg-accent-coral-bg', icon: Minus };
       case 'below_market':
         return { label: 'Below Market', color: 'text-orange-600', bg: 'bg-orange-50', icon: TrendingDown };
       default:
-        return { label: 'Unknown', color: 'text-gray-600', bg: 'bg-gray-50', icon: Minus };
+        return { label: 'Unknown', color: 'text-muted', bg: 'bg-gray-50 dark:bg-gray-900', icon: Minus };
     }
   };
 
@@ -112,13 +112,13 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
-          <div className="h-32 bg-gray-100 rounded-xl" />
+        <div className="bg-surface rounded-2xl border border-border p-6 animate-pulse">
+          <div className="h-6 bg-border rounded w-48 mb-4" />
+          <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl" />
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-4" />
-          <div className="h-32 bg-gray-100 rounded-xl" />
+        <div className="bg-surface rounded-2xl border border-border p-6 animate-pulse">
+          <div className="h-6 bg-border rounded w-48 mb-4" />
+          <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl" />
         </div>
       </div>
     );
@@ -127,16 +127,16 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
   return (
     <div className="space-y-6">
       {/* Salary Position Card */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-50 rounded-xl">
                 <DollarSign className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Salary Position</h3>
-                <p className="text-sm text-gray-500">How your compensation compares to market</p>
+                <h3 className="text-lg font-bold text-primary">Salary Position</h3>
+                <p className="text-sm text-muted">How your compensation compares to market</p>
               </div>
             </div>
 
@@ -146,7 +146,7 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                 <select
                   value={selectedJobId || ''}
                   onChange={(e) => setSelectedJobId(e.target.value)}
-                  className="appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 pr-10 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                  className="appearance-none bg-gray-50 dark:bg-gray-900 border border-border rounded-xl px-4 py-2 pr-10 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-coral focus:border-transparent cursor-pointer"
                 >
                   {jobsWithSalary.map(job => (
                     <option key={job.id} value={job.id}>
@@ -154,7 +154,7 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               </div>
             )}
           </div>
@@ -163,18 +163,18 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
         <div className="p-6">
           {isLoadingSalary ? (
             <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-32" />
-              <div className="h-24 bg-gray-100 rounded-xl" />
+              <div className="h-8 bg-border rounded w-32" />
+              <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl" />
             </div>
           ) : !salaryPosition ? (
             <div className="text-center py-8">
-              <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">
+              <AlertCircle className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm text-muted">
                 {jobsWithSalary.length === 0
                   ? 'No jobs with salary data available'
                   : 'Unable to calculate market position'}
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Add salary ranges to your job postings to see benchmarks
               </p>
             </div>
@@ -194,24 +194,24 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                     );
                   })()}
                   <div>
-                    <div className="text-2xl font-black text-gray-900">
+                    <div className="text-2xl font-black text-primary">
                       {salaryPosition.percentile}th percentile
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted">
                       {salaryPosition.gap >= 0 ? '+' : ''}{salaryPosition.gap}% vs median
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">Your range</div>
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="text-sm text-muted">Your range</div>
+                  <div className="text-lg font-bold text-primary">
                     {formatSalary(salaryPosition.companySalary.min)} - {formatSalary(salaryPosition.companySalary.max)}
                   </div>
                 </div>
               </div>
 
               {/* Distribution Visualization */}
-              <div className="bg-gray-50 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4">
                 <div className="flex items-end justify-between h-24 relative">
                   {/* Distribution bars */}
                   {[
@@ -232,12 +232,12 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                           animate={{ height: point.height }}
                           transition={{ duration: 0.5, delay: i * 0.1 }}
                           className={`w-8 rounded-t-lg ${
-                            isCompanyNear ? 'bg-blue-500' : 'bg-gray-300'
+                            isCompanyNear ? 'bg-accent-coral' : 'bg-gray-300'
                           }`}
                         />
                         <div className="mt-2 text-center">
-                          <div className="text-xs font-medium text-gray-500">{point.label}</div>
-                          <div className={`text-xs font-bold ${isCompanyNear ? 'text-blue-600' : 'text-gray-700'}`}>
+                          <div className="text-xs font-medium text-muted">{point.label}</div>
+                          <div className={`text-xs font-bold ${isCompanyNear ? 'text-accent-coral' : 'text-gray-700 dark:text-gray-300 dark:text-gray-600'}`}>
                             {formatSalary(point.value).replace('$', '')}
                           </div>
                         </div>
@@ -257,13 +257,13 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                     }}
                   >
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-lg" />
-                      <div className="text-[10px] font-bold text-blue-600 mt-1">YOU</div>
+                      <div className="w-3 h-3 bg-accent-coral rounded-full border-2 border-white shadow-lg" />
+                      <div className="text-[10px] font-bold text-accent-coral mt-1">YOU</div>
                     </div>
                   </motion.div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted">
                   <span>Based on {salaryPosition.marketBenchmark.sampleSize} similar roles</span>
                   <span>{salaryPosition.companySalary.currency}</span>
                 </div>
@@ -274,15 +274,15 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
       </div>
 
       {/* Perk Alignment Card */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 rounded-xl">
-              <Gift className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-accent-green-bg rounded-xl">
+              <Gift className="w-5 h-5 text-accent-green" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Perk Alignment</h3>
-              <p className="text-sm text-gray-500">How your benefits match candidate expectations</p>
+              <h3 className="text-lg font-bold text-primary">Perk Alignment</h3>
+              <p className="text-sm text-muted">How your benefits match candidate expectations</p>
             </div>
           </div>
         </div>
@@ -290,18 +290,18 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
         <div className="p-6">
           {isLoadingPerks ? (
             <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-32" />
-              <div className="h-24 bg-gray-100 rounded-xl" />
+              <div className="h-8 bg-border rounded w-32" />
+              <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl" />
             </div>
           ) : !perkAlignment ? (
             <div className="text-center py-8">
-              <Gift className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">
+              <Gift className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm text-muted">
                 {companyPerks.length === 0
                   ? 'No company perks configured'
                   : 'Unable to calculate perk alignment'}
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Add perks to your company profile to see alignment
               </p>
             </div>
@@ -316,7 +316,7 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                       cy="48"
                       r="40"
                       fill="none"
-                      stroke="#f3f4f6"
+                      stroke="var(--border)"
                       strokeWidth="8"
                     />
                     <motion.circle
@@ -324,7 +324,7 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                       cy="48"
                       r="40"
                       fill="none"
-                      stroke={perkAlignment.alignmentScore >= 70 ? '#22c55e' : perkAlignment.alignmentScore >= 40 ? '#3b82f6' : '#f97316'}
+                      stroke={perkAlignment.alignmentScore >= 70 ? '#22c55e' : perkAlignment.alignmentScore >= 40 ? 'var(--accent-coral)' : '#f97316'}
                       strokeWidth="8"
                       strokeLinecap="round"
                       initial={{ strokeDasharray: '0 251.2' }}
@@ -333,15 +333,15 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-black text-gray-900">{perkAlignment.alignmentScore}%</span>
+                    <span className="text-2xl font-black text-primary">{perkAlignment.alignmentScore}%</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="text-lg font-bold text-primary">
                     {perkAlignment.alignmentScore >= 70 ? 'Strong Alignment' :
                      perkAlignment.alignmentScore >= 40 ? 'Moderate Alignment' : 'Low Alignment'}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted">
                     {perkAlignment.alignedPerks.length} of top {perkAlignment.topCandidatePerks.length} desired perks offered
                   </div>
                 </div>
@@ -388,14 +388,14 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
 
               {/* Unique Perks */}
               {perkAlignment.uniquePerks.length > 0 && (
-                <div className="bg-purple-50 rounded-xl p-4">
+                <div className="bg-accent-green-bg rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
-                    <span className="text-sm font-bold text-purple-800">Your Differentiators</span>
+                    <Sparkles className="w-4 h-4 text-accent-green" />
+                    <span className="text-sm font-bold text-accent-green">Your Differentiators</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {perkAlignment.uniquePerks.map((perk, i) => (
-                      <span key={i} className="px-3 py-1 bg-white rounded-full text-sm font-medium text-purple-700 border border-purple-200 capitalize">
+                      <span key={i} className="px-3 py-1 bg-white dark:bg-surface rounded-full text-sm font-medium text-accent-green border border-accent-green-bg capitalize">
                         {perk}
                       </span>
                     ))}
@@ -404,8 +404,8 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
               )}
 
               {/* Top Candidate Perks */}
-              <div className="pt-4 border-t border-gray-100">
-                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">
+              <div className="pt-4 border-t border-border">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3">
                   Most Requested Perks by Candidates
                 </div>
                 <div className="space-y-2">
@@ -413,10 +413,10 @@ const CompensationBenchmarks: React.FC<CompensationBenchmarksProps> = ({
                     <div key={i} className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 capitalize">{item.perk}</span>
-                          <span className="text-xs text-gray-500">{item.demandPercent}%</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 capitalize">{item.perk}</span>
+                          <span className="text-xs text-muted">{item.demandPercent}%</span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${item.demandPercent}%` }}

@@ -14,14 +14,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`bg-white rounded-2xl border border-gray-200 overflow-hidden ${className}`}>
+    <div className={`bg-surface rounded-2xl border border-border overflow-hidden ${className}`}>
       {(title || subtitle) && (
         <div className="px-6 pt-6 pb-4">
           {title && (
-            <h3 className="text-base font-bold text-gray-900">{title}</h3>
+            <h3 className="text-base font-bold text-primary">{title}</h3>
           )}
           {subtitle && (
-            <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
+            <p className="text-sm text-muted mt-0.5">{subtitle}</p>
           )}
         </div>
       )}

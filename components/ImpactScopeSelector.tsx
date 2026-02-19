@@ -63,41 +63,41 @@ const ImpactScopeSelector: React.FC<Props> = ({
               onClick={() => handleToggle(level)}
               className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative group ${
                 active 
-                  ? 'border-blue-600 bg-blue-50/50 shadow-sm' 
-                  : 'border-gray-100 bg-white hover:border-gray-200'
+                  ? 'border-accent-coral bg-accent-coral-bg/50 shadow-sm' 
+                  : 'border-border bg-white dark:bg-surface hover:border-border'
               }`}
             >
               <div className="flex items-start gap-4">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0 transition-colors ${
-                  active ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'
+                  active ? 'bg-accent-coral text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                 }`}>
                   {level}
                 </div>
                 
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className={`font-bold ${active ? 'text-blue-900' : 'text-gray-900'}`}>{meta.label}</h4>
-                    {active && <Check className="w-5 h-5 text-blue-600" />}
+                    <h4 className={`font-bold ${active ? 'text-accent-coral' : 'text-primary'}`}>{meta.label}</h4>
+                    {active && <Check className="w-5 h-5 text-accent-coral" />}
                   </div>
-                  <p className="text-sm text-gray-500 leading-tight mb-3">{meta.descriptor}</p>
+                  <p className="text-sm text-muted leading-tight mb-3">{meta.descriptor}</p>
                   
                   {/* Expanded Content */}
                   <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 pt-3 border-t border-dashed transition-all ${
-                    active ? 'border-blue-200 opacity-100 max-h-40' : 'border-gray-100 opacity-60 group-hover:opacity-100 max-h-40 overflow-hidden'
+                    active ? 'border-accent-coral-light opacity-100 max-h-40' : 'border-border opacity-60 group-hover:opacity-100 max-h-40 overflow-hidden'
                   }`}>
                     <div>
-                      <div className="text-[10px] font-bold text-gray-400 uppercase mb-2">Typical Roles</div>
+                      <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Typical Roles</div>
                       <div className="flex flex-wrap gap-1">
                         {meta.typicalRoles.slice(0, 3).map(role => (
-                          <span key={role} className="text-[10px] bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-600">
+                          <span key={role} className="text-[10px] bg-surface border border-border px-1.5 py-0.5 rounded text-muted">
                             {role}
                           </span>
                         ))}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] font-bold text-gray-400 uppercase mb-2">Characteristics</div>
-                      <ul className="text-[10px] text-gray-500 space-y-0.5 list-disc list-inside">
+                      <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Characteristics</div>
+                      <ul className="text-[10px] text-muted space-y-0.5 list-disc list-inside">
                         {meta.characteristics.slice(0, 2).map((c, i) => (
                           <li key={i} className="truncate">{c}</li>
                         ))}
@@ -111,8 +111,8 @@ const ImpactScopeSelector: React.FC<Props> = ({
         })}
       </div>
       
-      <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl text-xs text-gray-500 border border-gray-200 border-dashed">
-        <Info className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl text-xs text-muted border border-border border-dashed">
+        <Info className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         <p>Impact scope measures the breadth of your influence beyond your job title. You can select up to {maxSelections} levels you are open to.</p>
       </div>
     </div>

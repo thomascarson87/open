@@ -370,12 +370,12 @@ export function calculateProfileStrength(profile: CandidateProfile | null): Prof
   if (hasTraits) totalPoints += 10;
 
   // Avatar (5 points)
-  const hasAvatar = (profile.avatarUrls && profile.avatarUrls.length > 0) || !!profile.avatar_url;
+  const hasAvatar = (profile.avatarUrls && profile.avatarUrls.length > 0) || !!profile.avatarUrl;
   breakdown.push({ category: 'Profile photo', points: hasAvatar ? 5 : 0, maxPoints: 5, completed: hasAvatar });
   if (hasAvatar) totalPoints += 5;
 
   // Education fields (5 points)
-  const hasEducation = !!(profile.education_level || profile.education_field || profile.education_institution);
+  const hasEducation = !!(profile.educationLevel || profile.educationField || profile.educationInstitution);
   breakdown.push({ category: 'Education', points: hasEducation ? 5 : 0, maxPoints: 5, completed: hasEducation });
   if (hasEducation) totalPoints += 5;
 

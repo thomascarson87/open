@@ -24,13 +24,13 @@ const OptionSelector: React.FC<any> = ({ label, icon, options, value, onChange, 
   const selectedOption = options.find((o: any) => o.value === value);
   return (
     <div className="space-y-3">
-      <label className="flex items-center text-sm font-bold text-gray-700">
+      <label className="flex items-center text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">
         {icon} <span className="ml-2">{label}</span>
       </label>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
         {options.map((option: any) => (
           <button key={option.value} type="button" onClick={() => onChange(option.value)}
-            className={`p-3 rounded-xl border-2 text-left transition-all ${value === option.value ? 'border-blue-600 bg-blue-50 text-blue-900' : 'border-gray-100 bg-white text-gray-600 hover:border-gray-300'}`}>
+            className={`p-3 rounded-xl border-2 text-left transition-all ${value === option.value ? 'border-accent-coral bg-accent-coral-bg text-accent-coral' : 'border-border bg-white dark:bg-surface text-muted hover:border-gray-300 dark:border-gray-700'}`}>
             <div className="flex items-center gap-2">
               {option.icon && <span className="text-lg">{option.icon}</span>}
               <span className="font-bold text-sm">{option.label}</span>
@@ -39,9 +39,9 @@ const OptionSelector: React.FC<any> = ({ label, icon, options, value, onChange, 
         ))}
       </div>
       {showDescription && selectedOption && (
-        <div className="flex items-start gap-2 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50">
-          <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-blue-800">{selectedOption.description}</p>
+        <div className="flex items-start gap-2 bg-accent-coral-bg/50 p-3 rounded-lg border border-accent-coral-bg/50">
+          <Info className="w-4 h-4 text-accent-coral mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-accent-coral">{selectedOption.description}</p>
         </div>
       )}
     </div>
@@ -55,25 +55,25 @@ const WorkStyleSelector: React.FC<Props> = ({ preferences, onChange, showDescrip
 
   return (
     <div className="space-y-6">
-      <div className="border border-gray-200 rounded-2xl overflow-hidden">
-        <button type="button" onClick={() => toggle('schedule')} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100">
-          <div className="flex items-center gap-3"><Clock className="w-5 h-5 text-blue-600" /><span className="font-bold">Schedule & Pace</span></div>
+      <div className="border border-border rounded-2xl overflow-hidden">
+        <button type="button" onClick={() => toggle('schedule')} className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800">
+          <div className="flex items-center gap-3"><Clock className="w-5 h-5 text-accent-coral" /><span className="font-bold">Schedule & Pace</span></div>
           {expanded.schedule ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>
         {expanded.schedule && (
-          <div className="p-6 space-y-8 border-t border-gray-100">
+          <div className="p-6 space-y-8 border-t border-border">
             <OptionSelector label="Work Hours" icon={<Clock className="w-4 h-4" />} options={WORK_HOURS_OPTIONS} value={preferences.workHours} onChange={(v: any) => update('workHours', v)} />
             <OptionSelector label="Intensity" icon={<Zap className="w-4 h-4" />} options={WORK_INTENSITY_OPTIONS} value={preferences.workIntensity} onChange={(v: any) => update('workIntensity', v)} />
           </div>
         )}
       </div>
-      <div className="border border-gray-200 rounded-2xl overflow-hidden">
-        <button type="button" onClick={() => toggle('autonomy')} className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100">
-          <div className="flex items-center gap-3"><Brain className="w-5 h-5 text-purple-600" /><span className="font-bold">Autonomy</span></div>
+      <div className="border border-border rounded-2xl overflow-hidden">
+        <button type="button" onClick={() => toggle('autonomy')} className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800">
+          <div className="flex items-center gap-3"><Brain className="w-5 h-5 text-accent-green" /><span className="font-bold">Autonomy</span></div>
           {expanded.autonomy ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>
         {expanded.autonomy && (
-          <div className="p-6 space-y-8 border-t border-gray-100">
+          <div className="p-6 space-y-8 border-t border-border">
             <OptionSelector label="Autonomy Level" icon={<Users className="w-4 h-4" />} options={AUTONOMY_LEVEL_OPTIONS} value={preferences.autonomyLevel} onChange={(v: any) => update('autonomyLevel', v)} />
           </div>
         )}

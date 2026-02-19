@@ -59,17 +59,17 @@ const getEntryIcon = (type: string, status?: string) => {
 const getEntryColor = (type: string, status?: string) => {
   switch (type) {
     case 'application':
-      return 'bg-blue-100 text-blue-600';
+      return 'bg-accent-coral-bg text-accent-coral';
     case 'status_change':
       if (status?.includes('rejected')) return 'bg-red-100 text-red-600';
       if (status?.includes('offer') || status?.includes('hired')) return 'bg-green-100 text-green-600';
-      return 'bg-purple-100 text-purple-600';
+      return 'bg-accent-green-bg text-accent-green';
     case 'message':
-      return 'bg-gray-100 text-gray-600';
+      return 'bg-gray-100 dark:bg-gray-800 text-muted';
     case 'event':
       return 'bg-yellow-100 text-yellow-600';
     default:
-      return 'bg-gray-100 text-gray-600';
+      return 'bg-gray-100 dark:bg-gray-800 text-muted';
   }
 };
 
@@ -150,10 +150,10 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ application }) => {
       <div className="p-4 space-y-4">
         {[1, 2, 3].map(i => (
           <div key={i} className="flex gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-full bg-gray-200" />
+            <div className="w-8 h-8 rounded-full bg-border" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-3 bg-gray-200 rounded w-1/2" />
+              <div className="h-4 bg-border rounded w-3/4" />
+              <div className="h-3 bg-border rounded w-1/2" />
             </div>
           </div>
         ))}
@@ -164,8 +164,8 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ application }) => {
   if (timeline.length === 0) {
     return (
       <div className="p-8 text-center">
-        <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">No activity yet</p>
+        <Clock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+        <p className="text-muted">No activity yet</p>
       </div>
     );
   }
@@ -176,7 +176,7 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ application }) => {
         {timeline.map((entry, index) => (
           <div key={entry.id} className="flex gap-3 relative">
             {index < timeline.length - 1 && (
-              <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-gray-100" />
+              <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-gray-100 dark:bg-gray-800" />
             )}
 
             <div className={`
@@ -188,13 +188,13 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ application }) => {
 
             <div className="flex-1 pb-6">
               <div className="flex items-start justify-between gap-2">
-                <span className="font-medium text-gray-900 text-sm">{entry.title}</span>
-                <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
+                <span className="font-medium text-primary text-sm">{entry.title}</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap flex-shrink-0">
                   {formatRelativeTime(entry.timestamp)}
                 </span>
               </div>
               {entry.description && (
-                <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                <p className="text-sm text-muted mt-1 leading-relaxed">
                   {entry.description}
                 </p>
               )}
@@ -204,7 +204,7 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ application }) => {
                   href={entry.metadata.event.video_link}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-accent-green-bg text-accent-green rounded-lg text-xs font-bold hover:bg-accent-green-bg transition-colors"
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   Join Meeting

@@ -28,13 +28,13 @@ const QuickFilters: React.FC<QuickFiltersProps> = ({ current, onChange, counts }
             transition-all flex-shrink-0
             ${current === f.id
               ? 'bg-gray-900 text-white shadow-md'
-              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+              : 'bg-surface border border-border text-muted hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 hover:border-gray-300 dark:border-gray-700'
             }
           `}
         >
           {f.label}
           {counts[f.id] > 0 && (
-            <span className={`ml-1.5 ${current === f.id ? 'text-gray-400' : 'text-gray-400'}`}>
+            <span className={`ml-1.5 ${current === f.id ? 'text-gray-400 dark:text-gray-500' : 'text-gray-400 dark:text-gray-500'}`}>
               {counts[f.id]}
             </span>
           )}

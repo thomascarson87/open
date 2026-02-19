@@ -15,7 +15,7 @@ export const JOB_SEARCH_STATUS_OPTIONS: JobSearchStatusOption[] = [
   {
     value: 'open_to_offers',
     label: 'Open to Offers',
-    badgeColor: 'bg-blue-500',
+    badgeColor: 'bg-accent-coral',
     description: 'Not searching but would consider the right role'
   },
   {

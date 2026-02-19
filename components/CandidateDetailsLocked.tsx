@@ -60,15 +60,15 @@ const CandidateDetailsLocked: React.FC<Props> = ({ candidate, onUnlock, onBack }
     <div className="max-w-4xl mx-auto px-4 py-8">
       <button 
         onClick={onBack}
-        className="flex items-center text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+        className="flex items-center text-muted hover:text-primary mb-6 transition-colors"
       >
         <ChevronRight className="w-4 h-4 mr-1 rotate-180" /> Back to Search
       </button>
 
       {/* Locked Header */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-6 relative overflow-hidden">
+      <div className="bg-surface rounded-3xl shadow-sm border border-border p-8 mb-6 relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
-          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl text-gray-400 font-bold border-4 border-white shadow-lg">
+          <div className="w-24 h-24 rounded-full bg-border flex items-center justify-center text-3xl text-gray-400 dark:text-gray-500 font-bold border-4 border-white shadow-lg">
             {candidate.name.charAt(0)}
           </div>
           
@@ -76,12 +76,12 @@ const CandidateDetailsLocked: React.FC<Props> = ({ candidate, onUnlock, onBack }
              <div className="inline-flex items-center px-3 py-1 bg-gray-900 text-white rounded-full text-xs font-bold mb-3">
                 <Lock className="w-3 h-3 mr-1" /> Profile Locked
              </div>
-             <h1 className="text-3xl font-black text-gray-300 blur-sm select-none mb-1">
+             <h1 className="font-heading text-3xl text-gray-300 dark:text-gray-600 blur-sm select-none mb-1">
                {candidate.name}
              </h1>
-             <p className="text-2xl font-bold text-gray-900 mb-2">{candidate.headline}</p>
+             <p className="text-2xl font-bold text-primary mb-2">{candidate.headline}</p>
              
-             <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600">
+             <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-muted">
                 <span className="flex items-center"><MapPin className="w-4 h-4 mr-1"/> {candidate.location}</span>
              </div>
           </div>
@@ -92,8 +92,8 @@ const CandidateDetailsLocked: React.FC<Props> = ({ candidate, onUnlock, onBack }
                 disabled={isUnlocking}
                 className={`${
                   isUnlocking
-                    ? 'bg-blue-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5'
+                    ? 'bg-accent-coral-light cursor-not-allowed'
+                    : 'bg-accent-coral hover:bg-accent-coral hover:-translate-y-0.5'
                 } text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center min-w-[160px] justify-center`}
              >
                 {isUnlocking ? (

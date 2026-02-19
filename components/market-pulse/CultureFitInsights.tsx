@@ -77,12 +77,12 @@ const getMarketLabelStyle = (label: string) => {
       return { bg: 'bg-orange-100', text: 'text-orange-700', icon: TrendingDown, label: 'Competitive' };
     case 'niche':
     case 'rare':
-      return { bg: 'bg-purple-100', text: 'text-purple-700', icon: Zap, label: 'Unique' };
+      return { bg: 'bg-accent-green-bg', text: 'text-accent-green', icon: Zap, label: 'Unique' };
     case 'popular':
     case 'common':
-      return { bg: 'bg-blue-100', text: 'text-blue-700', icon: Users, label: 'Popular' };
+      return { bg: 'bg-accent-coral-bg', text: 'text-accent-coral', icon: Users, label: 'Popular' };
     default:
-      return { bg: 'bg-gray-100', text: 'text-gray-600', icon: Minus, label: 'Balanced' };
+      return { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-muted', icon: Minus, label: 'Balanced' };
   }
 };
 
@@ -237,11 +237,11 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
-          <div className="h-5 bg-gray-200 rounded w-40 mb-4" />
+        <div className="bg-surface rounded-2xl border border-border p-6 animate-pulse">
+          <div className="h-5 bg-border rounded w-40 mb-4" />
           <div className="flex flex-wrap gap-2">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-8 bg-gray-100 rounded-full w-24" />
+              <div key={i} className="h-8 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
             ))}
           </div>
         </div>
@@ -252,17 +252,17 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
   return (
     <div className="space-y-6">
       {/* Section A: Your Values Profile */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-rose-500" />
-              <h3 className="text-lg font-bold text-gray-900">Your Values Profile</h3>
+              <h3 className="text-lg font-bold text-primary">Your Values Profile</h3>
             </div>
             {hasValues && (
               <button
                 onClick={() => handleNavigateToProfile('values')}
-                className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1"
+                className="text-sm text-accent-coral font-medium hover:text-accent-coral flex items-center gap-1"
               >
                 Edit
                 <ChevronRight className="w-4 h-4" />
@@ -271,13 +271,13 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
           </div>
 
           {!hasValues ? (
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Heart className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">No values added yet</p>
-              <p className="text-xs text-gray-500 mb-4">Add your values to find culture-matched companies</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+              <Heart className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">No values added yet</p>
+              <p className="text-xs text-muted mb-4">Add your values to find culture-matched companies</p>
               <button
                 onClick={() => handleNavigateToProfile('values')}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-accent-coral text-white text-sm font-bold rounded-lg hover:bg-accent-coral transition-colors"
               >
                 Add Values
               </button>
@@ -305,8 +305,8 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                         valueInsight?.marketLabel === 'high_demand'
                           ? 'bg-green-600 text-white'
                           : valueInsight?.marketLabel === 'rare'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-blue-600 text-white'
+                          ? 'bg-accent-coral text-white'
+                          : 'bg-accent-coral text-white'
                       }`}>
                         {value}
                         {valueInsight && valueInsight.marketLabel === 'high_demand' && (
@@ -326,7 +326,7 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                   );
                 })}
                 {values.length > 8 && (
-                  <span className="px-3 py-1.5 bg-gray-100 text-gray-500 text-sm font-medium rounded-full">
+                  <span className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-muted text-sm font-medium rounded-full">
                     +{values.length - 8} more
                   </span>
                 )}
@@ -334,7 +334,7 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
 
               {/* Values market summary */}
               {marketInsights && !isLoadingInsights && (
-                <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-4 text-xs text-muted">
                   {marketInsights.valueInsights.filter(v => v.marketLabel === 'high_demand').length > 0 && (
                     <span className="flex items-center gap-1">
                       <TrendingUp className="w-3 h-3 text-green-500" />
@@ -343,7 +343,7 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                   )}
                   {marketInsights.valueInsights.filter(v => v.marketLabel === 'rare').length > 0 && (
                     <span className="flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-purple-500" />
+                      <Zap className="w-3 h-3 text-accent-green" />
                       {marketInsights.valueInsights.filter(v => v.marketLabel === 'rare').length} distinctive values
                     </span>
                   )}
@@ -353,18 +353,18 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
               {/* Traits Chips (if any) */}
               {traits.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Character Traits</p>
+                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Character Traits</p>
                   <div className="flex flex-wrap gap-2">
                     {traits.slice(0, 6).map((trait, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1 border border-gray-200 text-gray-600 text-sm font-medium rounded-full"
+                        className="px-3 py-1 border border-border text-muted text-sm font-medium rounded-full"
                       >
                         {trait}
                       </span>
                     ))}
                     {traits.length > 6 && (
-                      <span className="px-3 py-1 border border-gray-200 text-gray-400 text-sm font-medium rounded-full">
+                      <span className="px-3 py-1 border border-border text-gray-400 dark:text-gray-500 text-sm font-medium rounded-full">
                         +{traits.length - 6} more
                       </span>
                     )}
@@ -393,33 +393,33 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
       </div>
 
       {/* Section B: Work Style DNA */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-bold text-gray-900">Work Style DNA</h3>
+              <Briefcase className="w-5 h-5 text-accent-green" />
+              <h3 className="text-lg font-bold text-primary">Work Style DNA</h3>
             </div>
             {hasWorkStylePrefs && (
               <button
                 onClick={() => handleNavigateToProfile('workstyle')}
-                className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1"
+                className="text-sm text-accent-coral font-medium hover:text-accent-coral flex items-center gap-1"
               >
                 Edit
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
           </div>
-          <p className="text-sm text-gray-500 mb-4">How your preferences compare to the market</p>
+          <p className="text-sm text-muted mb-4">How your preferences compare to the market</p>
 
           {!hasWorkStylePrefs ? (
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Briefcase className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">Work style preferences not set</p>
-              <p className="text-xs text-gray-500 mb-4">Complete your work style preferences to see market fit</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+              <Briefcase className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">Work style preferences not set</p>
+              <p className="text-xs text-muted mb-4">Complete your work style preferences to see market fit</p>
               <button
                 onClick={() => handleNavigateToProfile('workstyle')}
-                className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors"
+                className="px-4 py-2 bg-accent-coral text-white text-sm font-bold rounded-lg hover:bg-accent-coral-light transition-colors"
               >
                 Set Preferences
               </button>
@@ -431,19 +431,19 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl"
+                  className="flex items-center gap-4 p-4 bg-gradient-to-r from-accent-coral-bg to-accent-green-bg rounded-xl"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-600">Market Position Score</span>
+                      <span className="text-sm font-medium text-muted">Market Position Score</span>
                       <span className={`text-2xl font-black ${
                         marketInsights.overallDemandScore >= 60 ? 'text-green-600' :
-                        marketInsights.overallDemandScore >= 40 ? 'text-blue-600' : 'text-orange-600'
+                        marketInsights.overallDemandScore >= 40 ? 'text-accent-coral' : 'text-orange-600'
                       }`}>
                         {marketInsights.overallDemandScore}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-3 text-xs text-muted">
                       {marketInsights.summary.highDemandCount > 0 && (
                         <span className="flex items-center gap-1">
                           <TrendingUp className="w-3 h-3 text-green-500" />
@@ -452,18 +452,18 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                       )}
                       {marketInsights.summary.nicheCount > 0 && (
                         <span className="flex items-center gap-1">
-                          <Zap className="w-3 h-3 text-purple-500" />
+                          <Zap className="w-3 h-3 text-accent-green" />
                           {marketInsights.summary.nicheCount} unique
                         </span>
                       )}
                     </div>
                   </div>
                   {/* Mini bar chart */}
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-24 h-2 bg-border rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
                         marketInsights.overallDemandScore >= 60 ? 'bg-green-500' :
-                        marketInsights.overallDemandScore >= 40 ? 'bg-blue-500' : 'bg-orange-500'
+                        marketInsights.overallDemandScore >= 40 ? 'bg-accent-coral' : 'bg-orange-500'
                       }`}
                       style={{ width: `${marketInsights.overallDemandScore}%` }}
                     />
@@ -485,16 +485,16 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                      className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
                     >
                       {/* Dimension name */}
                       <div className="w-32 flex-shrink-0">
-                        <span className="text-sm text-gray-500">{dim.label}</span>
+                        <span className="text-sm text-muted">{dim.label}</span>
                       </div>
 
                       {/* Value */}
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-bold text-gray-900 truncate block">{dim.displayValue}</span>
+                        <span className="text-sm font-bold text-primary truncate block">{dim.displayValue}</span>
                       </div>
 
                       {/* Market insight */}
@@ -506,12 +506,12 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                             {labelStyle?.label}
                           </span>
                           {/* Percentage tooltip */}
-                          <div className="text-xs text-gray-400 hidden sm:block" title={`${dim.marketInsight.candidatePercent}% of candidates, ${dim.marketInsight.companyPercent}% of companies`}>
+                          <div className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block" title={`${dim.marketInsight.candidatePercent}% of candidates, ${dim.marketInsight.companyPercent}% of companies`}>
                             {dim.marketInsight.companyPercent}% seek
                           </div>
                         </div>
                       ) : isLoadingInsights ? (
-                        <div className="w-20 h-5 bg-gray-200 rounded animate-pulse" />
+                        <div className="w-20 h-5 bg-border rounded animate-pulse" />
                       ) : null}
                     </motion.div>
                   );
@@ -519,17 +519,17 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
               </div>
 
               {/* Legend */}
-              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-gray-400">
+              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-gray-400 dark:text-gray-500">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
                   <span>High Demand</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-purple-500" />
+                  <div className="w-2 h-2 rounded-full bg-accent-green" />
                   <span>Unique</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <div className="w-2 h-2 rounded-full bg-accent-coral" />
                   <span>Popular</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -540,14 +540,14 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
 
               {/* Prompt for more preferences if incomplete */}
               {workStyleDimensions.length < 5 && (
-                <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                  <p className="text-xs text-purple-700">
+                <div className="flex items-center gap-2 p-3 bg-accent-green-bg rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-accent-green flex-shrink-0" />
+                  <p className="text-xs text-accent-green">
                     Complete more work style preferences ({workStyleDimensions.length}/10) for better matching
                   </p>
                   <button
                     onClick={() => handleNavigateToProfile('workstyle')}
-                    className="ml-auto text-xs font-bold text-purple-600 hover:text-purple-700"
+                    className="ml-auto text-xs font-bold text-accent-green hover:text-accent-green"
                   >
                     Add More
                   </button>
@@ -574,37 +574,37 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
       </div>
 
       {/* Section C: Culture Match Preview */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-1">
             <Building className="w-5 h-5 text-emerald-500" />
-            <h3 className="text-lg font-bold text-gray-900">Companies That Match Your Culture</h3>
+            <h3 className="text-lg font-bold text-primary">Companies That Match Your Culture</h3>
           </div>
-          <p className="text-sm text-gray-500 mb-4">Based on shared values and work style preferences</p>
+          <p className="text-sm text-muted mb-4">Based on shared values and work style preferences</p>
 
           {isLoadingMatches ? (
             <div className="flex gap-4 overflow-x-auto pb-2">
               {[1, 2, 3].map(i => (
-                <div key={i} className="flex-shrink-0 w-64 bg-gray-50 rounded-xl p-4 animate-pulse">
+                <div key={i} className="flex-shrink-0 w-64 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 animate-pulse">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+                    <div className="w-10 h-10 bg-border rounded-lg" />
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-1" />
-                      <div className="h-3 bg-gray-100 rounded w-16" />
+                      <div className="h-4 bg-border rounded w-24 mb-1" />
+                      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-16" />
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <div className="h-5 bg-gray-100 rounded-full w-16" />
-                    <div className="h-5 bg-gray-100 rounded-full w-16" />
+                    <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-16" />
+                    <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-16" />
                   </div>
                 </div>
               ))}
             </div>
           ) : !hasValues ? (
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Users className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">Add your values first</p>
-              <p className="text-xs text-gray-500">We'll find companies that share your values</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+              <Users className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">Add your values first</p>
+              <p className="text-xs text-muted">We'll find companies that share your values</p>
             </div>
           ) : companyMatches.length === 0 ? (
             <div className="bg-emerald-50 rounded-xl p-6 text-center">
@@ -621,7 +621,7 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                   onClick={() => handleViewCompany(company.id)}
-                  className="flex-shrink-0 w-64 bg-gray-50 hover:bg-gray-100 rounded-xl p-4 text-left transition-colors group"
+                  className="flex-shrink-0 w-64 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-xl p-4 text-left transition-colors group"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     {company.logoUrl ? (
@@ -632,23 +632,23 @@ const CultureFitInsights: React.FC<CultureFitInsightsProps> = ({
                       />
                     ) : (
                       <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center">
-                        <Building className="w-5 h-5 text-gray-400" />
+                        <Building className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                      <div className="font-bold text-primary truncate group-hover:text-accent-coral transition-colors">
                         {company.name}
                       </div>
                       <div className="flex items-center gap-1">
                         <div className={`text-sm font-bold ${
                           company.cultureScore >= 70 ? 'text-green-600' :
-                          company.cultureScore >= 50 ? 'text-blue-600' : 'text-yellow-600'
+                          company.cultureScore >= 50 ? 'text-accent-coral' : 'text-yellow-600'
                         }`}>
                           {company.cultureScore}% match
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-muted transition-colors" />
                   </div>
 
                   {company.sharedValues.length > 0 && (

@@ -324,21 +324,21 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-900 text-white">
+            <div className="bg-surface rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+                <div className="p-6 border-b border-border flex justify-between items-center bg-gray-900 text-white">
                     <h3 className="text-lg font-bold">Schedule Interview</h3>
-                    <button onClick={onClose}><X className="w-5 h-5 text-gray-400 hover:text-white"/></button>
+                    <button onClick={onClose}><X className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-white"/></button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     {/* Candidate Selector - only show when needed */}
                     {showCandidateSelector && !candidateId && (
                         <div className="mb-4">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            <label className="block text-xs font-bold text-muted uppercase mb-1">
                                 Select Candidate
                             </label>
                             {loadingCandidates ? (
-                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm">
+                                <div className="p-3 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl text-muted text-sm">
                                     Loading candidates...
                                 </div>
                             ) : availableCandidates.length === 0 ? (
@@ -347,7 +347,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                                 </div>
                             ) : (
                                 <select 
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl focus:ring-2 focus:ring-accent-coral"
                                     value={selectedCandidateId || ''}
                                     onChange={e => handleCandidateSelect(e.target.value)}
                                     required
@@ -364,15 +364,15 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     )}
 
                     {candidateName && (
-                        <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-700 font-medium mb-2">
+                        <div className="bg-accent-coral-bg p-3 rounded-lg text-sm text-accent-coral font-medium mb-2">
                             Scheduling with: <span className="font-bold">{candidateName}</span>
                         </div>
                     )}
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Interview Type</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1">Interview Type</label>
                         <select 
-                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"
+                            className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl"
                             value={formData.type}
                             onChange={e => {
                                 const type = e.target.value;
@@ -390,10 +390,10 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Event Title</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1">Event Title</label>
                         <input 
                             required 
-                            className="w-full p-3 border border-gray-200 rounded-xl" 
+                            className="w-full p-3 border border-border rounded-xl" 
                             value={formData.title} 
                             onChange={e => setFormData({...formData, title: e.target.value})}
                         />
@@ -401,22 +401,22 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Date</label>
+                             <label className="block text-xs font-bold text-muted uppercase mb-1">Date</label>
                              <input 
                                 type="date" 
                                 required 
-                                className="w-full p-3 border border-gray-200 rounded-xl" 
+                                className="w-full p-3 border border-border rounded-xl" 
                                 value={formData.date} 
                                 onChange={e => setFormData({...formData, date: e.target.value})}
                                 min={new Date().toISOString().split('T')[0]}
                             />
                         </div>
                         <div>
-                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Start Time</label>
+                             <label className="block text-xs font-bold text-muted uppercase mb-1">Start Time</label>
                              <input 
                                 type="time" 
                                 required 
-                                className="w-full p-3 border border-gray-200 rounded-xl" 
+                                className="w-full p-3 border border-border rounded-xl" 
                                 value={formData.time} 
                                 onChange={e => setFormData({...formData, time: e.target.value})}
                             />
@@ -424,9 +424,9 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     </div>
 
                     <div>
-                         <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Duration</label>
+                         <label className="block text-xs font-bold text-muted uppercase mb-1">Duration</label>
                          <select
-                            className="w-full p-3 border border-gray-200 rounded-xl bg-white"
+                            className="w-full p-3 border border-border rounded-xl bg-white dark:bg-surface"
                             value={formData.duration}
                             onChange={e => setFormData({...formData, duration: parseInt(e.target.value)})}
                          >
@@ -437,9 +437,9 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Notes / Agenda</label>
+                        <label className="block text-xs font-bold text-muted uppercase mb-1">Notes / Agenda</label>
                         <textarea 
-                            className="w-full p-3 border border-gray-200 rounded-xl h-20 text-sm" 
+                            className="w-full p-3 border border-border rounded-xl h-20 text-sm" 
                             value={formData.notes} 
                             onChange={e => setFormData({...formData, notes: e.target.value})}
                             placeholder="Agenda notes..."
@@ -450,7 +450,7 @@ const ScheduleCallModal: React.FC<Props> = ({ onClose, onSchedule, candidateId, 
                         <button 
                             type="submit" 
                             disabled={loading || (showCandidateSelector && !selectedCandidateId && !candidateId)}
-                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg flex items-center justify-center disabled:opacity-50"
+                            className="w-full py-3 bg-accent-coral text-white rounded-xl font-bold hover:bg-accent-coral shadow-lg flex items-center justify-center disabled:opacity-50"
                         >
                             {loading ? 'Scheduling...' : <><CheckCircle className="w-4 h-4 mr-2"/> Confirm & Send Invites</>}
                         </button>

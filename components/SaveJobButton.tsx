@@ -82,7 +82,7 @@ const SaveJobButton: React.FC<SaveJobButtonProps> = ({
         className={`p-2 rounded-xl transition-all ${
           isSaved
             ? 'bg-pink-50 text-pink-500 hover:bg-pink-100'
-            : 'text-gray-300 hover:text-pink-500 hover:bg-pink-50'
+            : 'text-gray-300 dark:text-gray-600 hover:text-pink-500 hover:bg-pink-50'
         } ${loading ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
         title={isSaved ? `Unsave ${jobTitle || 'job'}` : `Save ${jobTitle || 'job'}`}
         aria-label={isSaved ? `Unsave ${jobTitle || 'job'}` : `Save ${jobTitle || 'job'}`}
@@ -100,7 +100,7 @@ const SaveJobButton: React.FC<SaveJobButtonProps> = ({
       className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
         isSaved
           ? 'bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100'
-          : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+          : 'bg-gray-50 dark:bg-gray-900 text-muted border border-border hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'
       } ${loading ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       aria-label={isSaved ? `Unsave ${jobTitle || 'job'}` : `Save ${jobTitle || 'job'}`}
     >

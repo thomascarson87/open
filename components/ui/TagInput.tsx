@@ -38,18 +38,18 @@ export function TagInput({
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl p-2 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors">
+    <div className="border border-border rounded-xl p-2 focus-within:border-accent-coral focus-within:ring-1 focus-within:ring-accent-coral transition-colors">
       <div className="flex flex-wrap gap-2">
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm"
+            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 rounded-lg text-sm"
           >
             {tag}
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-500 hover:text-muted"
             >
               <X className="w-3 h-3" />
             </button>
@@ -67,7 +67,7 @@ export function TagInput({
         />
       </div>
       {tags.length >= maxTags && (
-        <p className="text-xs text-gray-400 mt-1">Maximum {maxTags} tags reached</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Maximum {maxTags} tags reached</p>
       )}
     </div>
   );

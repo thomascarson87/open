@@ -17,14 +17,14 @@ const LevelTooltip: React.FC<Props> = ({ metadata, position = 'top' }) => {
         <span className="text-2xl">{metadata.icon}</span>
         <span className="font-bold text-lg">{metadata.label}</span>
       </div>
-      <p className="text-sm text-gray-300 mb-3 leading-tight">{metadata.descriptor}</p>
+      <p className="text-sm text-gray-300 dark:text-gray-600 mb-3 leading-tight">{metadata.descriptor}</p>
       
       <div className="space-y-2 mb-3">
-        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Observable Behaviors</div>
+        <div className="text-[10px] font-bold text-muted uppercase tracking-wider">Observable Behaviors</div>
         <ul className="text-xs space-y-1.5">
           {metadata.behaviors.map((behavior, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-blue-400 mt-0.5">•</span>
+              <span className="text-accent-coral-light mt-0.5">•</span>
               <span>{behavior}</span>
             </li>
           ))}
@@ -32,8 +32,8 @@ const LevelTooltip: React.FC<Props> = ({ metadata, position = 'top' }) => {
       </div>
       
       <div className="border-t border-gray-800 pt-2 mt-2">
-        <p className="text-[10px] text-gray-400">
-          <span className="font-bold text-gray-500 uppercase">Example:</span> {metadata.example}
+        <p className="text-[10px] text-gray-400 dark:text-gray-500">
+          <span className="font-bold text-muted uppercase">Example:</span> {metadata.example}
         </p>
       </div>
       

@@ -157,11 +157,11 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
       const { data: recruiter } = await supabase
         .from('team_members')
         .select('user_id')
-        .eq('company_id', application.job.company_id)
+        .eq('company_id', application.job.companyId)
         .limit(1)
         .maybeSingle();
 
-      const recruiterId = recruiter?.user_id || application.job.company_id;
+      const recruiterId = recruiter?.user_id || application.job.companyId;
 
       const newConvId = await messageService.getOrCreateConversation(
         recruiterId,
@@ -219,11 +219,11 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
   if (!conversationId && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center min-h-[400px]">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-          <MessageSquare className="w-8 h-8 text-blue-600" />
+        <div className="w-16 h-16 bg-accent-coral-bg rounded-full flex items-center justify-center mb-4">
+          <MessageSquare className="w-8 h-8 text-accent-coral" />
         </div>
-        <h3 className="font-bold text-gray-900 mb-2">Start a Conversation</h3>
-        <p className="text-gray-500 text-sm mb-6 max-w-xs">
+        <h3 className="font-bold text-primary mb-2">Start a Conversation</h3>
+        <p className="text-muted text-sm mb-6 max-w-xs">
           Send a message to the hiring team at {application.job.company_name}
         </p>
         <div className="w-full max-w-sm">
@@ -233,7 +233,7 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your first message..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-300 outline-none"
+            className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-accent-coral focus:border-accent-coral-light outline-none"
           />
           <button
             onClick={() => sendMessage().catch(console.error)}
@@ -248,15 +248,15 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50/30">
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900/30">
       {/* Messages List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 text-sm">
+          <div className="text-center py-8 text-muted text-sm">
             No messages yet. Start the conversation!
           </div>
         ) : (
@@ -270,14 +270,14 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
               return (
                 <React.Fragment key={msg.id}>
                   {showTimestamp && (
-                    <div className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest py-4">
+                    <div className="text-center text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest py-4">
                       {formatMessageTime(msg.timestamp)}
                     </div>
                   )}
                   
                   {msg.isSystemMessage ? (
                     <div className="flex justify-center my-2">
-                      <div className="px-4 py-1.5 bg-gray-200/50 backdrop-blur-sm rounded-full text-[11px] font-bold text-gray-600 border border-gray-200">
+                      <div className="px-4 py-1.5 bg-border/50 backdrop-blur-sm rounded-full text-[11px] font-bold text-muted border border-border">
                         {msg.text}
                       </div>
                     </div>
@@ -288,7 +288,7 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
                           max-w-[85%] px-4 py-2.5 rounded-2xl text-sm shadow-sm
                           ${isOwn
                             ? 'bg-gray-900 text-white rounded-br-md'
-                            : 'bg-white border border-gray-100 text-gray-900 rounded-bl-md'
+                            : 'bg-surface border border-border text-primary rounded-bl-md'
                           }
                         `}
                       >
@@ -305,7 +305,7 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
       </div>
 
       {/* Input - Sticky at bottom */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex-shrink-0">
+      <div className="sticky bottom-0 bg-white dark:bg-surface border-t border-border p-4 flex-shrink-0">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -314,12 +314,12 @@ const MessagesTab: React.FC<MessagesTabProps> = ({ application, onConversationCr
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             disabled={isSending}
-            className="flex-1 px-5 py-3 bg-gray-50 border-none rounded-full focus:ring-2 focus:ring-blue-100 outline-none disabled:opacity-50 text-sm font-medium"
+            className="flex-1 px-5 py-3 bg-gray-50 dark:bg-gray-900 border-none rounded-full focus:ring-2 focus:ring-accent-coral outline-none disabled:opacity-50 text-sm font-medium"
           />
           <button
             onClick={() => sendMessage().catch(console.error)}
             disabled={!inputText.trim() || isSending}
-            className="p-3 bg-blue-600 text-white rounded-full disabled:opacity-50 hover:bg-blue-700 transition-colors flex-shrink-0 shadow-md active:scale-95"
+            className="p-3 bg-accent-coral text-white rounded-full disabled:opacity-50 hover:bg-accent-coral transition-colors flex-shrink-0 shadow-md active:scale-95"
           >
             {isSending ? (
               <Loader2 className="w-5 h-5 animate-spin" />

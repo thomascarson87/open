@@ -60,8 +60,8 @@ function getDominantTint(weights: MatchWeights): string {
 const WeightBars: React.FC<{ weights: MatchWeights; compact?: boolean }> = ({ weights, compact = false }) => (
   <div className={`flex flex-col ${compact ? 'gap-2' : 'gap-3'} w-full`}>
     <div className="flex items-center gap-3">
-      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-gray-600`}>Skills</span>
-      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 rounded-full overflow-hidden`}>
+      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-muted`}>Skills</span>
+      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden`}>
         <motion.div
           className={`h-full ${COLORS.skills.bg} rounded-full`}
           initial={false}
@@ -72,8 +72,8 @@ const WeightBars: React.FC<{ weights: MatchWeights; compact?: boolean }> = ({ we
       <span className={`${compact ? 'text-xs w-10' : 'text-sm w-12'} font-black ${COLORS.skills.text} text-right`}>{weights.skills}%</span>
     </div>
     <div className="flex items-center gap-3">
-      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-gray-600`}>Comp</span>
-      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 rounded-full overflow-hidden`}>
+      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-muted`}>Comp</span>
+      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden`}>
         <motion.div
           className={`h-full ${COLORS.compensation.bg} rounded-full`}
           initial={false}
@@ -84,8 +84,8 @@ const WeightBars: React.FC<{ weights: MatchWeights; compact?: boolean }> = ({ we
       <span className={`${compact ? 'text-xs w-10' : 'text-sm w-12'} font-black ${COLORS.compensation.text} text-right`}>{weights.compensation}%</span>
     </div>
     <div className="flex items-center gap-3">
-      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-gray-600`}>Culture</span>
-      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 rounded-full overflow-hidden`}>
+      <span className={`${compact ? 'text-[10px] w-12' : 'text-xs w-16'} font-semibold text-muted`}>Culture</span>
+      <div className={`flex-1 ${compact ? 'h-1.5' : 'h-2.5'} bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden`}>
         <motion.div
           className={`h-full ${COLORS.culture.bg} rounded-full`}
           initial={false}
@@ -109,12 +109,12 @@ const SparklineHeader: React.FC<{
     onClick={onToggle}
     whileTap={{ scale: 0.995 }}
   >
-    <div className="bg-blue-50 p-1.5 rounded-lg flex-shrink-0">
-      <Sliders className="w-4 h-4 text-blue-600" />
+    <div className="bg-accent-coral-bg p-1.5 rounded-lg flex-shrink-0">
+      <Sliders className="w-4 h-4 text-accent-coral" />
     </div>
 
     {/* Label - visible when collapsed */}
-    <span className="text-sm font-semibold text-gray-700 hidden sm:block">Match Priority</span>
+    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-600 hidden sm:block">Match Priority</span>
 
     <GravityCircle
       weights={weights}
@@ -136,7 +136,7 @@ const SparklineHeader: React.FC<{
     </div>
 
     <motion.div
-      className="flex-shrink-0 text-gray-400"
+      className="flex-shrink-0 text-gray-400 dark:text-gray-500"
       animate={{ rotate: isExpanded ? 180 : 0 }}
       transition={{ duration: 0.2 }}
     >
@@ -212,7 +212,7 @@ const DesktopDrawer: React.FC<{
       {/* Reset */}
       <button
         onClick={onReset}
-        className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-blue-600 transition-colors"
+        className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-gray-400 dark:text-gray-500 hover:text-accent-coral transition-colors"
       >
         <RotateCcw className="w-4 h-4" />
         Reset
@@ -260,14 +260,14 @@ const MobileBottomSheet: React.FC<{
           if (info.offset.y > 80 || info.velocity.y > 500) onClose();
         }}
       >
-        <div className="bg-white/95 backdrop-blur-xl">
+        <div className="bg-white dark:bg-surface/95 backdrop-blur-xl">
           {/* Drag handle with swipe hint */}
           <div className="flex flex-col items-center pt-2 pb-1">
             <motion.div
               className={`w-12 h-1.5 rounded-full transition-colors ${isDraggingSheet ? 'bg-gray-400' : 'bg-gray-300'}`}
               animate={{ scaleX: isDraggingSheet ? 1.2 : 1 }}
             />
-            <span className="text-[9px] text-gray-400 mt-1">Swipe down to close</span>
+            <span className="text-[9px] text-gray-400 dark:text-gray-500 mt-1">Swipe down to close</span>
           </div>
 
           {/* Content - more compact */}
@@ -295,7 +295,7 @@ const MobileBottomSheet: React.FC<{
               {/* Reset */}
               <button
                 onClick={onReset}
-                className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-bold text-gray-400 dark:text-gray-500 hover:text-accent-coral transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset
@@ -360,12 +360,12 @@ const FluidGravityFilter: React.FC<FluidGravityFilterProps> = ({
     <div ref={containerRef} className="sticky top-20 z-30 mb-6">
       {/* Main container with gradient tint */}
       <motion.div
-        className="rounded-2xl border border-gray-200/50 overflow-hidden shadow-lg"
+        className="rounded-2xl border border-border/50 overflow-hidden shadow-lg"
         style={{ backgroundColor: dominantTint }}
         animate={{ backgroundColor: dominantTint }}
         transition={{ duration: 0.3 }}
       >
-        <div className="bg-white/85 backdrop-blur-md">
+        <div className="bg-white dark:bg-surface/85 backdrop-blur-md">
           {/* Sparkline header - always visible */}
           <SparklineHeader
             weights={weights}
@@ -382,7 +382,7 @@ const FluidGravityFilter: React.FC<FluidGravityFilterProps> = ({
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="overflow-hidden border-t border-gray-100"
+                  className="overflow-hidden border-t border-border"
                 >
                   <DesktopDrawer
                     weights={weights}

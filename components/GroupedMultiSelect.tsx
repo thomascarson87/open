@@ -90,17 +90,17 @@ const GroupedMultiSelect: React.FC<Props> = ({
 
   return (
     <div className="mb-6">
-      <label className="block text-sm font-bold text-gray-700 mb-2">
+      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
         {label}
         {maxSelections && (
-          <span className="text-xs text-gray-400 font-normal ml-2">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-2">
             (Max {maxSelections})
           </span>
         )}
       </label>
       
       {helpText && (
-        <p className="text-xs text-gray-500 mb-2">{helpText}</p>
+        <p className="text-xs text-muted mb-2">{helpText}</p>
       )}
 
       {/* Selected Tags */}
@@ -109,13 +109,13 @@ const GroupedMultiSelect: React.FC<Props> = ({
           {selected.map(item => (
             <span
               key={item}
-              className="inline-flex items-center gap-2 bg-blue-50 text-blue-900 px-3 py-2 rounded-xl text-sm font-medium border border-blue-200"
+              className="inline-flex items-center gap-2 bg-accent-coral-bg text-accent-coral px-3 py-2 rounded-xl text-sm font-medium border border-accent-coral-light"
             >
               <SkillIcon skillName={item} size={20} showFallback={false} />
               <span>{item}</span>
               <button
                 onClick={() => removeSelected(item)}
-                className="ml-1 text-blue-600 hover:text-blue-800"
+                className="ml-1 text-accent-coral hover:text-accent-coral"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -130,23 +130,23 @@ const GroupedMultiSelect: React.FC<Props> = ({
           ref={buttonRef}
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full p-3 border border-gray-300 rounded-lg text-left hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg text-left hover:border-accent-coral focus:outline-none focus:ring-2 focus:ring-accent-coral bg-white dark:bg-surface"
         >
-          <span className={selected.length ? "text-gray-900" : "text-gray-500"}>{placeholder}</span>
+          <span className={selected.length ? "text-primary" : "text-muted"}>{placeholder}</span>
         </button>
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div ref={dropdownRef} className="absolute z-50 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-auto">
+          <div ref={dropdownRef} className="absolute z-50 mt-2 w-full bg-white dark:bg-surface border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-auto">
             {searchable && (
-              <div className="sticky top-0 bg-white p-3 border-b border-gray-200 z-10">
+              <div className="sticky top-0 bg-white dark:bg-surface p-3 border-b border-border z-10">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-coral"
                     placeholder="Search..."
                     autoFocus
                   />
@@ -166,7 +166,7 @@ const GroupedMultiSelect: React.FC<Props> = ({
 
                   return (
                     <div key={category} className="mb-4">
-                      <div className="px-3 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50 rounded mt-2 mb-1">
+                      <div className="px-3 py-2 text-xs font-bold text-muted uppercase tracking-wider bg-gray-50 dark:bg-gray-900 rounded mt-2 mb-1">
                         {category}
                       </div>
                       {visibleItems.map(item => (
@@ -174,14 +174,14 @@ const GroupedMultiSelect: React.FC<Props> = ({
                           key={item}
                           type="button"
                           onClick={() => toggleOption(item)}
-                          className="w-full text-left px-3 py-2 hover:bg-blue-50 rounded flex items-center justify-between"
+                          className="w-full text-left px-3 py-2 hover:bg-accent-coral-bg rounded flex items-center justify-between"
                         >
                           <div className="flex items-center gap-2">
                             <SkillIcon skillName={item} size={20} showFallback={false} />
-                            <span className="text-sm text-gray-700">{item}</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{item}</span>
                           </div>
                           {selected.includes(item) && (
-                            <Check className="w-4 h-4 text-blue-600" />
+                            <Check className="w-4 h-4 text-accent-coral" />
                           )}
                         </button>
                       ))}
@@ -196,19 +196,19 @@ const GroupedMultiSelect: React.FC<Props> = ({
                       key={item}
                       type="button"
                       onClick={() => toggleOption(item)}
-                      className="w-full text-left px-3 py-2 hover:bg-blue-50 rounded flex items-center justify-between"
+                      className="w-full text-left px-3 py-2 hover:bg-accent-coral-bg rounded flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
                         <SkillIcon skillName={item} size={20} showFallback={false} />
-                        <span className="text-sm text-gray-700">{item}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">{item}</span>
                       </div>
                       {selected.includes(item) && (
-                        <Check className="w-4 h-4 text-blue-600" />
+                        <Check className="w-4 h-4 text-accent-coral" />
                       )}
                     </button>
                   ))
                 ) : (
-                  <div className="p-3 text-sm text-gray-500 text-center">No options found.</div>
+                  <div className="p-3 text-sm text-muted text-center">No options found.</div>
                 )
               )}
             </div>

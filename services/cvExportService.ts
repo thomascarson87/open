@@ -135,14 +135,14 @@ function generateCVHtml(profile: CandidateProfile): string {
         </section>
       ` : ''}
 
-      ${profile.education_level ? `
+      ${profile.educationLevel ? `
         <section class="cv-section">
           <h2>Education</h2>
           <div class="education-item">
-            <strong>${profile.education_level}</strong>
-            ${profile.education_field ? ` in ${profile.education_field}` : ''}
-            ${profile.education_institution ? ` - ${profile.education_institution}` : ''}
-            ${profile.education_graduation_year ? `<span class="edu-year">${profile.education_graduation_year}</span>` : ''}
+            <strong>${profile.educationLevel}</strong>
+            ${profile.educationField ? ` in ${profile.educationField}` : ''}
+            ${profile.educationInstitution ? ` - ${profile.educationInstitution}` : ''}
+            ${profile.educationGraduationYear ? `<span class="edu-year">${profile.educationGraduationYear}</span>` : ''}
           </div>
         </section>
       ` : ''}

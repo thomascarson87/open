@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { CandidateProfile, CompanyProfile, JobSkill, Skill, WorkMode } from '../types';
+import { mapCandidateFromDB, mapCompanyFromDB } from './dataMapperService';
 
 // Types for company-level matching
 export interface CompanyMatchDetails {
@@ -340,7 +341,7 @@ export function calculateCompanyMatch(
 async function getCompanySkillProfile(companyId: string): Promise<JobSkill[]> {
   const { data: jobs } = await supabase
     .from('jobs')
-    .select('required_skills')
+    .select('required_skills, required_skills_with_levels')
     .eq('company_id', companyId)
     .eq('status', 'published');
 
@@ -352,7 +353,7 @@ async function getCompanySkillProfile(companyId: string): Promise<JobSkill[]> {
   const skillMap = new Map<string, { skill: JobSkill; count: number }>();
 
   jobs.forEach(job => {
-    const skills = job.required_skills || [];
+    const skills = job.required_skills_with_levels || job.required_skills || [];
     skills.forEach((skill: JobSkill) => {
       const key = skill.name.toLowerCase();
       const existing = skillMap.get(key);
@@ -393,6 +394,8 @@ export async function getRecommendedCandidates(
     return [];
   }
 
+  const mappedCompany = mapCompanyFromDB(company);
+
   // Get aggregated skill requirements from company's jobs
   const aggregatedSkills = await getCompanySkillProfile(companyId);
 
@@ -408,9 +411,12 @@ export async function getRecommendedCandidates(
     return [];
   }
 
+  // Map raw DB rows to CandidateProfile with camelCase fields
+  const mappedCandidates = candidates.map(mapCandidateFromDB);
+
   // Calculate match scores for each candidate
-  const scoredCandidates: CompanyMatchCandidate[] = candidates.map(candidate => {
-    const matchBreakdown = calculateCompanyMatch(candidate, company, aggregatedSkills);
+  const scoredCandidates: CompanyMatchCandidate[] = mappedCandidates.map(candidate => {
+    const matchBreakdown = calculateCompanyMatch(candidate, mappedCompany, aggregatedSkills);
     return {
       ...candidate,
       companyMatchScore: matchBreakdown.overallScore,
@@ -443,7 +449,7 @@ export async function getRecentCandidates(
     .range(start, end);
 
   return {
-    candidates: candidates || [],
+    candidates: (candidates || []).map(mapCandidateFromDB),
     hasMore: count ? start + pageSize < count : false,
   };
 }

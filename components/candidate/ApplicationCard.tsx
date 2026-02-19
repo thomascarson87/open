@@ -38,18 +38,18 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, onClick 
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl border border-gray-200 p-4 
-                 hover:shadow-md hover:border-gray-300 
+      className="bg-surface rounded-xl border border-border p-4 
+                 hover:shadow-md hover:border-gray-300 dark:border-gray-700 
                  transition-all cursor-pointer
-                 active:scale-[0.99] active:bg-gray-50"
+                 active:scale-[0.99] active:bg-gray-50 dark:bg-gray-900"
     >
       <div className="flex items-start gap-4">
         {/* Company Logo */}
-        <div className="w-12 h-12 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
           {job.company_logo ? (
             <img src={job.company_logo} alt={job.company_name} className="w-full h-full object-cover" />
           ) : (
-            <Building2 className="w-6 h-6 text-gray-400" />
+            <Building2 className="w-6 h-6 text-gray-400 dark:text-gray-500" />
           )}
         </div>
 
@@ -57,8 +57,8 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, onClick 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 truncate">{job.title}</h3>
-              <p className="text-sm text-gray-500 truncate">{job.company_name}</p>
+              <h3 className="font-bold text-primary truncate">{job.title}</h3>
+              <p className="text-sm text-muted truncate">{job.company_name}</p>
             </div>
             <StatusBadge status={status} size="sm" />
           </div>
@@ -68,21 +68,21 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, onClick 
             {match_score > 0 && (
               <span className={`font-bold ${
                 match_score >= 80 ? 'text-green-600' :
-                match_score >= 60 ? 'text-yellow-600' : 'text-gray-500'
+                match_score >= 60 ? 'text-yellow-600' : 'text-muted'
               }`}>
                 {match_score}% match
               </span>
             )}
 
             {unreadCount > 0 && (
-              <span className="flex items-center text-blue-600 font-semibold">
+              <span className="flex items-center text-accent-coral font-semibold">
                 <MessageSquare className="w-3.5 h-3.5 mr-1" />
                 {unreadCount} new
               </span>
             )}
 
             {nextEvent && (
-              <span className="flex items-center text-purple-600 font-semibold">
+              <span className="flex items-center text-accent-green font-semibold">
                 <Calendar className="w-3.5 h-3.5 mr-1" />
                 {formatRelativeDate(nextEvent.start_time)}
               </span>
@@ -91,7 +91,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, onClick 
         </div>
 
         {/* Chevron */}
-        <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 mt-1" />
+        <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600 flex-shrink-0 mt-1" />
       </div>
     </div>
   );

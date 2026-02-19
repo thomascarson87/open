@@ -55,9 +55,9 @@ const GravityPopover: React.FC<GravityPopoverProps> = ({
       ref={popoverRef}
       className="
         absolute top-full left-1/2 -translate-x-1/2 mt-2
-        bg-white
+        bg-white dark:bg-surface
         rounded-2xl shadow-2xl
-        border border-gray-200
+        border border-border
         w-[480px] max-w-[calc(100vw-2rem)]
         z-50
         overflow-hidden
@@ -65,18 +65,18 @@ const GravityPopover: React.FC<GravityPopoverProps> = ({
       "
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50/50">
-        <h2 className="text-base font-bold text-gray-900">{title}</h2>
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-gray-50 dark:bg-gray-900/50">
+        <h2 className="font-heading text-base text-primary">{title}</h2>
         <button
           onClick={onClose}
-          className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-colors active:scale-95"
+          className="p-2 text-gray-400 dark:text-gray-500 hover:text-muted rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors active:scale-95"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="px-5 py-4 bg-white">
+      <div className="px-5 py-4 bg-white dark:bg-surface">
         {children}
       </div>
     </div>

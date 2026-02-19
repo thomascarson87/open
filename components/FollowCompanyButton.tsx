@@ -80,7 +80,7 @@ const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
         className={`p-2 rounded-xl transition-all ${
           isFollowing
             ? 'bg-pink-50 text-pink-500 hover:bg-pink-100'
-            : 'text-gray-300 hover:text-pink-500 hover:bg-pink-50'
+            : 'text-gray-300 dark:text-gray-600 hover:text-pink-500 hover:bg-pink-50'
         } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         title={isFollowing ? `Unfollow ${companyName || 'company'}` : `Follow ${companyName || 'company'}`}
         aria-label={isFollowing ? `Unfollow ${companyName || 'company'}` : `Follow ${companyName || 'company'}`}
@@ -98,7 +98,7 @@ const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
       className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
         isFollowing
           ? 'bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100'
-          : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+          : 'bg-gray-50 dark:bg-gray-900 text-muted border border-border hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800'
       } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       aria-label={isFollowing ? `Unfollow ${companyName || 'company'}` : `Follow ${companyName || 'company'}`}
     >

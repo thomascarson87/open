@@ -25,22 +25,22 @@ const VerifiedSkillBadge: React.FC<{
     'text-orange-600';
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-all">
+    <div className="bg-white dark:bg-surface rounded-lg border border-border p-3 hover:shadow-sm transition-all">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h5 className="font-bold text-sm text-gray-900">{skill.skill}</h5>
-          <p className="text-xs text-gray-500">
+          <h5 className="font-bold text-sm text-primary">{skill.skill}</h5>
+          <p className="text-xs text-muted">
             {skill.verification_count} {skill.verification_count === 1 ? 'verification' : 'verifications'}
           </p>
         </div>
         <div className="text-right">
           <div className="text-2xl">{assessedMeta.icon}</div>
-          <div className="text-[10px] font-bold text-gray-600">{assessedMeta.label}</div>
+          <div className="text-[10px] font-bold text-muted">{assessedMeta.label}</div>
         </div>
       </div>
       
       <div className="flex items-center justify-between text-xs">
-        <span className="text-gray-500">Agreement:</span>
+        <span className="text-muted">Agreement:</span>
         <span className={`font-bold ${agreementColor}`}>
           {Math.round(skill.level_agreement_rate * 100)}%
         </span>
@@ -105,13 +105,13 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="animate-pulse space-y-8">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+          <div className="h-8 bg-border rounded w-1/3 mb-8"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[1,2,3,4].map(i => (
-              <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+              <div key={i} className="h-32 bg-border rounded-xl"></div>
             ))}
           </div>
-          <div className="h-64 bg-gray-200 rounded-xl"></div>
+          <div className="h-64 bg-border rounded-xl"></div>
         </div>
       </div>
     );
@@ -122,8 +122,8 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <h1 className="text-3xl font-bold text-gray-900">Professional Verifications</h1>
-            <p className="text-gray-600 mt-2">Build trust with verified references from colleagues.</p>
+            <h1 className="font-heading text-3xl text-primary">Professional Verifications</h1>
+            <p className="text-muted mt-2">Build trust with verified references from colleagues.</p>
         </div>
         <button
             onClick={() => setShowRequestModal(true)}
@@ -143,13 +143,13 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
           subtext={currentStats.total_verifications >= 3 ? "✓ Verified Professional" : `${3 - currentStats.total_verifications} more recommended`}
         />
         <StatCard
-          icon={<TrendingUp className="w-6 h-6 text-blue-500" />}
+          icon={<TrendingUp className="w-6 h-6 text-accent-coral" />}
           label="Avg Communication"
           value={currentStats.avg_communication > 0 ? `${currentStats.avg_communication.toFixed(1)}/10` : '-'}
           subtext="Written & Verbal"
         />
         <StatCard
-          icon={<TrendingUp className="w-6 h-6 text-purple-500" />}
+          icon={<TrendingUp className="w-6 h-6 text-accent-green" />}
           label="Avg Problem Solving"
           value={currentStats.avg_problem_solving > 0 ? `${currentStats.avg_problem_solving.toFixed(1)}/10` : '-'}
           subtext="Independence & Creativity"
@@ -165,8 +165,8 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
       {/* Verified Skills Section (New) */}
       {currentStats.verified_skills && currentStats.verified_skills.length > 0 && (
         <div className="mb-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-            <Award className="w-5 h-5 mr-2 text-blue-500" />
+            <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
+            <Award className="w-5 h-5 mr-2 text-accent-coral" />
             Verified Skills
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -175,7 +175,7 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
             ))}
             </div>
             {currentStats.verified_skills.length > 9 && (
-            <p className="text-sm text-gray-500 text-center mt-4">
+            <p className="text-sm text-muted text-center mt-4">
                 +{currentStats.verified_skills.length - 9} more verified skills
             </p>
             )}
@@ -184,22 +184,22 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
 
       {/* CTA Box */}
       {currentStats.total_verifications < 1 && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 mb-8 border border-blue-100">
+          <div className="bg-gradient-to-r from-accent-coral to-accent-green rounded-2xl p-8 mb-8 border border-accent-coral-bg">
             <div className="flex flex-col md:flex-row items-start justify-between gap-6">
             <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Why get verified?</h3>
-                <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-blue-600" /> Verified profiles get 25% higher match scores</li>
-                <li className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-blue-600" /> Companies unlock verified candidates 3x more often</li>
-                <li className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-blue-600" /> Replace PDF references with data-driven insights</li>
+                <h3 className="text-xl font-bold text-primary mb-2">Why get verified?</h3>
+                <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">
+                <li className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-accent-coral" /> Verified profiles get 25% higher match scores</li>
+                <li className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-accent-coral" /> Companies unlock verified candidates 3x more often</li>
+                <li className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-accent-coral" /> Replace PDF references with data-driven insights</li>
                 </ul>
             </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-blue-100 max-w-xs">
-                <div className="text-xs font-bold text-gray-400 uppercase mb-2">How it works</div>
+            <div className="bg-white dark:bg-surface p-4 rounded-xl shadow-sm border border-accent-coral-bg max-w-xs">
+                <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">How it works</div>
                 <div className="space-y-3">
-                    <div className="flex items-center text-sm"><span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold mr-2">1</span> Send invite link to colleague</div>
-                    <div className="flex items-center text-sm"><span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold mr-2">2</span> They fill 90s form (no login)</div>
-                    <div className="flex items-center text-sm"><span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold mr-2">3</span> Scores added to your profile</div>
+                    <div className="flex items-center text-sm"><span className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold mr-2">1</span> Send invite link to colleague</div>
+                    <div className="flex items-center text-sm"><span className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold mr-2">2</span> They fill 90s form (no login)</div>
+                    <div className="flex items-center text-sm"><span className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold mr-2">3</span> Scores added to your profile</div>
                 </div>
             </div>
             </div>
@@ -210,13 +210,13 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Completed Verifications */}
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
             <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
             Completed ({completedVerifications.length})
           </h3>
           <div className="space-y-4">
             {completedVerifications.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500 border-dashed">
+              <div className="bg-surface rounded-xl border border-border p-8 text-center text-muted border-dashed">
                 No completed verifications yet.
               </div>
             ) : (
@@ -233,13 +233,13 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
 
         {/* Pending Requests */}
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-bold text-primary mb-4 flex items-center">
             <Clock className="w-5 h-5 mr-2 text-orange-500" />
             Pending Requests ({pendingVerifications.length})
           </h3>
           <div className="space-y-4">
             {pendingVerifications.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500 border-dashed">
+              <div className="bg-surface rounded-xl border border-border p-8 text-center text-muted border-dashed">
                 No pending requests.
               </div>
             ) : (
@@ -274,30 +274,30 @@ const VerificationDashboard: React.FC<Props> = ({ candidateId, stats, skills = [
 // Supporting Components
 const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string; subtext: string }> = 
   ({ icon, label, value, subtext }) => (
-  <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+  <div className="bg-surface rounded-xl border border-border p-6 shadow-sm">
     <div className="flex items-center justify-between mb-4">
       {icon}
-      <span className="text-sm font-bold text-gray-500">{label}</span>
+      <span className="text-sm font-bold text-muted">{label}</span>
     </div>
-    <div className="text-3xl font-black text-gray-900 mb-1">{value}</div>
-    <div className="text-xs font-medium text-gray-500">{subtext}</div>
+    <div className="text-3xl font-black text-primary mb-1">{value}</div>
+    <div className="text-xs font-medium text-muted">{subtext}</div>
   </div>
 );
 
 const PendingVerificationCard: React.FC<{ verification: ProfessionalVerification; onResend: () => void }> =
   ({ verification, onResend }) => (
-  <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all">
+  <div className="bg-surface rounded-xl border border-border p-5 hover:shadow-md transition-all">
     <div className="flex items-start justify-between mb-3">
       <div>
-        <h4 className="font-bold text-gray-900">{verification.referee_name || verification.referee_email}</h4>
-        <p className="text-sm text-gray-600">{verification.referee_company || 'Company not specified'}</p>
-        <p className="text-xs text-gray-400 mt-1 capitalize">{verification.relationship_type.replace('_', ' ')}</p>
+        <h4 className="font-bold text-primary">{verification.referee_name || verification.referee_email}</h4>
+        <p className="text-sm text-muted">{verification.referee_company || 'Company not specified'}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 capitalize">{verification.relationship_type.replace('_', ' ')}</p>
       </div>
       <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-bold uppercase tracking-wider">Pending</span>
     </div>
     <div className="flex items-center justify-between text-sm mt-4 pt-3 border-t border-gray-50">
-      <span className="text-gray-400 text-xs">Sent {new Date(verification.created_at).toLocaleDateString()}</span>
-      <button onClick={onResend} className="text-blue-600 hover:text-blue-800 font-bold flex items-center text-xs uppercase tracking-wide">
+      <span className="text-gray-400 dark:text-gray-500 text-xs">Sent {new Date(verification.created_at).toLocaleDateString()}</span>
+      <button onClick={onResend} className="text-accent-coral hover:text-accent-coral font-bold flex items-center text-xs uppercase tracking-wide">
         <Mail className="w-3 h-3 mr-1" />
         Resend Invite
       </button>
@@ -320,14 +320,14 @@ const CompletedVerificationCard: React.FC<{
   ) / 10;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all">
+    <div className="bg-surface rounded-xl border border-border p-5 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h4 className="font-bold text-gray-900">{verification.referee_name || verification.referee_email}</h4>
-          <p className="text-sm text-gray-600">{verification.referee_company}</p>
+          <h4 className="font-bold text-primary">{verification.referee_name || verification.referee_email}</h4>
+          <p className="text-sm text-muted">{verification.referee_company}</p>
           <div className="flex gap-2 mt-1">
-             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize">{verification.relationship_type.replace('_', ' ')}</span>
-             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{verification.years_worked_together}</span>
+             <span className="text-xs bg-gray-100 dark:bg-gray-800 text-muted px-2 py-0.5 rounded capitalize">{verification.relationship_type.replace('_', ' ')}</span>
+             <span className="text-xs bg-gray-100 dark:bg-gray-800 text-muted px-2 py-0.5 rounded">{verification.years_worked_together}</span>
           </div>
         </div>
         <div className="text-right bg-green-50 px-3 py-2 rounded-lg">
@@ -343,13 +343,13 @@ const CompletedVerificationCard: React.FC<{
         <MiniScoreBar label="Collaboration" score={verification.collaboration_quality} />
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <span className="text-xs text-gray-400">
+      <div className="flex items-center justify-between pt-3 border-t border-border">
+        <span className="text-xs text-gray-400 dark:text-gray-500">
           Verified {new Date(verification.completed_at!).toLocaleDateString()}
         </span>
         <button
           onClick={onToggleVisibility}
-          className={`text-xs font-bold flex items-center px-3 py-1.5 rounded-full transition-colors ${verification.is_visible_publicly ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+          className={`text-xs font-bold flex items-center px-3 py-1.5 rounded-full transition-colors ${verification.is_visible_publicly ? 'bg-accent-coral-bg text-accent-coral hover:bg-accent-coral-bg' : 'bg-gray-100 dark:bg-gray-800 text-muted hover:bg-border'}`}
         >
           {verification.is_visible_publicly ? (
             <>
@@ -369,13 +369,13 @@ const CompletedVerificationCard: React.FC<{
 const MiniScoreBar: React.FC<{ label: string; score: number }> = ({ label, score }) => (
   <div>
     <div className="flex justify-between mb-1">
-        <span className="text-[10px] font-semibold text-gray-500 uppercase">{label}</span>
-        <span className="text-[10px] font-bold text-gray-700">{score.toFixed(1)}</span>
+        <span className="text-[10px] font-semibold text-muted uppercase">{label}</span>
+        <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">{score.toFixed(1)}</span>
     </div>
-    <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
       <div
         className={`h-1.5 rounded-full ${
-          score >= 8 ? 'bg-green-500' : score >= 6 ? 'bg-blue-500' : 'bg-orange-500'
+          score >= 8 ? 'bg-green-500' : score >= 6 ? 'bg-accent-coral' : 'bg-orange-500'
         }`}
         style={{ width: `${(score / 10) * 100}%` }}
       />

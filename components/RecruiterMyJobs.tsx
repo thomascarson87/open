@@ -200,7 +200,7 @@ const RecruiterMyJobs: React.FC = () => {
     const colors: Record<string, string> = {
       published: 'bg-green-100 text-green-700 border-green-200',
       pending_approval: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      draft: 'bg-gray-100 text-gray-700 border-gray-200',
+      draft: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 border-border',
       closed: 'bg-red-100 text-red-700 border-red-200'
     };
     return colors[status] || colors.draft;
@@ -222,8 +222,8 @@ const RecruiterMyJobs: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Job Postings</h1>
-          <p className="text-gray-500 mt-1">Manage your open positions and track applications</p>
+          <h1 className="font-heading text-3xl text-primary">My Job Postings</h1>
+          <p className="text-muted mt-1">Manage your open positions and track applications</p>
         </div>
         <button 
           onClick={() => window.location.href = '/?view=create-job'} // Simple navigation via URL param logic in App.tsx
@@ -235,36 +235,36 @@ const RecruiterMyJobs: React.FC = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-6 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-500">Active Jobs</span>
-            <Briefcase className="w-5 h-5 text-blue-500" />
+            <span className="text-sm font-medium text-muted">Active Jobs</span>
+            <Briefcase className="w-5 h-5 text-accent-coral" />
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.totalActive}</div>
+          <div className="text-3xl font-bold text-primary">{stats.totalActive}</div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-6 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-500">Total Applications</span>
+            <span className="text-sm font-medium text-muted">Total Applications</span>
             <Users className="w-5 h-5 text-green-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.totalApplications}</div>
+          <div className="text-3xl font-bold text-primary">{stats.totalApplications}</div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-6 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-500">Avg Match Score</span>
-            <TrendingUp className="w-5 h-5 text-purple-500" />
+            <span className="text-sm font-medium text-muted">Avg Match Score</span>
+            <TrendingUp className="w-5 h-5 text-accent-green" />
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.avgMatchScore}%</div>
+          <div className="text-3xl font-bold text-primary">{stats.avgMatchScore}%</div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-6 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-500">Positions to Fill</span>
+            <span className="text-sm font-medium text-muted">Positions to Fill</span>
             <BarChart3 className="w-5 h-5 text-orange-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900">{stats.positionsToFill}</div>
+          <div className="text-3xl font-bold text-primary">{stats.positionsToFill}</div>
         </div>
       </div>
 
@@ -279,7 +279,7 @@ const RecruiterMyJobs: React.FC = () => {
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                 statusFilter === status
                   ? 'bg-gray-900 text-white shadow-md'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'bg-surface border border-border text-muted hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900'
               }`}
             >
               {status === 'pending_my_approval' && <Clock className="w-3.5 h-3.5" />}
@@ -290,13 +290,13 @@ const RecruiterMyJobs: React.FC = () => {
 
         {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder="Search jobs..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none bg-white"
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-accent-coral outline-none bg-white dark:bg-surface"
           />
         </div>
 
@@ -304,7 +304,7 @@ const RecruiterMyJobs: React.FC = () => {
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as any)}
-          className="px-4 py-2 border border-gray-200 rounded-lg font-medium bg-white cursor-pointer hover:bg-gray-50"
+          className="px-4 py-2 border border-border rounded-lg font-medium bg-white dark:bg-surface cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900"
         >
           <option value="date">Sort by Date</option>
           <option value="applications">Sort by Applications</option>
@@ -316,13 +316,13 @@ const RecruiterMyJobs: React.FC = () => {
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <p className="text-gray-500 mt-4">Loading jobs...</p>
+          <p className="text-muted mt-4">Loading jobs...</p>
         </div>
       ) : filteredJobs.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-          <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No jobs found</h3>
-          <p className="text-gray-500 mb-6">
+        <div className="bg-surface rounded-2xl border border-border p-12 text-center">
+          <Briefcase className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-primary mb-2">No jobs found</h3>
+          <p className="text-muted mb-6">
             {searchQuery ? 'Try a different search term' : 'Start by posting your first job'}
           </p>
           <button 
@@ -337,7 +337,7 @@ const RecruiterMyJobs: React.FC = () => {
           {filteredJobs.map(job => (
             <div 
               key={job.id}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-6 group relative"
+              className="bg-surface rounded-xl border border-border shadow-sm hover:shadow-md transition-all p-6 group relative"
             >
               {/* Status & Approval Badges */}
               <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -351,50 +351,50 @@ const RecruiterMyJobs: React.FC = () => {
 
               {/* Job Info */}
               <div className="mb-4 pr-20">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{job.title}</h3>
-                <p className="text-sm text-gray-500">{job.location} · {job.workMode}</p>
-                <p className="text-xs text-gray-400 mt-2">
+                <h3 className="text-lg font-bold text-primary mb-1">{job.title}</h3>
+                <p className="text-sm text-muted">{job.location} · {job.workMode}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                   Posted {new Date(job.postedDate).toLocaleDateString()}
                 </p>
               </div>
 
               {/* Metrics */}
-              <div className="grid grid-cols-3 gap-4 mb-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-3 gap-4 mb-4 pt-4 border-t border-border">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{job.applicationsCount}</div>
-                  <div className="text-xs text-gray-500">Applications</div>
+                  <div className="text-2xl font-bold text-primary">{job.applicationsCount}</div>
+                  <div className="text-xs text-muted">Applications</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">{job.avgMatchScore}%</div>
-                  <div className="text-xs text-gray-500">Avg Match</div>
+                  <div className="text-xs text-muted">Avg Match</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{job.recentApplications}</div>
-                  <div className="text-xs text-gray-500">Last 7d</div>
+                  <div className="text-2xl font-bold text-accent-coral">{job.recentApplications}</div>
+                  <div className="text-xs text-muted">Last 7d</div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t border-gray-100">
+              <div className="flex gap-2 pt-4 border-t border-border">
                 <button 
                   onClick={() => {/* View job details - simplified for demo */}}
-                  className="flex-1 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                  className="flex-1 py-2 px-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
                 >
                   <Eye className="w-4 h-4 mr-1" /> View
                 </button>
                 <button 
                   onClick={() => {/* Edit job - simplified */}}
-                  className="flex-1 py-2 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                  className="flex-1 py-2 px-3 bg-accent-coral-bg hover:bg-accent-coral-bg text-accent-coral rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
                 >
                   <Edit className="w-4 h-4 mr-1" /> Edit
                 </button>
                 <div className="relative group/menu">
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors h-full flex items-center">
-                    <MoreVertical className="w-4 h-4 text-gray-600" />
+                  <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-lg transition-colors h-full flex items-center">
+                    <MoreVertical className="w-4 h-4 text-muted" />
                   </button>
                   
                   {/* Dropdown Menu */}
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-200 hidden group-hover/menu:block z-10 p-1">
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-surface rounded-xl shadow-xl border border-border hidden group-hover/menu:block z-10 p-1">
                     {isPendingMyApproval(job) && (
                       <button
                         onClick={() => window.location.href = '/?view=pending-approvals'}
@@ -405,19 +405,19 @@ const RecruiterMyJobs: React.FC = () => {
                     )}
                     <button
                       onClick={() => handleArchiveJob(job.id)}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 rounded-lg flex items-center"
                     >
                       <Archive className="w-4 h-4 mr-2" /> Archive
                     </button>
                     <button
                       onClick={() => {}}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 rounded-lg flex items-center"
                     >
                       <BarChart3 className="w-4 h-4 mr-2" /> Analytics
                     </button>
                     {teamRole === 'admin' && (
                       <>
-                        <div className="h-px bg-gray-100 my-1"></div>
+                        <div className="h-px bg-gray-100 dark:bg-gray-800 my-1"></div>
                         <button
                           onClick={() => handleDeleteJob(job.id)}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center"

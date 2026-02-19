@@ -14,11 +14,13 @@ import {
   FEEDBACK_FREQUENCY_OPTIONS,
   COMMUNICATION_PREFERENCE_OPTIONS,
   MEETING_CULTURE_OPTIONS,
+  CONFLICT_RESOLUTION_OPTIONS,
   HM_TEAM_SIZE_OPTIONS,
   HM_REPORTING_STRUCTURE_OPTIONS,
   GROWTH_EXPECTATION_OPTIONS,
   MENTORSHIP_APPROACH_OPTIONS,
   HM_WORK_STYLE_DEALBREAKERS,
+  HM_TEAM_DEALBREAKERS,
   HM_TRAIT_DEALBREAKERS,
   IMPACT_SCOPE_OPTIONS
 } from '../constants/hiringManagerData';
@@ -27,6 +29,8 @@ import {
   AUTONOMY_LEVEL_OPTIONS,
   AMBIGUITY_TOLERANCE_OPTIONS,
   CHANGE_FREQUENCY_OPTIONS,
+  DECISION_MAKING_OPTIONS,
+  RISK_TOLERANCE_OPTIONS,
   COLLABORATION_FREQ_OPTIONS,
   PAIR_PROGRAMMING_OPTIONS,
   CROSS_FUNCTIONAL_OPTIONS
@@ -78,30 +82,30 @@ const CollapsibleSection: React.FC<SectionProps> = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-surface rounded-xl border border-border overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gray-100 text-gray-600">
+          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-muted">
             {icon}
           </div>
           <div className="text-left">
-            <h3 className="text-base font-bold text-gray-900">{title}</h3>
+            <h3 className="text-base font-bold text-primary">{title}</h3>
             {description && (
-              <p className="text-sm text-gray-500">{description}</p>
+              <p className="text-sm text-muted">{description}</p>
             )}
           </div>
         </div>
         {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-gray-400" />
+          <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-400" />
+          <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />
         )}
       </button>
       {isOpen && (
-        <div className="px-5 pb-5 border-t border-gray-100">
+        <div className="px-5 pb-5 border-t border-border">
           <div className="pt-5">{children}</div>
         </div>
       )}
@@ -122,26 +126,26 @@ const OptionCard: React.FC<OptionCardProps> = ({ option, selected, onClick, icon
     onClick={onClick}
     className={`relative p-4 rounded-xl border-2 text-left transition-all ${
       selected
-        ? 'border-blue-500 bg-blue-50'
-        : 'border-gray-200 hover:border-gray-300 bg-white'
+        ? 'border-accent-coral bg-accent-coral-bg'
+        : 'border-border hover:border-gray-300 dark:border-gray-700 bg-white dark:bg-surface'
     }`}
   >
     {selected && (
-      <div className="absolute top-2 right-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+      <div className="absolute top-2 right-2 w-5 h-5 bg-accent-coral rounded-full flex items-center justify-center">
         <Check className="w-3 h-3 text-white" />
       </div>
     )}
     <div className="flex items-start gap-3">
       {icon && (
-        <div className={`p-2 rounded-lg ${selected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+        <div className={`p-2 rounded-lg ${selected ? 'bg-accent-coral-bg text-accent-coral' : 'bg-gray-100 dark:bg-gray-800 text-muted'}`}>
           {icon}
         </div>
       )}
       <div>
-        <div className={`font-bold ${selected ? 'text-blue-900' : 'text-gray-900'}`}>
+        <div className={`font-bold ${selected ? 'text-accent-coral' : 'text-primary'}`}>
           {option.label}
         </div>
-        <div className={`text-sm mt-0.5 ${selected ? 'text-blue-700' : 'text-gray-500'}`}>
+        <div className={`text-sm mt-0.5 ${selected ? 'text-accent-coral' : 'text-muted'}`}>
           {option.description}
         </div>
       </div>
@@ -159,12 +163,12 @@ interface SelectFieldProps {
 
 const SelectField: React.FC<SelectFieldProps> = ({ label, value, options, onChange, helpText }) => (
   <div>
-    <label className="block text-sm font-bold text-gray-700 mb-2">{label}</label>
-    {helpText && <p className="text-xs text-gray-500 mb-2">{helpText}</p>}
+    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">{label}</label>
+    {helpText && <p className="text-xs text-muted mb-2">{helpText}</p>}
     <select
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+      className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-accent-coral focus:border-accent-coral bg-white dark:bg-surface"
     >
       <option value="">Select...</option>
       {options.map((opt) => (
@@ -300,13 +304,13 @@ export default function HiringManagerPreferences() {
   // Access denied view
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-md text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="bg-surface rounded-xl border border-border p-8 max-w-md text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
-          <p className="text-gray-600">
+          <h2 className="font-heading text-xl text-primary mb-2">Access Restricted</h2>
+          <p className="text-muted">
             This page is only available to Hiring Managers and Admins.
             Please contact your administrator if you need access.
           </p>
@@ -318,21 +322,21 @@ export default function HiringManagerPreferences() {
   // Loading view
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent-coral animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-surface border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Team Preferences</h1>
-              <p className="text-gray-500 mt-1">
+              <h1 className="font-heading text-2xl text-primary">My Team Preferences</h1>
+              <p className="text-muted mt-1">
                 Define your default preferences for matching candidates to your team
               </p>
             </div>
@@ -353,13 +357,13 @@ export default function HiringManagerPreferences() {
           {/* Progress Indicator */}
           <div className="mt-6 flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-gray-500">Preferences Set:</div>
-              <div className="text-sm font-bold text-gray-900">{progress.total} / 18</div>
+              <div className="text-sm font-medium text-muted">Preferences Set:</div>
+              <div className="text-sm font-bold text-primary">{progress.total} / 21</div>
             </div>
-            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-500 rounded-full transition-all"
-                style={{ width: `${(progress.total / 18) * 100}%` }}
+                className="h-full bg-accent-coral rounded-full transition-all"
+                style={{ width: `${(progress.total / 21) * 100}%` }}
               />
             </div>
           </div>
@@ -412,7 +416,7 @@ export default function HiringManagerPreferences() {
         >
           {/* Leadership Approach Cards */}
           <div className="mb-6">
-            <label className="block text-sm font-bold text-gray-700 mb-3">
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-3">
               Leadership Approach
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -449,6 +453,13 @@ export default function HiringManagerPreferences() {
               options={MEETING_CULTURE_OPTIONS}
               onChange={(v) => updateForm('meetingCulture', v as any)}
               helpText="How your team approaches meetings"
+            />
+            <SelectField
+              label="Conflict Resolution"
+              value={form.conflictResolution}
+              options={CONFLICT_RESOLUTION_OPTIONS}
+              onChange={(v) => updateForm('conflictResolution', v as any)}
+              helpText="How you handle team disagreements"
             />
           </div>
         </CollapsibleSection>
@@ -487,6 +498,20 @@ export default function HiringManagerPreferences() {
               options={CHANGE_FREQUENCY_OPTIONS}
               onChange={(v) => updateForm('changeFrequency', v as any)}
               helpText="How often priorities shift"
+            />
+            <SelectField
+              label="Decision Making"
+              value={form.decisionMaking}
+              options={DECISION_MAKING_OPTIONS}
+              onChange={(v) => updateForm('decisionMaking', v as any)}
+              helpText="How decisions are typically made"
+            />
+            <SelectField
+              label="Risk Tolerance"
+              value={form.riskTolerance}
+              options={RISK_TOLERANCE_OPTIONS}
+              onChange={(v) => updateForm('riskTolerance', v as any)}
+              helpText="Comfort level with risk and experimentation"
             />
           </div>
         </CollapsibleSection>
@@ -552,10 +577,10 @@ export default function HiringManagerPreferences() {
             />
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Minimum Impact Scope
               </label>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-muted mb-3">
                 The minimum level of impact you expect from candidates
               </p>
               <div className="flex gap-2">
@@ -566,17 +591,51 @@ export default function HiringManagerPreferences() {
                     onClick={() => updateForm('impactScopeMin', option.value)}
                     className={`flex-1 p-3 rounded-lg border-2 transition-all text-center ${
                       form.impactScopeMin === option.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-accent-coral bg-accent-coral-bg'
+                        : 'border-border hover:border-gray-300 dark:border-gray-700'
                     }`}
                   >
                     <div className={`text-sm font-bold ${
-                      form.impactScopeMin === option.value ? 'text-blue-900' : 'text-gray-900'
+                      form.impactScopeMin === option.value ? 'text-accent-coral' : 'text-primary'
                     }`}>
                       {option.label}
                     </div>
                     <div className={`text-xs mt-0.5 ${
-                      form.impactScopeMin === option.value ? 'text-blue-600' : 'text-gray-500'
+                      form.impactScopeMin === option.value ? 'text-accent-coral' : 'text-muted'
+                    }`}>
+                      {option.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
+                Maximum Impact Scope
+              </label>
+              <p className="text-xs text-muted mb-3">
+                The maximum impact scope for this role (optional upper bound)
+              </p>
+              <div className="flex gap-2">
+                {IMPACT_SCOPE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('impactScopeMax', option.value)}
+                    className={`flex-1 p-3 rounded-lg border-2 transition-all text-center ${
+                      form.impactScopeMax === option.value
+                        ? 'border-accent-coral bg-accent-coral-bg'
+                        : 'border-border hover:border-gray-300 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className={`text-sm font-bold ${
+                      form.impactScopeMax === option.value ? 'text-accent-coral' : 'text-primary'
+                    }`}>
+                      {option.label}
+                    </div>
+                    <div className={`text-xs mt-0.5 ${
+                      form.impactScopeMax === option.value ? 'text-accent-coral' : 'text-muted'
                     }`}>
                       {option.description}
                     </div>
@@ -596,10 +655,10 @@ export default function HiringManagerPreferences() {
         >
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Work Style Dealbreakers
               </label>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-muted mb-3">
                 Work style mismatches that would be problematic
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -625,16 +684,16 @@ export default function HiringManagerPreferences() {
                       className={`p-3 rounded-lg border-2 text-left transition-all ${
                         isSelected
                           ? 'border-red-300 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          : 'border-border hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       <div className={`text-sm font-bold ${
-                        isSelected ? 'text-red-800' : 'text-gray-900'
+                        isSelected ? 'text-red-800' : 'text-primary'
                       }`}>
                         {option.label}
                       </div>
                       <div className={`text-xs mt-0.5 ${
-                        isSelected ? 'text-red-600' : 'text-gray-500'
+                        isSelected ? 'text-red-600' : 'text-muted'
                       }`}>
                         {option.description}
                       </div>
@@ -645,10 +704,59 @@ export default function HiringManagerPreferences() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
+                Team Dealbreakers
+              </label>
+              <p className="text-xs text-muted mb-3">
+                Team collaboration mismatches that would be problematic
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {HM_TEAM_DEALBREAKERS.map((option) => {
+                  const isSelected = form.teamDealbreakers.includes(option.value);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          updateForm(
+                            'teamDealbreakers',
+                            form.teamDealbreakers.filter((v) => v !== option.value)
+                          );
+                        } else {
+                          updateForm('teamDealbreakers', [
+                            ...form.teamDealbreakers,
+                            option.value
+                          ]);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                        isSelected
+                          ? 'border-red-300 bg-red-50'
+                          : 'border-border hover:border-gray-300 dark:border-gray-700'
+                      }`}
+                    >
+                      <div className={`text-sm font-bold ${
+                        isSelected ? 'text-red-800' : 'text-primary'
+                      }`}>
+                        {option.label}
+                      </div>
+                      <div className={`text-xs mt-0.5 ${
+                        isSelected ? 'text-red-600' : 'text-muted'
+                      }`}>
+                        {option.description}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Trait Dealbreakers
               </label>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-muted mb-3">
                 Character traits that would be disqualifying
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -674,16 +782,16 @@ export default function HiringManagerPreferences() {
                       className={`p-3 rounded-lg border-2 text-left transition-all ${
                         isSelected
                           ? 'border-red-300 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          : 'border-border hover:border-gray-300 dark:border-gray-700'
                       }`}
                     >
                       <div className={`text-sm font-bold ${
-                        isSelected ? 'text-red-800' : 'text-gray-900'
+                        isSelected ? 'text-red-800' : 'text-primary'
                       }`}>
                         {option.label}
                       </div>
                       <div className={`text-xs mt-0.5 ${
-                        isSelected ? 'text-red-600' : 'text-gray-500'
+                        isSelected ? 'text-red-600' : 'text-muted'
                       }`}>
                         {option.description}
                       </div>

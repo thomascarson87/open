@@ -26,7 +26,7 @@ interface SkillsLandscapeProps {
 // Quadrant colors
 const QUADRANT_COLORS: Record<SkillQuadrant, string> = {
   opportunity: '#10b981', // green
-  competitive: '#3b82f6', // blue
+  competitive: 'var(--accent-coral)', // blue
   saturated: '#f59e0b',   // amber
   niche: '#6b7280'        // gray
 };
@@ -36,9 +36,9 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload as ClassifiedSkill;
     return (
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm">
-        <p className="font-bold text-gray-900 capitalize">{data.skill}</p>
-        <div className="mt-1 space-y-0.5 text-gray-500">
+      <div className="bg-surface border border-border rounded-lg shadow-lg p-3 text-sm">
+        <p className="font-bold text-primary capitalize">{data.skill}</p>
+        <div className="mt-1 space-y-0.5 text-muted">
           <p>Candidates: {data.supply}</p>
           <p>Jobs: {data.demand}</p>
           <p className="capitalize text-xs mt-1">
@@ -60,8 +60,8 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 // Skeleton loader for chart
 const ChartSkeleton = () => (
-  <div className="h-[350px] bg-gray-50 rounded-xl animate-pulse flex items-center justify-center">
-    <div className="text-gray-300 text-sm">Loading market data...</div>
+  <div className="h-[350px] bg-gray-50 dark:bg-gray-900 rounded-xl animate-pulse flex items-center justify-center">
+    <div className="text-gray-300 dark:text-gray-600 text-sm">Loading market data...</div>
   </div>
 );
 
@@ -69,7 +69,7 @@ const ChartSkeleton = () => (
 const UnlockSkeleton = () => (
   <div className="flex gap-3 overflow-x-auto pb-2">
     {[1, 2, 3].map(i => (
-      <div key={i} className="flex-shrink-0 w-48 h-24 bg-gray-50 rounded-xl animate-pulse" />
+      <div key={i} className="flex-shrink-0 w-48 h-24 bg-gray-50 dark:bg-gray-900 rounded-xl animate-pulse" />
     ))}
   </div>
 );
@@ -127,11 +127,11 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
   return (
     <div className="space-y-6">
       {/* Quadrant Chart Section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-surface rounded-xl border border-border p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Skills Landscape</h3>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h3 className="text-base font-bold text-primary">Skills Landscape</h3>
+            <p className="text-sm text-muted mt-0.5">
               Where your skills sit in the market
             </p>
           </div>
@@ -140,7 +140,7 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
               <span className="text-green-600 font-medium">
                 {quadrantCounts.opportunity} opportunity
               </span>
-              <span className="text-blue-600 font-medium">
+              <span className="text-accent-coral font-medium">
                 {quadrantCounts.competitive} competitive
               </span>
             </div>
@@ -155,10 +155,10 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
             <div className="absolute top-2 left-2 text-[10px] font-semibold text-green-600 opacity-60 z-10">
               Opportunity
             </div>
-            <div className="absolute top-2 right-2 text-[10px] font-semibold text-blue-600 opacity-60 z-10">
+            <div className="absolute top-2 right-2 text-[10px] font-semibold text-accent-coral opacity-60 z-10">
               Competitive
             </div>
-            <div className="absolute bottom-8 left-2 text-[10px] font-semibold text-gray-400 opacity-60 z-10">
+            <div className="absolute bottom-8 left-2 text-[10px] font-semibold text-gray-400 dark:text-gray-500 opacity-60 z-10">
               Niche
             </div>
             <div className="absolute bottom-8 right-2 text-[10px] font-semibold text-amber-600 opacity-60 z-10">
@@ -174,12 +174,12 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
                   domain={[0, 'auto']}
                   tick={{ fontSize: 10 }}
                   tickLine={false}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  axisLine={{ stroke: 'var(--border)' }}
                   label={{
                     value: 'Supply (candidates)',
                     position: 'bottom',
                     offset: 0,
-                    style: { fontSize: 10, fill: '#9ca3af' }
+                    style: { fontSize: 10, fill: 'var(--text-muted)' }
                   }}
                 />
                 <YAxis
@@ -189,24 +189,24 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
                   domain={[0, 'auto']}
                   tick={{ fontSize: 10 }}
                   tickLine={false}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  axisLine={{ stroke: 'var(--border)' }}
                   label={{
                     value: 'Demand (jobs)',
                     angle: -90,
                     position: 'insideLeft',
-                    style: { fontSize: 10, fill: '#9ca3af' }
+                    style: { fontSize: 10, fill: 'var(--text-muted)' }
                   }}
                 />
 
                 {/* Median reference lines (quadrant dividers) */}
                 <ReferenceLine
                   x={medianLines.x}
-                  stroke="#e5e7eb"
+                  stroke="var(--border)"
                   strokeDasharray="4 4"
                 />
                 <ReferenceLine
                   y={medianLines.y}
-                  stroke="#e5e7eb"
+                  stroke="var(--border)"
                   strokeDasharray="4 4"
                 />
 
@@ -216,12 +216,12 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
                 <Scatter
                   name="Market"
                   data={chartData.market}
-                  fill="#e5e7eb"
+                  fill="var(--border)"
                 >
                   {chartData.market.map((entry, index) => (
                     <Cell
                       key={`market-${index}`}
-                      fill="#d1d5db"
+                      fill="var(--border)"
                       fillOpacity={0.4}
                       r={3}
                     />
@@ -232,7 +232,7 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
                 <Scatter
                   name="Your Skills"
                   data={chartData.candidate}
-                  fill="#3b82f6"
+                  fill="var(--accent-coral)"
                 >
                   {chartData.candidate.map((entry, index) => (
                     <Cell
@@ -249,29 +249,29 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
             </ResponsiveContainer>
 
             {/* Legend */}
-            <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500">
+            <div className="flex justify-center gap-4 mt-2 text-xs text-muted">
               <span className="flex items-center gap-1">
                 <span className="w-3 h-3 rounded-full bg-gray-300" />
                 Market skills
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
+                <span className="w-3 h-3 rounded-full bg-accent-coral border-2 border-white shadow" />
                 Your skills
               </span>
             </div>
           </div>
         ) : (
-          <div className="h-[350px] flex items-center justify-center text-gray-400 text-sm">
+          <div className="h-[350px] flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
             No market data available
           </div>
         )}
       </div>
 
       {/* Skill Unlock Opportunities */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-surface rounded-xl border border-border p-6">
         <div className="mb-4">
-          <h3 className="text-base font-bold text-gray-900">Skills That Would Unlock More</h3>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h3 className="text-base font-bold text-primary">Skills That Would Unlock More</h3>
+          <p className="text-sm text-muted mt-0.5">
             Based on jobs matching 80%+ of your skills
           </p>
         </div>
@@ -283,10 +283,10 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
             {unlockOpportunities.map((opp, index) => (
               <div
                 key={opp.skill}
-                className="flex-shrink-0 w-48 md:w-auto bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-gray-200 transition-colors"
+                className="flex-shrink-0 w-48 md:w-auto bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-border hover:border-border transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <span className="font-bold text-gray-900 capitalize text-sm">
+                  <span className="font-bold text-primary capitalize text-sm">
                     {opp.skill}
                   </span>
                   <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
@@ -294,14 +294,14 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
                   </span>
                 </div>
                 {opp.exampleJobTitles.length > 0 && (
-                  <p className="text-xs text-gray-400 line-clamp-2">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 line-clamp-2">
                     e.g. {opp.exampleJobTitles.slice(0, 2).join(', ')}
                   </p>
                 )}
                 {onAddSkill && (
                   <button
                     onClick={() => onAddSkill(opp.skill)}
-                    className="mt-3 text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    className="mt-3 text-xs text-accent-coral hover:text-accent-coral font-medium"
                   >
                     Add to profile →
                   </button>
@@ -310,7 +310,7 @@ const SkillsLandscape: React.FC<SkillsLandscapeProps> = ({
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-400 text-sm">
+          <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
             {marketData?.candidateSkills?.length === 0
               ? 'Add skills to your profile to see opportunities'
               : 'No skill gaps found - you match well with available jobs!'}

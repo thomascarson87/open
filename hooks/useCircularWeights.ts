@@ -20,7 +20,7 @@ export const CIRCLE_CONFIG = {
 
 // Pole positions at 120-degree intervals
 export const POLES = {
-  skills: { x: 150, y: 30, angle: 270, color: '#2563EB', label: 'Skills' },
+  skills: { x: 150, y: 30, angle: 270, color: 'var(--accent-coral)', label: 'Skills' },
   compensation: { x: 254, y: 210, angle: 30, color: '#16A34A', label: 'Comp' },
   culture: { x: 46, y: 210, angle: 150, color: '#9333EA', label: 'Culture' },
 } as const;

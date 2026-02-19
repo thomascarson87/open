@@ -2,43 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../services/supabaseClient';
 import { JobPosting } from '../../types';
+import { mapJobFromDB } from '../../services/dataMapperService';
 import { TalentPoolAnalysis, CompensationBenchmarks, JobPerformance, CultureAlignment } from '../../components/talent-market';
-
-// Map database response to JobPosting
-const mapJobFromDB = (data: any): JobPosting => {
-  if (!data) return {} as JobPosting;
-  const skillsSource = data.required_skills_with_levels || data.required_skills || [];
-  return {
-    id: data.id,
-    company_id: data.company_id,
-    canonical_role_id: data.canonical_role_id,
-    companyName: data.company_name,
-    companyLogo: data.company_logo,
-    title: data.title,
-    description: data.description,
-    location: data.location,
-    salaryRange: data.salary_range,
-    salaryMin: data.salary_min,
-    salaryMax: data.salary_max,
-    salaryCurrency: data.salary_currency || 'USD',
-    seniority: data.seniority,
-    contractTypes: data.contract_types || [],
-    startDate: data.start_date,
-    workMode: data.work_mode || 'Remote',
-    postedDate: data.posted_date || data.created_at,
-    status: data.status,
-    requiredSkills: skillsSource.map((s: any) => ({
-      name: s.name,
-      required_level: s.required_level || 3,
-      minimumYears: s.minimumYears,
-      weight: s.weight || 'preferred'
-    })),
-    values: data.values_list || [],
-    perks: data.perks || [],
-    desiredTraits: data.desired_traits || [],
-    requiredTraits: data.required_traits || [],
-  };
-};
 
 const TalentMarket: React.FC = () => {
   const { user, companyId } = useAuth();
@@ -112,7 +77,7 @@ const TalentMarket: React.FC = () => {
             j.status !== 'closed' && j.status !== 'archived'
           );
           console.log('[TalentMarket] Active jobs after filter:', activeJobs.length, 'of', data.length);
-          setJobs(activeJobs.map(mapJobFromDB));
+          setJobs(activeJobs.map(j => mapJobFromDB(j)));
         }
 
         // Fetch company profile for perks
@@ -140,8 +105,8 @@ const TalentMarket: React.FC = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-black text-gray-900">Talent Market</h1>
-        <p className="text-gray-500 mt-1">Precision starts with understanding the market.</p>
+        <h1 className="font-heading text-2xl text-primary">Talent Market</h1>
+        <p className="text-muted mt-1">Precision starts with understanding the market.</p>
       </div>
 
       {/* Error State */}
@@ -153,7 +118,7 @@ const TalentMarket: React.FC = () => {
 
       {/* Talent Pool Analysis */}
       <section className="mb-8">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Talent Pool
         </h2>
         <TalentPoolAnalysis
@@ -165,7 +130,7 @@ const TalentMarket: React.FC = () => {
 
       {/* Compensation Benchmarks */}
       <section className="mb-8">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Compensation Benchmarks
         </h2>
         <CompensationBenchmarks
@@ -177,7 +142,7 @@ const TalentMarket: React.FC = () => {
 
       {/* Job Performance */}
       <section className="mb-8">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Job Performance
         </h2>
         <JobPerformance
@@ -188,7 +153,7 @@ const TalentMarket: React.FC = () => {
 
       {/* Culture Alignment */}
       <section className="mb-8">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+        <h2 className="font-heading text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-4">
           Culture Alignment
         </h2>
         <CultureAlignment
@@ -198,12 +163,12 @@ const TalentMarket: React.FC = () => {
       </section>
 
       {/* Coming Soon Sections */}
-      <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-sm p-12 flex flex-col items-center justify-center min-h-[200px]">
+      <div className="bg-white dark:bg-surface rounded-[2.5rem] border border-border shadow-sm p-12 flex flex-col items-center justify-center min-h-[200px]">
         <div className="text-center max-w-md">
-          <p className="text-gray-400 text-sm font-medium mb-4">More insights coming soon</p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+          <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mb-4">More insights coming soon</p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full">
             <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
-            <span className="text-sm font-bold text-gray-500">Competitor Analysis</span>
+            <span className="text-sm font-bold text-muted">Competitor Analysis</span>
           </div>
         </div>
       </div>

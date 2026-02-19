@@ -14,25 +14,25 @@ const PRESET_CONFIG: Record<PresetKey, { label: string; shortLabel: string; acti
     label: 'Balanced',
     shortLabel: 'Balanced',
     activeClass: '!bg-gray-900 text-white border-gray-900',
-    inactiveClass: 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200',
+    inactiveClass: 'bg-white dark:bg-surface text-muted hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 border-border',
   },
   skillsFirst: {
     label: 'Skills-First',
     shortLabel: 'Skills',
-    activeClass: '!bg-blue-600 text-white border-blue-600',
-    inactiveClass: 'bg-white text-blue-700 hover:bg-blue-50 border-blue-200',
+    activeClass: '!bg-accent-coral text-white border-accent-coral',
+    inactiveClass: 'bg-white dark:bg-surface text-accent-coral hover:bg-accent-coral-bg border-accent-coral-light',
   },
   compensationFirst: {
     label: 'Comp-First',
     shortLabel: 'Comp',
     activeClass: '!bg-green-600 text-white border-green-600',
-    inactiveClass: 'bg-white text-green-700 hover:bg-green-50 border-green-200',
+    inactiveClass: 'bg-white dark:bg-surface text-green-700 hover:bg-green-50 border-green-200',
   },
   cultureFirst: {
     label: 'Culture-First',
     shortLabel: 'Culture',
-    activeClass: '!bg-purple-600 text-white border-purple-600',
-    inactiveClass: 'bg-white text-purple-700 hover:bg-purple-50 border-purple-200',
+    activeClass: '!bg-accent-coral text-white border-accent-coral',
+    inactiveClass: 'bg-white dark:bg-surface text-accent-green hover:bg-accent-green-bg border-accent-green-bg',
   },
 };
 

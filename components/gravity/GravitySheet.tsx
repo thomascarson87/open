@@ -54,7 +54,7 @@ const GravitySheet: React.FC<GravitySheetProps> = ({
         ref={sheetRef}
         className="
           absolute bottom-0 left-0 right-0
-          bg-white/95 backdrop-blur-md
+          bg-white dark:bg-surface/95 backdrop-blur-md
           rounded-t-3xl shadow-2xl
           max-h-[60vh] min-h-[50vh]
           flex flex-col
@@ -67,11 +67,11 @@ const GravitySheet: React.FC<GravitySheetProps> = ({
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-2 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-2 border-b border-border">
+          <h2 className="font-heading text-lg text-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-colors active:scale-95"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-muted rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>

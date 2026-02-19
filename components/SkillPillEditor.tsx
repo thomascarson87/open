@@ -60,18 +60,18 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
   return (
     <div
       ref={popoverRef}
-      className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-3 z-50 min-w-[280px]"
+      className="absolute top-full left-0 mt-2 bg-surface rounded-xl shadow-2xl border border-border p-3 z-50 min-w-[280px]"
     >
       {/* Skill name header */}
       <div className="flex items-center justify-between mb-3 pb-2 border-b">
         <div className="flex items-center gap-2">
           <SkillIcon skillName={skill.name} size={20} showFallback={false} />
-          <span className="font-bold text-gray-900">{skill.name}</span>
+          <span className="font-bold text-primary">{skill.name}</span>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 p-1"
+          className="text-gray-400 dark:text-gray-500 hover:text-muted p-1"
         >
           <X className="w-4 h-4" />
         </button>
@@ -79,7 +79,7 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
 
       {/* Level selector - horizontal */}
       <div className="mb-3">
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2">
+        <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase mb-2">
           Level
         </label>
         <div className="flex gap-1">
@@ -93,8 +93,8 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
                 onClick={() => handleLevelChange(lvl as 1 | 2 | 3 | 4 | 5)}
                 className={`flex-1 py-2 rounded-lg text-center transition-all ${
                   isSelected
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    ? 'bg-accent-coral text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-800 text-muted hover:bg-border'
                 }`}
                 title={meta.label}
               >
@@ -103,7 +103,7 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
             );
           })}
         </div>
-        <p className="text-[10px] text-gray-400 mt-1">
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
           {SKILL_LEVEL_METADATA[skill.required_level].label}: {SKILL_LEVEL_METADATA[skill.required_level].descriptor}
         </p>
       </div>
@@ -112,13 +112,13 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
       <div className="flex gap-3">
         {/* Min years dropdown */}
         <div className="flex-1">
-          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">
+          <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase mb-1">
             Min Years
           </label>
           <select
             value={skill.minimumYears || ''}
             onChange={(e) => handleYearsChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-            className="w-full p-2 text-sm font-bold border rounded-lg bg-white"
+            className="w-full p-2 text-sm font-bold border rounded-lg bg-white dark:bg-surface"
           >
             <option value="">Any</option>
             <option value="0.5">0.5+</option>
@@ -133,7 +133,7 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
 
         {/* Required/Preferred toggle */}
         <div className="flex-1">
-          <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">
+          <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase mb-1">
             Priority
           </label>
           <div className="flex rounded-lg overflow-hidden border">
@@ -143,7 +143,7 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
               className={`flex-1 py-2 text-xs font-bold transition-all ${
                 skill.weight === 'required'
                   ? 'bg-red-100 text-red-700'
-                  : 'bg-white text-gray-400 hover:bg-gray-50'
+                  : 'bg-white dark:bg-surface text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900'
               }`}
             >
               Required
@@ -153,8 +153,8 @@ const SkillPopover: React.FC<SkillPopoverProps> = ({ skill, onUpdate, onClose, a
               onClick={() => handleWeightChange('preferred')}
               className={`flex-1 py-2 text-xs font-bold transition-all ${
                 skill.weight === 'preferred'
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-white text-gray-400 hover:bg-gray-50'
+                  ? 'bg-accent-coral-bg text-accent-coral'
+                  : 'bg-white dark:bg-surface text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900'
               }`}
             >
               Preferred
@@ -193,29 +193,29 @@ const SkillPill: React.FC<SkillPillProps> = ({
         className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 cursor-pointer transition-all h-9 ${
           isRequired
             ? 'bg-red-50 border-red-200 hover:border-red-300'
-            : 'bg-blue-50 border-blue-200 hover:border-blue-300'
-        } ${isOpen ? 'ring-2 ring-blue-400 ring-offset-1' : ''}`}
+            : 'bg-accent-coral-bg border-accent-coral-light hover:border-accent-coral-light'
+        } ${isOpen ? 'ring-2 ring-accent-coral ring-offset-1' : ''}`}
         onClick={onToggle}
       >
         {/* Skill icon */}
         <SkillIcon skillName={skill.name} size={18} showFallback={false} />
 
         {/* Skill name */}
-        <span className="font-bold text-gray-800 text-sm whitespace-nowrap">{skill.name}</span>
+        <span className="font-bold text-gray-800 dark:text-gray-200 text-sm whitespace-nowrap">{skill.name}</span>
 
         {/* Level badge */}
         <span
           className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded text-[11px] font-black ${
             isRequired
               ? 'bg-red-200 text-red-700'
-              : 'bg-blue-200 text-blue-700'
+              : 'bg-accent-coral-bg text-accent-coral'
           }`}
         >
           {skill.required_level}
         </span>
 
         {/* Years indicator */}
-        <span className={`text-xs font-medium ${skill.minimumYears ? 'text-gray-600' : 'text-gray-400'}`}>
+        <span className={`text-xs font-medium ${skill.minimumYears ? 'text-muted' : 'text-gray-400 dark:text-gray-500'}`}>
           {yearsDisplay}
         </span>
 
@@ -226,7 +226,7 @@ const SkillPill: React.FC<SkillPillProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="text-gray-400 hover:text-red-500 transition-colors ml-0.5"
+          className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors ml-0.5"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -258,7 +258,7 @@ const SkillPillEditor: React.FC<SkillPillEditorProps> = ({
 
   if (skills.length === 0) {
     return (
-      <div className="text-center py-6 text-gray-400 border-2 border-dashed rounded-2xl">
+      <div className="text-center py-6 text-gray-400 dark:text-gray-500 border-2 border-dashed rounded-2xl">
         <p className="font-bold">No skills added yet</p>
         <p className="text-sm">Use the search above to add skills</p>
       </div>

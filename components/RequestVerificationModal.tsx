@@ -55,12 +55,12 @@ const RequestVerificationModal: React.FC<Props> = ({
   if (success) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center animate-in fade-in zoom-in duration-300 shadow-2xl">
+        <div className="bg-surface rounded-2xl p-8 max-w-md w-full text-center animate-in fade-in zoom-in duration-300 shadow-2xl">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h3>
-          <p className="text-gray-600">
+          <h3 className="text-2xl font-bold text-primary mb-2">Request Sent!</h3>
+          <p className="text-muted">
             We've emailed {formData.referee_name} with a secure link. You'll be notified when they complete the verification.
           </p>
         </div>
@@ -70,17 +70,17 @@ const RequestVerificationModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl max-w-xl w-full overflow-hidden animate-in fade-in slide-in-from-bottom duration-300 shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="bg-surface rounded-2xl max-w-xl w-full overflow-hidden animate-in fade-in slide-in-from-bottom duration-300 shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Request Verification</h2>
+            <h2 className="font-heading text-xl text-primary">Request Verification</h2>
             <div className="flex gap-2 mt-1">
-                <div className={`h-1 w-8 rounded-full ${step >= 1 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-                <div className={`h-1 w-8 rounded-full ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+                <div className={`h-1 w-8 rounded-full ${step >= 1 ? 'bg-accent-coral' : 'bg-border'}`}></div>
+                <div className={`h-1 w-8 rounded-full ${step >= 2 ? 'bg-accent-coral' : 'bg-border'}`}></div>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 transition-colors">
+          <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -90,7 +90,7 @@ const RequestVerificationModal: React.FC<Props> = ({
           {step === 1 ? (
             <div className="space-y-5 animate-in slide-in-from-right duration-300">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                   Colleague's Email *
                 </label>
                 <input
@@ -100,12 +100,12 @@ const RequestVerificationModal: React.FC<Props> = ({
                   value={formData.referee_email}
                   onChange={(e) => setFormData({ ...formData, referee_email: e.target.value })}
                   placeholder="name@company.com"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-accent-coral outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                   Colleague's Name
                 </label>
                 <input
@@ -114,12 +114,12 @@ const RequestVerificationModal: React.FC<Props> = ({
                   value={formData.referee_name}
                   onChange={(e) => setFormData({ ...formData, referee_name: e.target.value })}
                   placeholder="e.g. Sarah Jones"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-accent-coral outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                   Company worked at together
                 </label>
                 <input
@@ -128,39 +128,39 @@ const RequestVerificationModal: React.FC<Props> = ({
                   value={formData.referee_company}
                   onChange={(e) => setFormData({ ...formData, referee_company: e.target.value })}
                   placeholder="e.g. TechFlow Inc."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-accent-coral outline-none transition-all"
                 />
               </div>
 
               {/* Show Skills to be Verified */}
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <div className="bg-accent-coral-bg rounded-xl p-4 border border-accent-coral-bg">
                 <div className="flex items-center mb-2">
-                  <Award className="w-4 h-4 text-blue-600 mr-2" />
-                  <h4 className="text-sm font-bold text-blue-900">Skills to Verify</h4>
+                  <Award className="w-4 h-4 text-accent-coral mr-2" />
+                  <h4 className="text-sm font-bold text-accent-coral">Skills to Verify</h4>
                 </div>
-                <p className="text-xs text-blue-700 mb-3">
+                <p className="text-xs text-accent-coral mb-3">
                   Your colleague will assess these skills and validate the proficiency levels:
                 </p>
                 <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
                   {candidateSkills.slice(0, 10).map((skill, idx) => {
                     const levelMeta = SKILL_LEVEL_METADATA[skill.level];
                     return (
-                      <div key={idx} className="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-blue-100">
-                        <span className="font-semibold text-gray-900">{skill.name}</span>
+                      <div key={idx} className="flex items-center justify-between text-xs bg-white dark:bg-surface rounded-lg px-3 py-2 border border-accent-coral-bg">
+                        <span className="font-semibold text-primary">{skill.name}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{levelMeta.icon}</span>
-                          <span className="text-gray-600">{levelMeta.label}</span>
+                          <span className="text-muted">{levelMeta.label}</span>
                         </div>
                       </div>
                     );
                   })}
                   {candidateSkills.length > 10 && (
-                    <p className="text-xs text-gray-500 text-center">
+                    <p className="text-xs text-muted text-center">
                       +{candidateSkills.length - 10} more skills
                     </p>
                   )}
                   {candidateSkills.length === 0 && (
-                      <p className="text-xs text-gray-500 text-center italic">No skills added yet.</p>
+                      <p className="text-xs text-muted text-center italic">No skills added yet.</p>
                   )}
                 </div>
               </div>
@@ -179,7 +179,7 @@ const RequestVerificationModal: React.FC<Props> = ({
           ) : (
             <div className="space-y-6 animate-in slide-in-from-right duration-300">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-3">
                   Relationship *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -195,8 +195,8 @@ const RequestVerificationModal: React.FC<Props> = ({
                       onClick={() => setFormData({ ...formData, relationship_type: option.value as any })}
                       className={`p-4 rounded-xl border-2 text-sm font-bold transition-all text-left ${
                         formData.relationship_type === option.value
-                          ? 'border-blue-600 bg-blue-50 text-blue-900'
-                          : 'border-gray-100 hover:border-gray-300 text-gray-600'
+                          ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                          : 'border-border hover:border-gray-300 dark:border-gray-700 text-muted'
                       }`}
                     >
                       {option.label}
@@ -206,7 +206,7 @@ const RequestVerificationModal: React.FC<Props> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-3">
                   Duration *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -222,8 +222,8 @@ const RequestVerificationModal: React.FC<Props> = ({
                       onClick={() => setFormData({ ...formData, years_worked_together: option as any })}
                       className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${
                         formData.years_worked_together === option
-                          ? 'border-blue-600 bg-blue-50 text-blue-900'
-                          : 'border-gray-100 hover:border-gray-300 text-gray-600'
+                          ? 'border-accent-coral bg-accent-coral-bg text-accent-coral'
+                          : 'border-border hover:border-gray-300 dark:border-gray-700 text-muted'
                       }`}
                     >
                       {option}
@@ -232,23 +232,23 @@ const RequestVerificationModal: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 text-sm text-blue-800 leading-relaxed">
+              <div className="bg-accent-coral-bg rounded-xl p-4 border border-accent-coral-bg text-sm text-accent-coral leading-relaxed">
                 <strong>What happens next:</strong> We'll email your colleague a secure link. 
                 They'll verify your skills and provide performance ratings. No account required for them.
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="text-gray-500 hover:text-gray-900 font-bold text-sm"
+                  className="text-muted hover:text-primary font-bold text-sm"
                 >
                   Back
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white px-8 py-3 rounded-xl font-bold flex items-center shadow-lg transition-transform hover:-translate-y-0.5"
+                  className="bg-accent-coral hover:bg-accent-coral disabled:opacity-70 text-white px-8 py-3 rounded-xl font-bold flex items-center shadow-lg transition-transform hover:-translate-y-0.5"
                 >
                   {loading ? (
                     'Sending...'

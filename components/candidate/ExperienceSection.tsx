@@ -52,26 +52,26 @@ function ExperienceCard({
   return (
     <div
       onClick={onClick}
-      className={`p-5 bg-white border border-gray-200 rounded-2xl ${
-        isEditable ? 'cursor-pointer hover:border-blue-300 hover:shadow-md transition-all' : ''
+      className={`p-5 bg-surface border border-border rounded-2xl ${
+        isEditable ? 'cursor-pointer hover:border-accent-coral-light hover:shadow-md transition-all' : ''
       }`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-6 h-6 text-gray-400" />
+          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
 
           <div className="flex-1 min-w-0">
-            <h4 className="font-bold text-gray-900 text-lg">{experience.role}</h4>
-            <p className="text-gray-600 font-medium">{experience.company}</p>
-            <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-gray-500">
+            <h4 className="font-bold text-primary text-lg">{experience.role}</h4>
+            <p className="text-muted font-medium">{experience.company}</p>
+            <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-muted">
               <span>{formatDateRange(experience.startDate, experience.endDate)}</span>
-              <span className="text-gray-300">•</span>
+              <span className="text-gray-300 dark:text-gray-600">•</span>
               <span>{duration}</span>
               {experience.location && (
                 <>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-gray-300 dark:text-gray-600">•</span>
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     {experience.location}
@@ -80,7 +80,7 @@ function ExperienceCard({
               )}
               {experience.type && (
                 <>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-gray-300 dark:text-gray-600">•</span>
                   <span>{experience.type}</span>
                 </>
               )}
@@ -95,19 +95,19 @@ function ExperienceCard({
             </span>
           )}
           {experience.isVerified && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full flex items-center gap-1">
+            <span className="px-2 py-1 bg-accent-coral-bg text-accent-coral text-xs font-bold rounded-full flex items-center gap-1">
               <CheckCircle className="w-3 h-3" />
               Verified
             </span>
           )}
           {isEditable && (
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
           )}
         </div>
       </div>
 
       {experience.description && (
-        <p className="mt-4 text-sm text-gray-600 line-clamp-2">
+        <p className="mt-4 text-sm text-muted line-clamp-2">
           {experience.description}
         </p>
       )}
@@ -117,13 +117,13 @@ function ExperienceCard({
           {experience.skillsAcquired.slice(0, 5).map(skill => (
             <span
               key={skill}
-              className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md font-medium"
+              className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-muted text-xs rounded-md font-medium"
             >
               {skill}
             </span>
           ))}
           {experience.skillsAcquired.length > 5 && (
-            <span className="text-xs text-gray-400 py-0.5">
+            <span className="text-xs text-gray-400 dark:text-gray-500 py-0.5">
               +{experience.skillsAcquired.length - 5} more
             </span>
           )}
@@ -149,14 +149,14 @@ export function ExperienceSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
-          <Briefcase className="w-5 h-5 text-blue-600" />
+        <h3 className="text-xl font-black text-primary flex items-center gap-2">
+          <Briefcase className="w-5 h-5 text-accent-coral" />
           Work Experience
         </h3>
         {isEditable && (
           <button
             onClick={onAdd}
-            className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="flex items-center gap-2 text-sm font-bold text-accent-coral hover:text-accent-coral transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Position
@@ -165,13 +165,13 @@ export function ExperienceSection({
       </div>
 
       {sortedExperiences.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-          <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No work experience added yet</p>
+        <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-2xl border-2 border-dashed border-border">
+          <Briefcase className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <p className="text-muted font-medium">No work experience added yet</p>
           {isEditable && (
             <button
               onClick={onAdd}
-              className="mt-3 text-blue-600 text-sm font-bold hover:text-blue-700"
+              className="mt-3 text-accent-coral text-sm font-bold hover:text-accent-coral"
             >
               Add your first position
             </button>

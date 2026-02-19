@@ -80,16 +80,16 @@ const GoogleAuthCallback: React.FC = () => {
   }, [authLoading, user, searchParams]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md w-full text-center space-y-6 animate-in fade-in zoom-in duration-300">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-surface p-8 rounded-2xl shadow-xl border border-border max-w-md w-full text-center space-y-6 animate-in fade-in zoom-in duration-300">
         
         {status === 'loading' && (
           <>
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <div className="w-16 h-16 bg-accent-coral-bg rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader2 className="w-8 h-8 text-accent-coral animate-spin" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Processing</h2>
-            <p className="text-gray-500">{message}</p>
+            <h2 className="font-heading text-xl text-primary">Processing</h2>
+            <p className="text-muted">{message}</p>
           </>
         )}
 
@@ -98,7 +98,7 @@ const GoogleAuthCallback: React.FC = () => {
             <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Success!</h2>
+            <h2 className="font-heading text-xl text-primary">Success!</h2>
             <p className="text-green-600 font-medium">{message}</p>
           </>
         )}
@@ -108,11 +108,11 @@ const GoogleAuthCallback: React.FC = () => {
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Connection Failed</h2>
+            <h2 className="font-heading text-xl text-primary">Connection Failed</h2>
             <p className="text-red-500 font-medium">{message}</p>
             <button 
               onClick={() => navigate('/?view=schedule')}
-              className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+              className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-border text-gray-700 dark:text-gray-300 dark:text-gray-600 rounded-lg text-sm font-medium transition-colors"
             >
               Return to Schedule
             </button>

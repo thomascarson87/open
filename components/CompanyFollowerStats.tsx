@@ -48,15 +48,15 @@ const CompanyFollowerStats: React.FC<CompanyFollowerStatsProps> = ({
       </div>
 
       <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-black text-gray-900">
+        <span className="text-3xl font-black text-primary">
           {followerCount.toLocaleString()}
         </span>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted">
           {followerCount === 1 ? 'candidate' : 'candidates'}
         </span>
       </div>
 
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-muted mt-2">
         Candidates interested in your company will see new job postings in their feed.
       </p>
     </div>

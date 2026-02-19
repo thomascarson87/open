@@ -107,7 +107,7 @@ export function EducationEditPanel({
       <div className="space-y-6 p-6">
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             Institution *
           </label>
           <input
@@ -115,18 +115,18 @@ export function EducationEditPanel({
             value={formData.institution || ''}
             onChange={e => setFormData({ ...formData, institution: e.target.value })}
             placeholder="e.g., University of Cambridge"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             Degree / Level *
           </label>
           <select
             value={formData.degree || ''}
             onChange={e => setFormData({ ...formData, degree: e.target.value })}
-            className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
           >
             <option value="">Select degree level...</option>
             {DEGREE_OPTIONS.map(opt => (
@@ -136,13 +136,13 @@ export function EducationEditPanel({
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             Field of Study *
           </label>
           <select
             value={formData.fieldOfStudy || ''}
             onChange={e => setFormData({ ...formData, fieldOfStudy: e.target.value })}
-            className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
           >
             <option value="">Select field...</option>
             {FIELD_OF_STUDY_OPTIONS.map(opt => (
@@ -155,13 +155,13 @@ export function EducationEditPanel({
               value={customField}
               onChange={e => setCustomField(e.target.value)}
               placeholder="Specify your field of study"
-              className="w-full p-3 border border-gray-200 rounded-xl mt-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              className="w-full p-3 border border-border rounded-xl mt-2 focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
             />
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             Specialization / Concentration
           </label>
           <input
@@ -169,12 +169,12 @@ export function EducationEditPanel({
             value={formData.specialization || ''}
             onChange={e => setFormData({ ...formData, specialization: e.target.value })}
             placeholder="e.g., Artificial Intelligence, Corporate Finance"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             Location
           </label>
           <LocationAutocomplete
@@ -195,15 +195,15 @@ export function EducationEditPanel({
                 isOngoing: e.target.checked,
                 graduationYear: e.target.checked ? null : formData.graduationYear
               })}
-              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="w-5 h-5 rounded border-gray-300 dark:border-gray-700 text-accent-coral focus:ring-accent-coral"
             />
-            <span className="text-sm font-medium text-gray-700">I'm currently studying here</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">I'm currently studying here</span>
           </label>
         </div>
 
         {!formData.isOngoing && (
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
               Graduation Year *
             </label>
             <select
@@ -212,7 +212,7 @@ export function EducationEditPanel({
                 ...formData,
                 graduationYear: e.target.value ? parseInt(e.target.value) : null
               })}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
             >
               <option value="">Select year...</option>
               {graduationYears.map(year => (
@@ -223,7 +223,7 @@ export function EducationEditPanel({
         )}
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             Grade / GPA
           </label>
           <input
@@ -231,14 +231,14 @@ export function EducationEditPanel({
             value={formData.grade || ''}
             onChange={e => setFormData({ ...formData, grade: e.target.value })}
             placeholder="e.g., First Class Honours, 3.8/4.0 GPA"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
           />
         </div>
 
       </div>
 
       {/* Footer */}
-      <div className="sticky bottom-0 bg-white border-t p-4 flex items-center justify-between">
+      <div className="sticky bottom-0 bg-white dark:bg-surface border-t p-4 flex items-center justify-between">
         <div>
           {education && onDelete && (
             <button
@@ -259,7 +259,7 @@ export function EducationEditPanel({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+            className="px-4 py-2 text-muted hover:text-gray-800 dark:text-gray-200 font-medium"
           >
             Cancel
           </button>
@@ -267,7 +267,7 @@ export function EducationEditPanel({
             type="button"
             onClick={handleSave}
             disabled={!isValid}
-            className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 bg-accent-coral text-white rounded-xl font-bold hover:bg-accent-coral disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Save
           </button>

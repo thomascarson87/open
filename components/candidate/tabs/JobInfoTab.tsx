@@ -17,26 +17,26 @@ const JobInfoTab: React.FC<JobInfoTabProps> = ({ application }) => {
     <div className="p-4 space-y-6">
       <div className="flex flex-wrap gap-2">
         {job.location && (
-          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 rounded-full text-sm text-gray-700">
-            <MapPin className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">
+            <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted" />
             {job.location}
           </span>
         )}
         {job.salary_range && (
-          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 rounded-full text-sm text-gray-700">
-            <DollarSign className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">
+            <DollarSign className="w-3.5 h-3.5 mr-1.5 text-muted" />
             {job.salary_range}
           </span>
         )}
         {job.work_mode && (
-          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 rounded-full text-sm text-gray-700">
-            <Briefcase className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">
+            <Briefcase className="w-3.5 h-3.5 mr-1.5 text-muted" />
             {job.work_mode}
           </span>
         )}
         {job.seniority && (
-          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 rounded-full text-sm text-gray-700">
-            <TrendingUp className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+          <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600">
+            <TrendingUp className="w-3.5 h-3.5 mr-1.5 text-muted" />
             {job.seniority}
           </span>
         )}
@@ -49,14 +49,14 @@ const JobInfoTab: React.FC<JobInfoTabProps> = ({ application }) => {
             ? 'bg-green-50 border-green-200' 
             : application.match_score >= 60 
               ? 'bg-yellow-50 border-yellow-200'
-              : 'bg-gray-50 border-gray-200'
+              : 'bg-gray-50 dark:bg-gray-900 border-border'
           }
         `}>
           <div className="flex items-center justify-between">
-            <span className="font-bold text-gray-900">Match Score</span>
+            <span className="font-bold text-primary">Match Score</span>
             <span className={`text-2xl font-black ${
               application.match_score >= 80 ? 'text-green-600' :
-              application.match_score >= 60 ? 'text-yellow-600' : 'text-gray-600'
+              application.match_score >= 60 ? 'text-yellow-600' : 'text-muted'
             }`}>
               {application.match_score}%
             </span>
@@ -66,37 +66,37 @@ const JobInfoTab: React.FC<JobInfoTabProps> = ({ application }) => {
 
       {job.description && (
         <div>
-          <h3 className="font-bold text-gray-900 mb-2 flex items-center">
-            <Building2 className="w-4 h-4 mr-2 text-gray-500" />
+          <h3 className="font-bold text-primary mb-2 flex items-center">
+            <Building2 className="w-4 h-4 mr-2 text-muted" />
             About the Role
           </h3>
-          <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
+          <p className="text-muted text-sm leading-relaxed whitespace-pre-wrap">
             {job.description}
           </p>
         </div>
       )}
 
-      {job.impact_statement && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl">
-          <h3 className="font-bold text-blue-900 mb-2 flex items-center">
+      {job.impactStatement && (
+        <div className="bg-accent-coral-bg border-l-4 border-accent-coral p-4 rounded-r-xl">
+          <h3 className="font-bold text-accent-coral mb-2 flex items-center">
             <Zap className="w-4 h-4 mr-2" />
             Your Impact
           </h3>
-          <p className="text-blue-800 text-sm leading-relaxed">
-            {job.impact_statement}
+          <p className="text-accent-coral text-sm leading-relaxed">
+            {job.impactStatement}
           </p>
         </div>
       )}
 
       {job.responsibilities && job.responsibilities.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-900 mb-3 flex items-center">
+          <h3 className="font-bold text-primary mb-3 flex items-center">
             <Check className="w-4 h-4 mr-2 text-green-500" />
             What You'll Do
           </h3>
           <ul className="space-y-2">
             {job.responsibilities.map((item, i) => (
-              <li key={i} className="flex items-start text-sm text-gray-600">
+              <li key={i} className="flex items-start text-sm text-muted">
                 <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mr-3 mt-0.5">
                   <Check className="w-3 h-3 text-green-600" />
                 </div>
@@ -107,14 +107,14 @@ const JobInfoTab: React.FC<JobInfoTabProps> = ({ application }) => {
         </div>
       )}
 
-      {job.tech_stack && job.tech_stack.length > 0 && (
+      {job.techStack && job.techStack.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-900 mb-3 flex items-center">
-            <Code className="w-4 h-4 mr-2 text-indigo-500" />
+          <h3 className="font-bold text-primary mb-3 flex items-center">
+            <Code className="w-4 h-4 mr-2 text-accent-green" />
             Tech Stack
           </h3>
           <div className="flex flex-wrap gap-2">
-            {job.tech_stack.map((tech, i) => (
+            {job.techStack.map((tech, i) => (
               <span
                 key={i}
                 className="px-3 py-1.5 bg-gray-900 text-white rounded-lg text-sm font-medium"
@@ -128,7 +128,7 @@ const JobInfoTab: React.FC<JobInfoTabProps> = ({ application }) => {
 
       {job.values_list && job.values_list.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-900 mb-3 flex items-center">
+          <h3 className="font-bold text-primary mb-3 flex items-center">
             <Heart className="w-4 h-4 mr-2 text-red-500" />
             Company Values
           </h3>
@@ -147,15 +147,15 @@ const JobInfoTab: React.FC<JobInfoTabProps> = ({ application }) => {
 
       {job.perks && job.perks.length > 0 && (
         <div>
-          <h3 className="font-bold text-gray-900 mb-3 flex items-center">
-            <Gift className="w-4 h-4 mr-2 text-purple-500" />
+          <h3 className="font-bold text-primary mb-3 flex items-center">
+            <Gift className="w-4 h-4 mr-2 text-accent-green" />
             Benefits & Perks
           </h3>
           <div className="flex flex-wrap gap-2">
             {job.perks.map((perk, i) => (
               <span
                 key={i}
-                className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium border border-purple-100"
+                className="px-3 py-1.5 bg-accent-green-bg text-accent-green rounded-full text-sm font-medium border border-accent-green-bg"
               >
                 {perk}
               </span>

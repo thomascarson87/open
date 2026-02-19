@@ -79,13 +79,13 @@ export function ExperienceEditPanel({
 
         {/* Basic Info Section */}
         <section className="space-y-4">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+          <h4 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             Basic Information
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Job Title *
               </label>
               <input
@@ -93,12 +93,12 @@ export function ExperienceEditPanel({
                 value={formData.role || ''}
                 onChange={e => setFormData({ ...formData, role: e.target.value })}
                 placeholder="e.g., Senior Software Engineer"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Company *
               </label>
               <input
@@ -106,18 +106,18 @@ export function ExperienceEditPanel({
                 value={formData.company || ''}
                 onChange={e => setFormData({ ...formData, company: e.target.value })}
                 placeholder="e.g., Acme Inc."
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Employment Type
               </label>
               <select
                 value={formData.type || ''}
                 onChange={e => setFormData({ ...formData, type: e.target.value })}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
               >
                 <option value="">Select type...</option>
                 {EMPLOYMENT_TYPES.map(type => (
@@ -127,7 +127,7 @@ export function ExperienceEditPanel({
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Location
               </label>
               <LocationAutocomplete
@@ -139,19 +139,19 @@ export function ExperienceEditPanel({
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Start Date *
               </label>
               <input
                 type="month"
                 value={formData.startDate || ''}
                 onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 End Date
               </label>
               <input
@@ -159,7 +159,7 @@ export function ExperienceEditPanel({
                 value={formData.endDate || ''}
                 onChange={e => setFormData({ ...formData, endDate: e.target.value || null })}
                 disabled={formData.isCurrentRole}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-400"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none disabled:bg-gray-100 dark:bg-gray-800 disabled:text-gray-400 dark:text-gray-500"
               />
             </div>
 
@@ -173,9 +173,9 @@ export function ExperienceEditPanel({
                     isCurrentRole: e.target.checked,
                     endDate: e.target.checked ? null : formData.endDate
                   })}
-                  className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded border-gray-300 dark:border-gray-700 text-accent-coral focus:ring-accent-coral"
                 />
-                <span className="text-sm font-medium text-gray-700">I currently work here</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600">I currently work here</span>
               </label>
             </div>
           </div>
@@ -183,12 +183,12 @@ export function ExperienceEditPanel({
 
         {/* Description Section */}
         <section className="space-y-4">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+          <h4 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             Role Description
           </h4>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
               Summary
             </label>
             <textarea
@@ -196,7 +196,7 @@ export function ExperienceEditPanel({
               onChange={e => setFormData({ ...formData, description: e.target.value })}
               placeholder="Briefly describe your role and main focus..."
               rows={3}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+              className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none resize-none"
             />
           </div>
         </section>
@@ -204,10 +204,10 @@ export function ExperienceEditPanel({
         {/* Responsibilities Section */}
         <section className="space-y-4">
           <div>
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+            <h4 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               Key Responsibilities
             </h4>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               Add your main responsibilities in this role. These help recruiters understand your scope.
             </p>
           </div>
@@ -223,10 +223,10 @@ export function ExperienceEditPanel({
         {/* Achievements Section */}
         <section className="space-y-4">
           <div>
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+            <h4 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               Key Achievements
             </h4>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               Highlight measurable accomplishments. Use numbers where possible.
             </p>
           </div>
@@ -242,10 +242,10 @@ export function ExperienceEditPanel({
         {/* Skills Acquired Section */}
         <section className="space-y-4">
           <div>
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+            <h4 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               Skills Gained
             </h4>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               What skills did you develop or strengthen in this role?
             </p>
           </div>
@@ -259,13 +259,13 @@ export function ExperienceEditPanel({
 
         {/* Additional Context Section */}
         <section className="space-y-4">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+          <h4 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             Additional Context
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Team Size
               </label>
               <input
@@ -277,12 +277,12 @@ export function ExperienceEditPanel({
                   teamSize: e.target.value ? parseInt(e.target.value) : undefined
                 })}
                 placeholder="e.g., 8"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
                 Reported To
               </label>
               <input
@@ -290,7 +290,7 @@ export function ExperienceEditPanel({
                 value={formData.reportingTo || ''}
                 onChange={e => setFormData({ ...formData, reportingTo: e.target.value })}
                 placeholder="e.g., VP of Engineering"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                className="w-full p-3 border border-border rounded-xl focus:border-accent-coral focus:ring-1 focus:ring-accent-coral outline-none"
               />
             </div>
           </div>
@@ -298,13 +298,13 @@ export function ExperienceEditPanel({
 
         {/* Verification Status (read-only display) */}
         {experience?.isVerified && (
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <div className="flex items-center gap-2 text-blue-700">
+          <div className="p-4 bg-accent-coral-bg rounded-xl border border-accent-coral-bg">
+            <div className="flex items-center gap-2 text-accent-coral">
               <CheckCircle className="w-5 h-5" />
               <span className="font-bold">This position has been verified</span>
             </div>
             {experience.verifiedBy && experience.verifiedBy.length > 0 && (
-              <p className="text-sm text-blue-600 mt-1">
+              <p className="text-sm text-accent-coral mt-1">
                 Verified by {experience.verifiedBy.length} connection(s)
               </p>
             )}
@@ -313,7 +313,7 @@ export function ExperienceEditPanel({
       </div>
 
       {/* Footer Actions */}
-      <div className="sticky bottom-0 bg-white border-t p-4 flex items-center justify-between">
+      <div className="sticky bottom-0 bg-white dark:bg-surface border-t p-4 flex items-center justify-between">
         <div>
           {experience && onDelete && (
             <button
@@ -334,7 +334,7 @@ export function ExperienceEditPanel({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+            className="px-4 py-2 text-muted hover:text-gray-800 dark:text-gray-200 font-medium"
           >
             Cancel
           </button>
@@ -342,7 +342,7 @@ export function ExperienceEditPanel({
             type="button"
             onClick={handleSave}
             disabled={!isValid}
-            className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 bg-accent-coral text-white rounded-xl font-bold hover:bg-accent-coral disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Save Position
           </button>

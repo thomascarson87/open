@@ -112,16 +112,16 @@ const TalentFeed: React.FC<TalentFeedProps> = ({
     <section className="mt-10">
       {/* Header with Toggle */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-black text-gray-900">Talent Feed</h2>
+        <h2 className="font-heading text-xl text-primary">Talent Feed</h2>
 
         {/* Pill Toggle */}
-        <div className="flex bg-gray-100 rounded-full p-1">
+        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-full p-1">
           <button
             onClick={() => setFeedMode('latest')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all ${
               feedMode === 'latest'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white dark:bg-surface text-primary shadow-sm'
+                : 'text-muted hover:text-gray-700 dark:text-gray-300 dark:text-gray-600'
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -131,8 +131,8 @@ const TalentFeed: React.FC<TalentFeedProps> = ({
             onClick={() => setFeedMode('recommended')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all ${
               feedMode === 'recommended'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white dark:bg-surface text-primary shadow-sm'
+                : 'text-muted hover:text-gray-700 dark:text-gray-300 dark:text-gray-600'
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -142,7 +142,7 @@ const TalentFeed: React.FC<TalentFeedProps> = ({
       </div>
 
       {/* Subtitle based on mode */}
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-muted mb-6">
         {feedMode === 'latest'
           ? 'Recently added candidates on the platform'
           : `Candidates matched to ${companyProfile.companyName || 'your company'}'s culture, industry, and values`
@@ -155,21 +155,21 @@ const TalentFeed: React.FC<TalentFeedProps> = ({
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div
               key={i}
-              className="bg-white rounded-[2rem] border border-gray-100 h-[320px] animate-pulse"
+              className="bg-white dark:bg-surface rounded-[2rem] border border-border h-[320px] animate-pulse"
             >
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full" />
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-100 rounded w-3/4" />
-                    <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
                   </div>
                 </div>
-                <div className="h-3 bg-gray-100 rounded w-full" />
-                <div className="h-3 bg-gray-100 rounded w-2/3" />
+                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full" />
+                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-2/3" />
                 <div className="flex gap-2 pt-4">
-                  <div className="h-8 bg-gray-100 rounded-lg flex-1" />
-                  <div className="h-8 bg-gray-100 rounded-lg flex-1" />
+                  <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex-1" />
+                  <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex-1" />
                 </div>
               </div>
             </div>
@@ -179,14 +179,14 @@ const TalentFeed: React.FC<TalentFeedProps> = ({
 
       {/* Empty State */}
       {!isLoading && candidates.length === 0 && (
-        <div className="bg-gray-50 rounded-[1.5rem] p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-[1.5rem] p-12 text-center">
+          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
           </div>
-          <h3 className="text-lg font-bold text-gray-700 mb-2">
+          <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">
             {feedMode === 'latest' ? 'No Candidates Yet' : 'No Matches Found'}
           </h3>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <p className="text-muted max-w-md mx-auto">
             {feedMode === 'latest'
               ? 'New candidates will appear here as they join the platform.'
               : 'Complete your company profile to improve matching accuracy.'
@@ -257,7 +257,7 @@ const TalentFeed: React.FC<TalentFeedProps> = ({
           <button
             onClick={handleLoadMore}
             disabled={loadingMore}
-            className="px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+            className="px-8 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 rounded-xl font-bold text-sm hover:bg-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
           >
             {loadingMore ? (
               <>

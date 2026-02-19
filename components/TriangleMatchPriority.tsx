@@ -294,28 +294,28 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
   )?.[0] || null;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 sticky top-20 z-30 transition-all duration-300">
+    <div className="bg-surface rounded-2xl shadow-sm border border-border p-6 mb-8 sticky top-20 z-30 transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="bg-blue-100 p-2 rounded-lg">
-            <Target className="w-5 h-5 text-blue-600" />
+          <div className="bg-accent-coral-bg p-2 rounded-lg">
+            <Target className="w-5 h-5 text-accent-coral" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-gray-900">What Matters Most to You?</h2>
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Drag the point to prioritize your feed</p>
+            <h2 className="font-heading text-lg text-primary">What Matters Most to You?</h2>
+            <p className="text-xs text-muted font-medium uppercase tracking-wider">Drag the point to prioritize your feed</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-bold text-gray-400 dark:text-gray-500 hover:text-accent-coral transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Reset
           </button>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-lg text-gray-400 dark:text-gray-500"
           >
             {isCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
           </button>
@@ -346,7 +346,7 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
               {/* Gradient definition */}
               <defs>
                 <linearGradient id="triangle-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stopColor="#2563EB" stopOpacity="0.08" />
+                  <stop offset="0%" stopColor="var(--accent-coral)" stopOpacity="0.08" />
                   <stop offset="50%" stopColor="#16A34A" stopOpacity="0.05" />
                   <stop offset="100%" stopColor="#9333EA" stopOpacity="0.08" />
                 </linearGradient>
@@ -369,18 +369,18 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
               <line x1="20" y1="230" x2="150" y2="160" stroke="#E5E7EB" strokeWidth="1" strokeDasharray="4,4" />
 
               {/* Vertex markers */}
-              <circle cx={VERTICES.skills.x} cy={VERTICES.skills.y} r="6" fill="#2563EB" />
+              <circle cx={VERTICES.skills.x} cy={VERTICES.skills.y} r="6" fill="var(--accent-coral)" />
               <circle cx={VERTICES.compensation.x} cy={VERTICES.compensation.y} r="6" fill="#16A34A" />
               <circle cx={VERTICES.culture.x} cy={VERTICES.culture.y} r="6" fill="#9333EA" />
 
               {/* Vertex labels */}
-              <text x={VERTICES.skills.x} y={VERTICES.skills.y - 14} textAnchor="middle" className="text-[10px] font-bold fill-blue-600 uppercase">
+              <text x={VERTICES.skills.x} y={VERTICES.skills.y - 14} textAnchor="middle" className="text-[10px] font-bold fill-accent-coral uppercase">
                 Skills
               </text>
               <text x={VERTICES.compensation.x + 8} y={VERTICES.compensation.y + 4} textAnchor="start" className="text-[10px] font-bold fill-green-600 uppercase">
                 Comp
               </text>
-              <text x={VERTICES.culture.x - 8} y={VERTICES.culture.y + 4} textAnchor="end" className="text-[10px] font-bold fill-purple-600 uppercase">
+              <text x={VERTICES.culture.x - 8} y={VERTICES.culture.y + 4} textAnchor="end" className="text-[10px] font-bold fill-accent-green uppercase">
                 Culture
               </text>
 
@@ -393,7 +393,7 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
                 cy={currentPoint.y}
                 r={isDragging ? 14 : 12}
                 fill="white"
-                stroke="#3B82F6"
+                stroke="var(--accent-coral)"
                 strokeWidth="3"
                 filter="url(#point-shadow)"
                 className="transition-all duration-150"
@@ -402,7 +402,7 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
                 cx={currentPoint.x}
                 cy={currentPoint.y}
                 r="4"
-                fill="#3B82F6"
+                fill="var(--accent-coral)"
               />
             </svg>
           </div>
@@ -414,12 +414,12 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
               {/* Skills */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-700">Skills Match</span>
-                  <span className="text-sm font-black text-blue-600">{weights.skills}%</span>
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Skills Match</span>
+                  <span className="text-sm font-black text-accent-coral">{weights.skills}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-200"
+                    className="h-full bg-accent-coral rounded-full transition-all duration-200"
                     style={{ width: `${weights.skills}%` }}
                   />
                 </div>
@@ -428,10 +428,10 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
               {/* Compensation */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-700">Compensation</span>
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Compensation</span>
                   <span className="text-sm font-black text-green-600">{weights.compensation}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500 rounded-full transition-all duration-200"
                     style={{ width: `${weights.compensation}%` }}
@@ -442,12 +442,12 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
               {/* Culture */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-700">Culture Fit</span>
-                  <span className="text-sm font-black text-purple-600">{weights.culture}%</span>
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Culture Fit</span>
+                  <span className="text-sm font-black text-accent-green">{weights.culture}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-purple-500 rounded-full transition-all duration-200"
+                    className="h-full bg-accent-green rounded-full transition-all duration-200"
                     style={{ width: `${weights.culture}%` }}
                   />
                 </div>
@@ -461,7 +461,7 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
                   activePreset === 'balanced'
                     ? 'bg-gray-900 text-white'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    : 'bg-gray-50 dark:bg-gray-900 text-muted hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 border border-border'
                 }`}
               >
                 Balanced
@@ -470,8 +470,8 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
                 onClick={() => onChange(PRESETS.skillsFirst)}
                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
                   activePreset === 'skillsFirst'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+                    ? 'bg-accent-coral text-white'
+                    : 'bg-accent-coral-bg text-accent-coral hover:bg-accent-coral-bg border border-accent-coral-light'
                 }`}
               >
                 Skills-First
@@ -490,8 +490,8 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
                 onClick={() => onChange(PRESETS.cultureFirst)}
                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
                   activePreset === 'cultureFirst'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
+                    ? 'bg-accent-coral text-white'
+                    : 'bg-accent-green-bg text-accent-green hover:bg-accent-green-bg border border-accent-green-bg'
                 }`}
               >
                 Culture-First
@@ -499,7 +499,7 @@ const TriangleMatchPriority: React.FC<Props> = ({ weights, onChange, onReset }) 
             </div>
 
             {/* Keyboard hint */}
-            <p className="text-[10px] text-gray-400 text-center mt-1">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mt-1">
               Use arrow keys or click presets
             </p>
           </div>

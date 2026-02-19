@@ -27,28 +27,28 @@ const ProfileReviewCard: React.FC<Props> = ({
           ? 'border-green-100 bg-green-50/20' 
           : isWarning 
           ? 'border-yellow-100 bg-yellow-50/20' 
-          : 'border-gray-100 bg-gray-50/20'
+          : 'border-border bg-gray-50 dark:bg-gray-900/20'
       }`}
       onClick={onEdit}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className={`p-3 rounded-2xl ${
-            isComplete ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+            isComplete ? 'bg-green-100 text-green-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
           }`}>
             <Icon className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-gray-900">{title}</h3>
+            <h3 className="text-lg font-black text-primary">{title}</h3>
             <div className="flex items-center gap-1.5">
-              <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-24 h-1.5 bg-border rounded-full overflow-hidden">
                 <div 
-                  className={`h-full transition-all duration-500 ${isComplete ? 'bg-green-500' : 'bg-blue-500'}`} 
+                  className={`h-full transition-all duration-500 ${isComplete ? 'bg-green-500' : 'bg-accent-coral'}`} 
                   style={{ width: `${completionPercent}%` }}
                 />
               </div>
               <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                isComplete ? 'text-green-600' : 'text-gray-400'
+                isComplete ? 'text-green-600' : 'text-gray-400 dark:text-gray-500'
               }`}>
                 {completionPercent}%
               </span>
@@ -59,21 +59,21 @@ const ProfileReviewCard: React.FC<Props> = ({
           {isComplete ? (
             <Check className="w-5 h-5 text-green-500" />
           ) : (
-            <AlertCircle className={`w-5 h-5 ${isWarning ? 'text-yellow-500' : 'text-gray-300'}`} />
+            <AlertCircle className={`w-5 h-5 ${isWarning ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}`} />
           )}
-          <div className="p-1.5 bg-white rounded-lg border border-gray-100 text-gray-400 group-hover:text-blue-600 group-hover:border-blue-200 transition-colors">
+          <div className="p-1.5 bg-white dark:bg-surface rounded-lg border border-border text-gray-400 dark:text-gray-500 group-hover:text-accent-coral group-hover:border-accent-coral-light transition-colors">
             <Edit2 className="w-3.5 h-3.5" />
           </div>
         </div>
       </div>
 
-      <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+      <p className="text-sm text-muted leading-relaxed line-clamp-2">
         {summary || 'No data entered yet.'}
       </p>
 
-      <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-100/50">
-        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Section Status</span>
-        <div className="flex items-center text-xs font-bold text-blue-600">
+      <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/50">
+        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">Section Status</span>
+        <div className="flex items-center text-xs font-bold text-accent-coral">
           Edit Section <ChevronRight className="w-3 h-3 ml-1" />
         </div>
       </div>

@@ -60,7 +60,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
   const DealBreakerToggle = ({ field }: { field: string }) => (
       <button 
         onClick={() => toggleDealBreaker(field)}
-        className={`ml-2 p-1 rounded-full transition-all flex items-center text-[10px] font-bold ${isDealBreaker(field) ? 'bg-red-50 text-red-500 border border-red-200' : 'bg-gray-50 text-gray-400 border border-transparent'}`}
+        className={`ml-2 p-1 rounded-full transition-all flex items-center text-[10px] font-bold ${isDealBreaker(field) ? 'bg-red-50 text-red-500 border border-red-200' : 'bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 border border-transparent'}`}
         title={isDealBreaker(field) ? "Strict Match Required" : "Flexible Match"}
       >
           {isDealBreaker(field) ? <><Lock className="w-3 h-3 mr-1" /> Strict</> : <><Unlock className="w-3 h-3 mr-1" /> Flex</>}
@@ -68,28 +68,28 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
   );
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
+    <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden min-h-[500px] flex flex-col">
        {/* Steps Header */}
-       <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+       <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-border flex justify-between items-center">
            <div className="flex space-x-2">
                {[1, 2, 3, 4].map(s => (
-                   <div key={s} className={`h-2 w-12 rounded-full transition-all ${s <= step ? 'bg-gray-900' : 'bg-gray-200'}`}></div>
+                   <div key={s} className={`h-2 w-12 rounded-full transition-all ${s <= step ? 'bg-gray-900' : 'bg-border'}`}></div>
                ))}
            </div>
-           <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Step {step} of 4</div>
+           <div className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Step {step} of 4</div>
        </div>
 
        <div className="flex-1 p-8 overflow-y-auto">
            {step === 1 && (
                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                   <h2 className="text-xl font-bold text-gray-900 mb-4">Core Requirements</h2>
+                   <h2 className="font-heading text-xl text-primary mb-4">Core Requirements</h2>
 
                    {/* Role Filter - High signal, top of form */}
-                   <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                   <div className="bg-accent-coral-bg/50 p-6 rounded-2xl border border-accent-coral-bg">
                        <div className="flex items-center gap-2 mb-4">
-                           <Users className="w-5 h-5 text-blue-600" />
-                           <h3 className="text-sm font-bold text-blue-900">Role-Based Search</h3>
-                           <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">High Signal</span>
+                           <Users className="w-5 h-5 text-accent-coral" />
+                           <h3 className="text-sm font-bold text-accent-coral">Role-Based Search</h3>
+                           <span className="text-[10px] font-bold text-accent-coral bg-accent-coral-bg px-2 py-0.5 rounded-full">High Signal</span>
                        </div>
                        <RoleFilter
                            selectedRoles={selectedRoles}
@@ -114,33 +114,33 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
 
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
-                           <label className="block text-sm font-bold text-gray-700 mb-2">Job Title (Free Text)</label>
+                           <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">Job Title (Free Text)</label>
                            <input
                               value={criteria.title || ''}
                               onChange={e => setCriteria({...criteria, title: e.target.value})}
                               placeholder="e.g. Senior Product Manager"
-                              className="w-full p-3 border border-gray-200 rounded-xl"
+                              className="w-full p-3 border border-border rounded-xl"
                            />
-                           <p className="text-xs text-gray-400 mt-1">Use for additional title matching beyond role filter</p>
+                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Use for additional title matching beyond role filter</p>
                        </div>
 
                        <div>
                            <div className="flex justify-between">
-                               <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
+                               <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-2">Location</label>
                                <DealBreakerToggle field="location"/>
                            </div>
                            <input
                               value={criteria.location || ''}
                               onChange={e => setCriteria({...criteria, location: e.target.value})}
                               placeholder="City, Country"
-                              className="w-full p-3 border border-gray-200 rounded-xl"
+                              className="w-full p-3 border border-border rounded-xl"
                            />
                        </div>
                    </div>
 
                    <div>
                        <div className="flex justify-between mb-2">
-                            <label className="block text-sm font-bold text-gray-700">Seniority Level</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Seniority Level</label>
                             <DealBreakerToggle field="seniority"/>
                        </div>
                        <div className="flex flex-wrap gap-2">
@@ -153,7 +153,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                             ? p.seniority.filter(l => l !== level)
                                             : [...(p.seniority || []), level]
                                     }))}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.seniority?.includes(level) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.seniority?.includes(level) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white dark:bg-surface text-muted border-border'}`}
                                 >
                                     {level}
                                 </button>
@@ -163,7 +163,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
 
                    <div>
                        <div className="flex justify-between mb-2">
-                            <label className="block text-sm font-bold text-gray-700">Work Mode</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Work Mode</label>
                             <DealBreakerToggle field="work_mode"/>
                        </div>
                        <div className="flex flex-wrap gap-2">
@@ -176,7 +176,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                             ? p.workMode.filter(m => m !== mode)
                                             : [...(p.workMode || []), mode]
                                     }))}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.workMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.workMode?.includes(mode) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white dark:bg-surface text-muted border-border'}`}
                                 >
                                     {mode}
                                 </button>
@@ -184,17 +184,17 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                        </div>
                    </div>
 
-                   <div className="pt-4 border-t border-gray-100">
+                   <div className="pt-4 border-t border-border">
                        <div className="flex justify-between mb-2">
-                            <label className="block text-sm font-bold text-gray-700">Education Requirements</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Education Requirements</label>
                             <DealBreakerToggle field="education"/>
                        </div>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <select 
-                                    value={criteria.required_education_level || ''}
-                                    onChange={e => setCriteria({...criteria, required_education_level: e.target.value})}
-                                    className="w-full p-3 border border-gray-200 rounded-xl bg-white"
+                                    value={criteria.requiredEducationLevel || ''}
+                                    onChange={e => setCriteria({...criteria, requiredEducationLevel: e.target.value})}
+                                    className="w-full p-3 border border-border rounded-xl bg-white dark:bg-surface"
                                 >
                                     <option value="">Any Education Level</option>
                                     {EDUCATION_LEVELS.map(level => (
@@ -206,15 +206,15 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                 <label className="flex items-center cursor-pointer">
                                     <input 
                                         type="checkbox" 
-                                        checked={criteria.education_required || false}
-                                        onChange={e => setCriteria({...criteria, education_required: e.target.checked})}
-                                        className="mr-2 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" 
+                                        checked={criteria.educationRequired || false}
+                                        onChange={e => setCriteria({...criteria, educationRequired: e.target.checked})}
+                                        className="mr-2 w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-accent-coral" 
                                     />
-                                    <span className="text-sm text-gray-600">Strict requirement (no experience substitution)</span>
+                                    <span className="text-sm text-muted">Strict requirement (no experience substitution)</span>
                                 </label>
                             </div>
                        </div>
-                       <p className="text-xs text-gray-400 mt-2">Leave blank to match all education levels</p>
+                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Leave blank to match all education levels</p>
                    </div>
                </div>
            )}
@@ -222,15 +222,15 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
            {step === 2 && (
                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Technical Skills</h2>
-                        <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                        <h2 className="font-heading text-xl text-primary">Technical Skills</h2>
+                        <div className="flex items-center bg-accent-coral-bg text-accent-coral px-3 py-1 rounded-full text-xs font-bold">
                             <Zap className="w-3 h-3 mr-1" /> Precision Level Matching
                         </div>
                     </div>
 
-                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3 mb-6">
-                        <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-blue-800 leading-relaxed">
+                    <div className="bg-accent-coral-bg/50 p-4 rounded-xl border border-accent-coral-bg flex items-start gap-3 mb-6">
+                        <Info className="w-5 h-5 text-accent-coral mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-accent-coral leading-relaxed">
                             {selectedRoles.length > 0
                                 ? <>Skills from selected role template(s) are pre-populated below. Click any skill to adjust proficiency level.</>
                                 : <>Set required proficiency levels (1-5) instead of just years. This improves matching by focusing on what candidates can actually <strong>do</strong>. Default is <strong>Level 3 (Applying)</strong>.</>
@@ -266,8 +266,8 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                     {criteria.requiredSkills && criteria.requiredSkills.length > 0 ? (
                         <div className="space-y-4">
                              <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Configure Proficiency Requirements</h3>
-                                <span className="text-xs font-bold text-gray-400">{criteria.requiredSkills.length} selected</span>
+                                <h3 className="text-sm font-bold text-muted uppercase tracking-widest">Configure Proficiency Requirements</h3>
+                                <span className="text-xs font-bold text-gray-400 dark:text-gray-500">{criteria.requiredSkills.length} selected</span>
                              </div>
                              <SkillPillEditor
                                 skills={criteria.requiredSkills}
@@ -275,10 +275,10 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                              />
                         </div>
                     ) : (
-                        <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                             <Zap className="w-10 h-10 text-gray-300 mx-auto mb-3 opacity-50" />
-                             <h3 className="text-lg font-bold text-gray-400">No skills added yet</h3>
-                             <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                        <div className="text-center py-16 bg-gray-50 dark:bg-gray-900 rounded-2xl border-2 border-dashed border-border">
+                             <Zap className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3 opacity-50" />
+                             <h3 className="text-lg font-bold text-gray-400 dark:text-gray-500">No skills added yet</h3>
+                             <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs mx-auto">
                                 {selectedRoles.length > 0
                                     ? 'Select a role on Step 1 to auto-populate skills, or add skills manually above.'
                                     : 'Select technologies from the list above to set your proficiency requirements.'}
@@ -295,33 +295,33 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                         >
                             <div>
                                 <h3 className="text-lg font-black flex items-center">
-                                    <Shield className="w-5 h-5 mr-2 text-gray-400"/>
+                                    <Shield className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500"/>
                                     Certifications & Regulatory Experience
-                                    <span className="ml-2 text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Optional</span>
+                                    <span className="ml-2 text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">Optional</span>
                                 </h3>
-                                <p className="text-sm text-gray-400 mt-1 text-left">Filter by specific credentials or compliance expertise</p>
+                                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1 text-left">Filter by specific credentials or compliance expertise</p>
                             </div>
-                            {certSectionOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                            {certSectionOpen ? <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />}
                         </button>
 
                         {certSectionOpen && (
                             <div className="mt-6 space-y-8">
                                 {certLoading ? (
                                     <div className="flex items-center justify-center py-12">
-                                        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                                        <span className="ml-3 text-sm text-gray-400 font-bold">Loading certifications...</span>
+                                        <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-gray-600 rounded-full animate-spin" />
+                                        <span className="ml-3 text-sm text-gray-400 dark:text-gray-500 font-bold">Loading certifications...</span>
                                     </div>
                                 ) : (
                                     <>
                                         {/* Search */}
                                         {certifications.length > 15 && (
                                             <div className="relative">
-                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                                                 <input
                                                     value={certSearch}
                                                     onChange={e => setCertSearch(e.target.value)}
                                                     placeholder="Search certifications..."
-                                                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border-transparent rounded-xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none"
+                                                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-transparent rounded-xl text-sm font-bold focus:bg-white dark:bg-surface focus:ring-2 focus:ring-accent-coral outline-none"
                                                 />
                                             </div>
                                         )}
@@ -331,7 +331,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                             <label className="block text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1">Must-have certifications</label>
                                             <p className="text-xs text-amber-600 mb-4">Only show candidates with these credentials</p>
                                             {certifications.length === 0 ? (
-                                                <p className="text-sm text-gray-400 italic">No certifications available</p>
+                                                <p className="text-sm text-gray-400 dark:text-gray-500 italic">No certifications available</p>
                                             ) : (
                                                 <div className="space-y-4">
                                                     {Object.entries(groupCertificationsByCategory(
@@ -364,7 +364,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                                                                     }}
                                                                                     className="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
                                                                                 />
-                                                                                <span className={`text-sm font-bold ${isRequired ? 'text-amber-900' : 'text-gray-700'}`}>{cert.name}</span>
+                                                                                <span className={`text-sm font-bold ${isRequired ? 'text-amber-900' : 'text-gray-700 dark:text-gray-300 dark:text-gray-600'}`}>{cert.name}</span>
                                                                             </label>
                                                                         );
                                                                     })}
@@ -377,11 +377,11 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                         </div>
 
                                         {/* Preferred Certifications */}
-                                        <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-200">
-                                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Nice-to-have certifications</label>
-                                            <p className="text-xs text-gray-400 mb-4">Candidates with these will rank higher</p>
+                                        <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-[2rem] border border-border">
+                                            <label className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1">Nice-to-have certifications</label>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Candidates with these will rank higher</p>
                                             {certifications.length === 0 ? (
-                                                <p className="text-sm text-gray-400 italic">No certifications available</p>
+                                                <p className="text-sm text-gray-400 dark:text-gray-500 italic">No certifications available</p>
                                             ) : (
                                                 <div className="space-y-4">
                                                     {Object.entries(groupCertificationsByCategory(
@@ -393,16 +393,16 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                                         const selectedInCategory = certs.filter(c => (criteria.preferredCertifications || []).includes(c.id)).length;
                                                         return (
                                                             <div key={category}>
-                                                                <p className="text-xs font-black text-gray-500 mb-2">
+                                                                <p className="text-xs font-black text-muted mb-2">
                                                                     {categoryLabel}
-                                                                    {selectedInCategory > 0 && <span className="ml-1 text-gray-400">({selectedInCategory} selected)</span>}
+                                                                    {selectedInCategory > 0 && <span className="ml-1 text-gray-400 dark:text-gray-500">({selectedInCategory} selected)</span>}
                                                                 </p>
                                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                                                                     {certs.map(cert => {
                                                                         const isPreferred = (criteria.preferredCertifications || []).includes(cert.id);
                                                                         const isRequired = (criteria.requiredCertifications || []).includes(cert.id);
                                                                         return (
-                                                                            <label key={cert.id} className={`flex items-center gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${isPreferred ? 'bg-white' : 'hover:bg-white/70'} ${isRequired ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                                                            <label key={cert.id} className={`flex items-center gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${isPreferred ? 'bg-white dark:bg-surface' : 'hover:bg-white dark:bg-surface/70'} ${isRequired ? 'opacity-40 cursor-not-allowed' : ''}`}>
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     checked={isPreferred}
@@ -412,9 +412,9 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                                                                         const updated = isPreferred ? current.filter(id => id !== cert.id) : [...current, cert.id];
                                                                                         setCriteria({...criteria, preferredCertifications: updated});
                                                                                     }}
-                                                                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-accent-coral focus:ring-accent-coral"
                                                                                 />
-                                                                                <span className={`text-sm font-bold ${isPreferred ? 'text-gray-900' : 'text-gray-600'}`}>{cert.name}</span>
+                                                                                <span className={`text-sm font-bold ${isPreferred ? 'text-primary' : 'text-muted'}`}>{cert.name}</span>
                                                                             </label>
                                                                         );
                                                                     })}
@@ -427,17 +427,17 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                         </div>
 
                                         {/* Regulatory Domains */}
-                                        <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-200">
-                                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Regulatory experience needed</label>
-                                            <p className="text-xs text-gray-400 mb-4">Filter for candidates with compliance expertise in these areas</p>
+                                        <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-[2rem] border border-border">
+                                            <label className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1">Regulatory experience needed</label>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Filter for candidates with compliance expertise in these areas</p>
                                             {regulatoryDomainsList.length === 0 ? (
-                                                <p className="text-sm text-gray-400 italic">No regulatory domains available</p>
+                                                <p className="text-sm text-gray-400 dark:text-gray-500 italic">No regulatory domains available</p>
                                             ) : (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                     {regulatoryDomainsList.map(domain => {
                                                         const isSelected = (criteria.regulatoryDomains || []).includes(domain.id);
                                                         return (
-                                                            <label key={domain.id} className={`flex items-start gap-2.5 p-3 rounded-xl cursor-pointer transition-all ${isSelected ? 'bg-white border border-blue-200' : 'hover:bg-white/70'}`}>
+                                                            <label key={domain.id} className={`flex items-start gap-2.5 p-3 rounded-xl cursor-pointer transition-all ${isSelected ? 'bg-white dark:bg-surface border border-accent-coral-light' : 'hover:bg-white dark:bg-surface/70'}`}>
                                                                 <input
                                                                     type="checkbox"
                                                                     checked={isSelected}
@@ -446,11 +446,11 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                                                         const updated = isSelected ? current.filter(id => id !== domain.id) : [...current, domain.id];
                                                                         setCriteria({...criteria, regulatoryDomains: updated});
                                                                     }}
-                                                                    className="w-4 h-4 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                    className="w-4 h-4 mt-0.5 rounded border-gray-300 dark:border-gray-700 text-accent-coral focus:ring-accent-coral"
                                                                 />
                                                                 <div>
-                                                                    <span className={`text-sm font-bold ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>{domain.name}</span>
-                                                                    {domain.description && <p className="text-xs text-gray-400 mt-0.5">{domain.description}</p>}
+                                                                    <span className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-muted'}`}>{domain.name}</span>
+                                                                    {domain.description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{domain.description}</p>}
                                                                 </div>
                                                             </label>
                                                         );
@@ -468,7 +468,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
 
            {step === 3 && (
                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                   <h2 className="text-xl font-bold text-gray-900 mb-4">Culture Fit</h2>
+                   <h2 className="font-heading text-xl text-primary mb-4">Culture Fit</h2>
                    
                    <GroupedMultiSelect
                         label="Company Values"
@@ -502,18 +502,18 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
 
             {step === 4 && (
                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                   <h2 className="text-xl font-bold text-gray-900 mb-4">Practical Details</h2>
+                   <h2 className="font-heading text-xl text-primary mb-4">Practical Details</h2>
 
                    <div>
                        <div className="flex justify-between mb-2">
-                            <label className="block text-sm font-bold text-gray-700">Budget Max (Annual)</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Budget Max (Annual)</label>
                             <DealBreakerToggle field="salary"/>
                        </div>
                        <div className="flex gap-2">
                             <select 
                                 value={criteria.salaryCurrency}
                                 onChange={e => setCriteria({...criteria, salaryCurrency: e.target.value})}
-                                className="p-3 bg-gray-50 border border-gray-200 rounded-xl font-bold"
+                                className="p-3 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl font-bold"
                             >
                                 <option value="USD">USD</option>
                                 <option value="GBP">GBP</option>
@@ -523,7 +523,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                 type="number"
                                 value={criteria.salaryMax || ''}
                                 onChange={e => setCriteria({...criteria, salaryMax: parseInt(e.target.value)})}
-                                className="flex-1 p-3 border border-gray-200 rounded-xl"
+                                className="flex-1 p-3 border border-border rounded-xl"
                                 placeholder="e.g. 150000"
                             />
                        </div>
@@ -531,7 +531,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
 
                    <div>
                        <div className="flex justify-between mb-2">
-                            <label className="block text-sm font-bold text-gray-700">Contract Types</label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 dark:text-gray-600">Contract Types</label>
                             <DealBreakerToggle field="contract_type"/>
                        </div>
                        <div className="flex flex-wrap gap-2">
@@ -544,7 +544,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                                             ? p.contractTypes.filter(t => t !== type)
                                             : [...(p.contractTypes || []), type]
                                     }))}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${criteria.contractTypes?.includes(type) ? 'bg-gray-900 text-white border-gray-900' : 'bg-white dark:bg-surface text-muted border-border'}`}
                                 >
                                     {type}
                                 </button>
@@ -563,9 +563,9 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
            )}
        </div>
 
-       <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-between">
+       <div className="p-6 bg-gray-50 dark:bg-gray-900 border-t border-border flex justify-between">
            {step > 1 ? (
-               <button onClick={() => setStep(s => s - 1)} className="flex items-center text-gray-600 font-bold hover:text-gray-900">
+               <button onClick={() => setStep(s => s - 1)} className="flex items-center text-muted font-bold hover:text-primary">
                    <ArrowLeft className="w-4 h-4 mr-2"/> Back
                </button>
            ) : <div/>}
@@ -575,7 +575,7 @@ const TalentSearchForm: React.FC<Props> = ({ initialCriteria, onSearch }) => {
                    Next Step <ArrowRight className="w-4 h-4 ml-2"/>
                </button>
            ) : (
-               <button onClick={() => onSearch(criteria)} className="flex items-center bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all active:scale-95">
+               <button onClick={() => onSearch(criteria)} className="flex items-center bg-accent-coral text-white px-8 py-3 rounded-xl font-bold hover:bg-accent-coral shadow-lg transition-all active:scale-95">
                    <Search className="w-4 h-4 mr-2"/> Run Match
                </button>
            )}

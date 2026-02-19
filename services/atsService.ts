@@ -220,12 +220,12 @@ class ATSService {
   getStatusDisplayInfo(status: ApplicationStatus) {
     const displayMap: Record<ApplicationStatus, { label: string, color: string, icon: string, bgColor: string, textColor: string }> = {
       applied: { label: 'Applied', color: 'gray', icon: '📝', bgColor: 'bg-gray-100', textColor: 'text-gray-700' },
-      reviewing: { label: 'Under Review', color: 'blue', icon: '👀', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
-      phone_screen_scheduled: { label: 'Screen Scheduled', color: 'purple', icon: '📅', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
+      reviewing: { label: 'Under Review', color: 'blue', icon: '👀', bgColor: 'bg-accent-coral-bg', textColor: 'text-accent-coral' },
+      phone_screen_scheduled: { label: 'Screen Scheduled', color: 'purple', icon: '📅', bgColor: 'bg-accent-green-bg', textColor: 'text-accent-green' },
       phone_screen_completed: { label: 'Screen Done', color: 'green', icon: '✅', bgColor: 'bg-green-100', textColor: 'text-green-700' },
-      technical_scheduled: { label: 'Tech Scheduled', color: 'purple', icon: '💻', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
+      technical_scheduled: { label: 'Tech Scheduled', color: 'purple', icon: '💻', bgColor: 'bg-accent-green-bg', textColor: 'text-accent-green' },
       technical_completed: { label: 'Tech Done', color: 'green', icon: '✅', bgColor: 'bg-green-100', textColor: 'text-green-700' },
-      final_round_scheduled: { label: 'Final Scheduled', color: 'purple', icon: '🤝', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
+      final_round_scheduled: { label: 'Final Scheduled', color: 'purple', icon: '🤝', bgColor: 'bg-accent-green-bg', textColor: 'text-accent-green' },
       final_round_completed: { label: 'Final Done', color: 'green', icon: '✅', bgColor: 'bg-green-100', textColor: 'text-green-700' },
       offer_extended: { label: 'Offer Extended', color: 'yellow', icon: '🎉', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800' },
       offer_accepted: { label: 'Offer Accepted', color: 'green', icon: '🎊', bgColor: 'bg-green-100', textColor: 'text-green-700' },

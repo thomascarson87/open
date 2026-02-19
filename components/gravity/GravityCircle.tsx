@@ -220,7 +220,7 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
             x={POLES.skills.x}
             y={POLES.skills.y - (isCompact ? 10 : 16)}
             textAnchor="middle"
-            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-blue-600 uppercase`}
+            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-accent-coral uppercase`}
           >
             Skills
           </text>
@@ -236,7 +236,7 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
             x={isCompact ? 8 : 5}
             y={POLES.culture.y + (isCompact ? 4 : 6)}
             textAnchor="start"
-            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-purple-600 uppercase`}
+            className={`${isCompact ? 'text-[9px]' : 'text-[11px]'} font-bold fill-accent-green uppercase`}
           >
             Culture
           </text>
@@ -250,7 +250,7 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
           cy={currentPoint.y}
           r={puckRadius}
           fill="white"
-          stroke="#3B82F6"
+          stroke="var(--accent-coral)"
           strokeWidth={isSmall ? 1.5 : 3}
           filter={isDragging ? 'url(#puck-glow)' : 'url(#puck-shadow)'}
         />
@@ -259,7 +259,7 @@ const GravityCircle: React.FC<GravityCircleProps> = ({
             cx={currentPoint.x}
             cy={currentPoint.y}
             r={isDragging ? 5 : 4}
-            fill="#3B82F6"
+            fill="var(--accent-coral)"
           />
         )}
       </g>

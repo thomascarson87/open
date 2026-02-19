@@ -128,18 +128,18 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-4">
-                     <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                         <ArrowLeft className="w-5 h-5 text-gray-600"/>
+                     <button onClick={onBack} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 rounded-full transition-colors">
+                         <ArrowLeft className="w-5 h-5 text-muted"/>
                      </button>
                      <div>
-                         <h2 className="text-2xl font-bold text-gray-900">Matches Found</h2>
-                         <p className="text-gray-500">{results.length} candidates fit your precision criteria</p>
+                         <h2 className="font-heading text-2xl text-primary">Matches Found</h2>
+                         <p className="text-muted">{results.length} candidates fit your precision criteria</p>
                      </div>
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-2">
                     <select
-                        className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-100 outline-none"
+                        className="bg-surface border border-border rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-accent-coral outline-none"
                         value={sortBy}
                         onChange={e => setSortBy(e.target.value as any)}
                     >
@@ -151,13 +151,13 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
 
                     <button
                         onClick={() => setShowSaveDialog(true)}
-                        className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition-colors"
+                        className="bg-surface border border-border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 flex items-center transition-colors"
                     >
-                        <Save className="w-4 h-4 mr-2 text-blue-600"/> Save Search
+                        <Save className="w-4 h-4 mr-2 text-accent-coral"/> Save Search
                     </button>
 
-                    <button className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center transition-colors">
-                        <Download className="w-4 h-4 mr-2 text-gray-400"/> Export
+                    <button className="bg-surface border border-border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 flex items-center transition-colors">
+                        <Download className="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500"/> Export
                     </button>
                 </div>
             </div>
@@ -194,25 +194,25 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
 
             {/* Empty State */}
             {results.length === 0 && (
-                <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                    <Filter className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900">No perfect matches</h3>
-                    <p className="text-gray-500 mt-2 max-w-md mx-auto">Try loosening your strict requirements or broadening your skill search.</p>
+                <div className="text-center py-20 bg-surface rounded-3xl border border-dashed border-border">
+                    <Filter className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-primary">No perfect matches</h3>
+                    <p className="text-muted mt-2 max-w-md mx-auto">Try loosening your strict requirements or broadening your skill search.</p>
                 </div>
             )}
 
             {/* Save Dialog */}
             {showSaveDialog && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in zoom-in duration-200">
-                        <h3 className="text-2xl font-black text-gray-900 mb-2">Save Search</h3>
-                        <p className="text-sm text-gray-500 mb-6 leading-relaxed">Save these requirements to run them again with a single click or enable automatic match alerts.</p>
+                    <div className="bg-surface rounded-3xl w-full max-w-sm p-8 shadow-2xl animate-in zoom-in duration-200">
+                        <h3 className="text-2xl font-black text-primary mb-2">Save Search</h3>
+                        <p className="text-sm text-muted mb-6 leading-relaxed">Save these requirements to run them again with a single click or enable automatic match alerts.</p>
                         
                         <div className="mb-6">
-                            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Search Title</label>
+                            <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-2">Search Title</label>
                             <input 
                                 autoFocus
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-100 outline-none"
+                                className="w-full p-4 bg-gray-50 dark:bg-gray-900 border border-border rounded-xl font-bold focus:ring-2 focus:ring-accent-coral outline-none"
                                 placeholder="e.g. Senior React Devs (London)"
                                 value={saveName}
                                 onChange={e => setSaveName(e.target.value)}
@@ -220,7 +220,7 @@ const TalentSearchResults: React.FC<Props> = ({ results, criteria, onBack, onUnl
                         </div>
                         
                         <div className="flex gap-3">
-                             <button onClick={() => setShowSaveDialog(false)} className="flex-1 px-4 py-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors">Cancel</button>
+                             <button onClick={() => setShowSaveDialog(false)} className="flex-1 px-4 py-3 text-muted font-bold hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 rounded-xl transition-colors">Cancel</button>
                              <button 
                                 onClick={handleSaveSearch} 
                                 disabled={!saveName || isSaving} 

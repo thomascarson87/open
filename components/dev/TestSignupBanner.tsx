@@ -46,7 +46,7 @@ export default function TestSignupBanner() {
     <div className="fixed top-4 left-4 z-[9997]">
       {/* Expanded View */}
       {expanded && (
-        <div className="mb-2 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-amber-200 overflow-hidden animate-in slide-in-from-top-2 duration-200 w-64">
+        <div className="mb-2 bg-white dark:bg-surface/95 backdrop-blur-sm rounded-xl shadow-xl border border-amber-200 overflow-hidden animate-in slide-in-from-top-2 duration-200 w-64">
           <div className="px-3 py-2 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
             <div className="text-[10px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
@@ -59,18 +59,18 @@ export default function TestSignupBanner() {
 
           <div className="p-3">
             {/* Test Account Info */}
-            <div className="bg-gray-50 rounded-lg p-3 mb-3">
-              <div className="text-xs text-gray-500 mb-1">Test Account</div>
-              <div className="text-sm font-bold text-gray-900 truncate">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 mb-3">
+              <div className="text-xs text-muted mb-1">Test Account</div>
+              <div className="text-sm font-bold text-primary truncate">
                 {testAccount?.email || 'Unknown'}
               </div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Stage: {currentStageInfo.name}
               </div>
             </div>
 
             {/* Instructions */}
-            <div className="text-xs text-gray-500 mb-3">
+            <div className="text-xs text-muted mb-3">
               Complete your profile using the onboarding flow. Click "Complete Profile" on the dashboard to start.
             </div>
 

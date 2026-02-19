@@ -48,13 +48,13 @@ const TalentMatcher: React.FC<Props> = ({ onViewProfile, onUnlock, onSchedule, o
         <div className="max-w-7xl mx-auto px-4 py-8">
             <div className="mb-6 flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Talent Match</h1>
-                    <p className="text-gray-500 mt-2">Find candidates that perfectly align with your requirements.</p>
+                    <h1 className="font-heading text-3xl text-primary">Talent Match</h1>
+                    <p className="text-muted mt-2">Find candidates that perfectly align with your requirements.</p>
                 </div>
                 {view === 'form' && (
                     <button 
                         onClick={() => setView('saved')}
-                        className="text-blue-600 font-bold text-sm hover:underline"
+                        className="text-accent-coral font-bold text-sm hover:underline"
                     >
                         View Saved Searches
                     </button>
@@ -62,7 +62,7 @@ const TalentMatcher: React.FC<Props> = ({ onViewProfile, onUnlock, onSchedule, o
                 {view === 'saved' && (
                     <button 
                         onClick={() => setView('form')}
-                        className="text-blue-600 font-bold text-sm hover:underline"
+                        className="text-accent-coral font-bold text-sm hover:underline"
                     >
                         Back to Search
                     </button>
@@ -70,10 +70,10 @@ const TalentMatcher: React.FC<Props> = ({ onViewProfile, onUnlock, onSchedule, o
             </div>
 
             {isLoading ? (
-                <div className="min-h-[400px] flex flex-col items-center justify-center bg-white rounded-2xl border border-gray-200">
-                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900">Finding best matches...</h3>
-                    <p className="text-gray-500">Analyzing skills, values, and preferences.</p>
+                <div className="min-h-[400px] flex flex-col items-center justify-center bg-surface rounded-2xl border border-border">
+                    <Loader2 className="w-12 h-12 text-accent-coral animate-spin mb-4" />
+                    <h3 className="text-xl font-bold text-primary">Finding best matches...</h3>
+                    <p className="text-muted">Analyzing skills, values, and preferences.</p>
                 </div>
             ) : (
                 <>

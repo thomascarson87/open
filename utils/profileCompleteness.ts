@@ -28,7 +28,7 @@ const PROFILE_FIELDS: FieldWeight[] = [
   // Important (medium weight)
   { field: 'salary', label: 'Salary Expectations', weight: 7, check: p => !!p.salaryMin },
   { field: 'workMode', label: 'Work Mode Preference', weight: 6, check: p => (p.preferredWorkMode?.length || 0) > 0 },
-  { field: 'education', label: 'Education', weight: 5, check: p => !!p.education_level },
+  { field: 'education', label: 'Education', weight: 5, check: p => !!p.educationLevel },
   { field: 'status', label: 'Job Search Status', weight: 5, check: p => !!p.status },
   { field: 'contractTypes', label: 'Contract Preferences', weight: 4, check: p => (p.contractTypes?.length || 0) > 0 },
 
@@ -62,7 +62,7 @@ function getTipForField(field: string): string {
 
 function getStrengthLabel(percentage: number): { label: string; color: string } {
   if (percentage >= 90) return { label: 'Excellent', color: 'text-green-500' };
-  if (percentage >= 75) return { label: 'Strong', color: 'text-blue-500' };
+  if (percentage >= 75) return { label: 'Strong', color: 'text-accent-coral' };
   if (percentage >= 50) return { label: 'Good Start', color: 'text-yellow-500' };
   if (percentage >= 25) return { label: 'Getting There', color: 'text-orange-500' };
   return { label: 'Just Started', color: 'text-gray-500' };

@@ -69,7 +69,7 @@ interface WidgetConfig {
 
 const DEFAULT_CONFIG: WidgetConfig = {
   brand_color_primary: '#0f172a',
-  brand_color_secondary: '#3b82f6',
+  brand_color_secondary: 'var(--accent-coral)',
   show_company_logo: true,
   show_salary_range: true,
   custom_css: '',
@@ -291,23 +291,23 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-[400px]">
-      <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      <Loader2 className="w-8 h-8 animate-spin text-gray-400 dark:text-gray-500" />
     </div>
   );
 
   const SectionHeader = ({ icon: Icon, title, section }: { icon: any, title: string, section: string }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+      className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
     >
       <div className="flex items-center gap-3">
-        <Icon className="w-5 h-5 text-gray-600" />
-        <span className="font-bold text-gray-900">{title}</span>
+        <Icon className="w-5 h-5 text-muted" />
+        <span className="font-bold text-primary">{title}</span>
       </div>
       {expandedSections[section] ? (
-        <ChevronUp className="w-5 h-5 text-gray-400" />
+        <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" />
       ) : (
-        <ChevronDown className="w-5 h-5 text-gray-400" />
+        <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />
       )}
     </button>
   );
@@ -317,15 +317,15 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
       {!isEmbedded && (
         <button
           onClick={onBack}
-          className="flex items-center text-gray-500 hover:text-gray-900 mb-6 font-medium transition"
+          className="flex items-center text-muted hover:text-primary mb-6 font-medium transition"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
         </button>
       )}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Career Page Widget</h1>
-        <p className="text-gray-500 mt-2 max-w-2xl">
+        <h1 className="font-heading text-3xl text-primary">Career Page Widget</h1>
+        <p className="text-muted mt-2 max-w-2xl">
           Embed your chime jobs directly on your company website.
           Customize the appearance to match your brand.
         </p>
@@ -333,36 +333,36 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-4 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-bold text-gray-500 uppercase">Widget Views</div>
-            <BarChart2 className="w-4 h-4 text-gray-400" />
+            <div className="text-xs font-bold text-muted uppercase">Widget Views</div>
+            <BarChart2 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.views.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-primary">{stats.views.toLocaleString()}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-4 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-bold text-gray-500 uppercase">Applications</div>
-            <Users className="w-4 h-4 text-gray-400" />
+            <div className="text-xs font-bold text-muted uppercase">Applications</div>
+            <Users className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="text-2xl font-bold text-green-600">{stats.applications.toLocaleString()}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-4 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-bold text-gray-500 uppercase">Conversions</div>
-            <TrendingUp className="w-4 h-4 text-gray-400" />
+            <div className="text-xs font-bold text-muted uppercase">Conversions</div>
+            <TrendingUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-2xl font-bold text-purple-600">{stats.conversions}</div>
+          <div className="text-2xl font-bold text-accent-green">{stats.conversions}</div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-surface p-4 rounded-xl border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-bold text-gray-500 uppercase">ROI Savings</div>
-            <DollarSign className="w-4 h-4 text-gray-400" />
+            <div className="text-xs font-bold text-muted uppercase">ROI Savings</div>
+            <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-2xl font-bold text-primary">
             ${((stats.applications * 50) - (stats.applications * 2)).toLocaleString()}
           </div>
         </div>
@@ -371,19 +371,19 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
       {/* Embed Code */}
       <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg mb-8">
         <div className="bg-gray-800 px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center text-gray-300 text-sm font-medium">
+          <div className="flex items-center text-gray-300 dark:text-gray-600 text-sm font-medium">
             <Code className="w-4 h-4 mr-2" /> Embed Code
           </div>
           <button
             onClick={handleCopy}
-            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition text-xs font-bold flex items-center"
+            className="px-3 py-1.5 bg-white dark:bg-surface/10 hover:bg-white dark:bg-surface/20 text-white rounded-lg transition text-xs font-bold flex items-center"
           >
             {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
         <div className="p-6 overflow-x-auto">
-          <pre className="text-blue-300 text-sm font-mono">
+          <pre className="text-accent-coral-light text-sm font-mono">
             <code>{widgetCode}</code>
           </pre>
         </div>
@@ -394,12 +394,12 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
         {/* Left Column: Settings */}
         <div className="space-y-4">
           {/* Theme Preset Selector */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
-              <Sparkles className="w-5 h-5 text-purple-600" />
-              <h3 className="font-bold text-gray-900">Theme Presets</h3>
+              <Sparkles className="w-5 h-5 text-accent-green" />
+              <h3 className="font-bold text-primary">Theme Presets</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-muted mb-4">
               Select a preset to quickly apply a coordinated style, then customize individual settings below.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -409,8 +409,8 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                   onClick={() => applyThemePreset(preset.id)}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
                     config.theme_preset === preset.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-accent-coral bg-accent-coral-bg'
+                      : 'border-border hover:border-gray-300 dark:border-gray-700 bg-white dark:bg-surface'
                   }`}
                 >
                   <div className="flex gap-1 mb-2">
@@ -423,25 +423,25 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                       style={{ backgroundColor: preset.brand_color_secondary }}
                     />
                   </div>
-                  <div className="text-sm font-bold text-gray-900">{preset.name}</div>
-                  <div className="text-xs text-gray-500 line-clamp-1">{preset.description}</div>
+                  <div className="text-sm font-bold text-primary">{preset.name}</div>
+                  <div className="text-xs text-muted line-clamp-1">{preset.description}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Typography Section */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
             <SectionHeader icon={Type} title="Typography" section="typography" />
             {expandedSections.typography && (
-              <div className="p-6 space-y-4 border-t border-gray-100">
+              <div className="p-6 space-y-4 border-t border-border">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Body Font</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Body Font</label>
                     <select
                       value={config.font_family}
                       onChange={e => setConfig({ ...config, font_family: e.target.value })}
-                      className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                      className="w-full p-3 border border-border rounded-lg text-sm"
                     >
                       {FONT_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -449,11 +449,11 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Heading Font</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Heading Font</label>
                     <select
                       value={config.font_heading}
                       onChange={e => setConfig({ ...config, font_heading: e.target.value })}
-                      className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                      className="w-full p-3 border border-border rounded-lg text-sm"
                     >
                       {FONT_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -462,7 +462,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Font Size</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Font Size</label>
                   <div className="flex gap-2">
                     {(['small', 'medium', 'large'] as const).map(size => (
                       <button
@@ -471,7 +471,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
                           config.font_size_base === size
                             ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-border'
                         }`}
                       >
                         {size.charAt(0).toUpperCase() + size.slice(1)}
@@ -484,120 +484,120 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
           </div>
 
           {/* Colors Section */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
             <SectionHeader icon={Palette} title="Colors" section="colors" />
             {expandedSections.colors && (
-              <div className="p-6 space-y-4 border-t border-gray-100">
+              <div className="p-6 space-y-4 border-t border-border">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Primary Color</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Primary Color</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
                         value={config.brand_color_primary}
                         onChange={e => setConfig({ ...config, brand_color_primary: e.target.value })}
-                        className="w-12 h-10 rounded cursor-pointer border border-gray-200 p-1"
+                        className="w-12 h-10 rounded cursor-pointer border border-border p-1"
                       />
                       <input
                         type="text"
                         value={config.brand_color_primary}
                         onChange={e => setConfig({ ...config, brand_color_primary: e.target.value })}
-                        className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
+                        className="flex-1 p-2 border border-border rounded-lg text-sm font-mono"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Secondary Color</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Secondary Color</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
                         value={config.brand_color_secondary}
                         onChange={e => setConfig({ ...config, brand_color_secondary: e.target.value })}
-                        className="w-12 h-10 rounded cursor-pointer border border-gray-200 p-1"
+                        className="w-12 h-10 rounded cursor-pointer border border-border p-1"
                       />
                       <input
                         type="text"
                         value={config.brand_color_secondary}
                         onChange={e => setConfig({ ...config, brand_color_secondary: e.target.value })}
-                        className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
+                        className="flex-1 p-2 border border-border rounded-lg text-sm font-mono"
                       />
                     </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Background</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Background</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
                         value={config.background_color}
                         onChange={e => setConfig({ ...config, background_color: e.target.value })}
-                        className="w-12 h-10 rounded cursor-pointer border border-gray-200 p-1"
+                        className="w-12 h-10 rounded cursor-pointer border border-border p-1"
                       />
                       <input
                         type="text"
                         value={config.background_color}
                         onChange={e => setConfig({ ...config, background_color: e.target.value })}
-                        className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
+                        className="flex-1 p-2 border border-border rounded-lg text-sm font-mono"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Text Color</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Text Color</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
                         value={config.text_color}
                         onChange={e => setConfig({ ...config, text_color: e.target.value })}
-                        className="w-12 h-10 rounded cursor-pointer border border-gray-200 p-1"
+                        className="w-12 h-10 rounded cursor-pointer border border-border p-1"
                       />
                       <input
                         type="text"
                         value={config.text_color}
                         onChange={e => setConfig({ ...config, text_color: e.target.value })}
-                        className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
+                        className="flex-1 p-2 border border-border rounded-lg text-sm font-mono"
                       />
                     </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Muted Text</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Muted Text</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
                         value={config.text_muted_color}
                         onChange={e => setConfig({ ...config, text_muted_color: e.target.value })}
-                        className="w-12 h-10 rounded cursor-pointer border border-gray-200 p-1"
+                        className="w-12 h-10 rounded cursor-pointer border border-border p-1"
                       />
                       <input
                         type="text"
                         value={config.text_muted_color}
                         onChange={e => setConfig({ ...config, text_muted_color: e.target.value })}
-                        className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
+                        className="flex-1 p-2 border border-border rounded-lg text-sm font-mono"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Border Color</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Border Color</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
                         value={config.border_color}
                         onChange={e => setConfig({ ...config, border_color: e.target.value })}
-                        className="w-12 h-10 rounded cursor-pointer border border-gray-200 p-1"
+                        className="w-12 h-10 rounded cursor-pointer border border-border p-1"
                       />
                       <input
                         type="text"
                         value={config.border_color}
                         onChange={e => setConfig({ ...config, border_color: e.target.value })}
-                        className="flex-1 p-2 border border-gray-200 rounded-lg text-sm font-mono"
+                        className="flex-1 p-2 border border-border rounded-lg text-sm font-mono"
                       />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Color Mode</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Color Mode</label>
                   <div className="flex gap-2">
                     {(['light', 'dark', 'auto'] as const).map(mode => (
                       <button
@@ -606,7 +606,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
                           config.color_mode === mode
                             ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-border'
                         }`}
                       >
                         {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -619,12 +619,12 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
           </div>
 
           {/* Layout Section */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
             <SectionHeader icon={Layout} title="Layout" section="layout" />
             {expandedSections.layout && (
-              <div className="p-6 space-y-4 border-t border-gray-100">
+              <div className="p-6 space-y-4 border-t border-border">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Border Radius</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Border Radius</label>
                   <div className="flex gap-2">
                     {(['sharp', 'rounded', 'pill'] as const).map(radius => (
                       <button
@@ -633,7 +633,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
                           config.border_radius === radius
                             ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-border'
                         }`}
                       >
                         {radius.charAt(0).toUpperCase() + radius.slice(1)}
@@ -642,7 +642,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Content Density</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Content Density</label>
                   <div className="flex gap-2">
                     {(['compact', 'normal', 'spacious'] as const).map(d => (
                       <button
@@ -651,7 +651,7 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
                           config.density === d
                             ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 dark:text-gray-600 hover:bg-border'
                         }`}
                       >
                         {d.charAt(0).toUpperCase() + d.slice(1)}
@@ -661,24 +661,24 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Max Width</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Max Width</label>
                     <input
                       type="text"
                       value={config.max_width}
                       onChange={e => setConfig({ ...config, max_width: e.target.value })}
                       placeholder="1200px"
-                      className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                      className="w-full p-3 border border-border rounded-lg text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Jobs Per Page</label>
+                    <label className="block text-xs font-bold text-muted uppercase mb-2">Jobs Per Page</label>
                     <input
                       type="number"
                       min={5}
                       max={50}
                       value={config.jobs_per_page}
                       onChange={e => setConfig({ ...config, jobs_per_page: parseInt(e.target.value) || 10 })}
-                      className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                      className="w-full p-3 border border-border rounded-lg text-sm"
                     />
                   </div>
                 </div>
@@ -688,45 +688,45 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                       type="checkbox"
                       checked={config.show_company_header}
                       onChange={e => setConfig({ ...config, show_company_header: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Show Company Header</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Show Company Header</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.show_company_logo}
                       onChange={e => setConfig({ ...config, show_company_logo: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Show Company Logo</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Show Company Logo</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.show_job_count}
                       onChange={e => setConfig({ ...config, show_job_count: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Show Job Count Badge</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Show Job Count Badge</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.show_salary_range}
                       onChange={e => setConfig({ ...config, show_salary_range: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Show Salary Ranges</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Show Salary Ranges</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.show_powered_by}
                       onChange={e => setConfig({ ...config, show_powered_by: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Show "Powered by Open" Badge</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Show "Powered by Open" Badge</span>
                   </label>
                 </div>
               </div>
@@ -734,83 +734,83 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
           </div>
 
           {/* Application Form Section */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
             <SectionHeader icon={FileText} title="Application Form" section="application" />
             {expandedSections.application && (
-              <div className="p-6 space-y-4 border-t border-gray-100">
+              <div className="p-6 space-y-4 border-t border-border">
                 <div className="space-y-3">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.require_resume}
                       onChange={e => setConfig({ ...config, require_resume: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Require Resume Upload</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Require Resume Upload</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={config.require_cover_letter}
                       onChange={e => setConfig({ ...config, require_cover_letter: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 mr-3"
+                      className="w-4 h-4 rounded text-accent-coral focus:ring-accent-coral mr-3"
                     />
-                    <span className="text-sm text-gray-700 font-medium">Require Cover Letter</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-600 font-medium">Require Cover Letter</span>
                   </label>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Success Message</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Success Message</label>
                   <textarea
                     value={config.success_message}
                     onChange={e => setConfig({ ...config, success_message: e.target.value })}
                     rows={3}
-                    className="w-full p-3 border border-gray-200 rounded-lg text-sm resize-none"
+                    className="w-full p-3 border border-border rounded-lg text-sm resize-none"
                     placeholder="Thank you for applying! We'll be in touch soon."
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Redirect URL (Optional)</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Redirect URL (Optional)</label>
                   <input
                     type="url"
                     value={config.redirect_url}
                     onChange={e => setConfig({ ...config, redirect_url: e.target.value })}
                     placeholder="https://yourcompany.com/thank-you"
-                    className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                    className="w-full p-3 border border-border rounded-lg text-sm"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Redirect applicants to this URL after submission</p>
+                  <p className="text-xs text-muted mt-1">Redirect applicants to this URL after submission</p>
                 </div>
               </div>
             )}
           </div>
 
           {/* Advanced Section */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
             <SectionHeader icon={Settings} title="Advanced" section="advanced" />
             {expandedSections.advanced && (
-              <div className="p-6 space-y-4 border-t border-gray-100">
+              <div className="p-6 space-y-4 border-t border-border">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Page Title (SEO)</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Page Title (SEO)</label>
                   <input
                     type="text"
                     value={config.page_title}
                     onChange={e => setConfig({ ...config, page_title: e.target.value })}
                     placeholder="Careers at Your Company"
-                    className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                    className="w-full p-3 border border-border rounded-lg text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Meta Description (SEO)</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Meta Description (SEO)</label>
                   <textarea
                     value={config.meta_description}
                     onChange={e => setConfig({ ...config, meta_description: e.target.value })}
                     rows={2}
-                    className="w-full p-3 border border-gray-200 rounded-lg text-sm resize-none"
+                    className="w-full p-3 border border-border rounded-lg text-sm resize-none"
                     placeholder="Join our team and work on exciting projects..."
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-blue-600" /> Allowed Domains
+                  <label className="block text-xs font-bold text-muted uppercase mb-2 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-accent-coral" /> Allowed Domains
                   </label>
                   <input
                     type="text"
@@ -819,18 +819,18 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
                       ...config,
                       domain_whitelist: e.target.value.split(',').map(d => d.trim()).filter(d => d.length > 0)
                     })}
-                    className="w-full p-3 border border-gray-200 rounded-lg text-sm"
+                    className="w-full p-3 border border-border rounded-lg text-sm"
                     placeholder="mycompany.com, careers.mycompany.com"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Leave empty to allow embedding on any domain</p>
+                  <p className="text-xs text-muted mt-1">Leave empty to allow embedding on any domain</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Custom CSS</label>
+                  <label className="block text-xs font-bold text-muted uppercase mb-2">Custom CSS</label>
                   <textarea
                     value={config.custom_css}
                     onChange={e => setConfig({ ...config, custom_css: e.target.value })}
                     rows={4}
-                    className="w-full p-3 border border-gray-200 rounded-lg text-sm font-mono resize-none"
+                    className="w-full p-3 border border-border rounded-lg text-sm font-mono resize-none"
                     placeholder=".open-widget-card { /* your styles */ }"
                   />
                 </div>
@@ -851,10 +851,10 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
 
         {/* Right Column: Live Preview */}
         <div className="xl:sticky xl:top-8 xl:self-start">
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <Eye className="w-5 h-5 text-gray-600" />
-              <span className="font-bold text-gray-900">Live Preview</span>
+          <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-border flex items-center gap-2">
+              <Eye className="w-5 h-5 text-muted" />
+              <span className="font-bold text-primary">Live Preview</span>
             </div>
 
             {/* Preview Container */}
@@ -994,11 +994,11 @@ export default function WidgetSetup({ onBack, isEmbedded = false }: WidgetSetupP
           </div>
 
           {/* Quick Start Guide */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 mt-4">
-            <h3 className="font-bold text-blue-900 flex items-center mb-4">
+          <div className="bg-accent-coral-bg border border-accent-coral-bg rounded-xl p-6 mt-4">
+            <h3 className="font-bold text-accent-coral flex items-center mb-4">
               <Globe className="w-5 h-5 mr-2" /> Quick Start Guide
             </h3>
-            <ol className="list-decimal list-inside space-y-2 text-blue-800 text-sm">
+            <ol className="list-decimal list-inside space-y-2 text-accent-coral text-sm">
               <li>Copy the embed code above.</li>
               <li>Paste it into your website's HTML where you want jobs to appear.</li>
               <li>The widget will automatically load your <strong>Published</strong> jobs.</li>

@@ -44,10 +44,10 @@ const getEventTypeLabel = (type: string): string => {
 const getEventTypeColor = (type: string): string => {
   const colors: Record<string, string> = {
     screening: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    technical_test: 'bg-blue-100 text-blue-800 border-blue-200',
-    final_round: 'bg-purple-100 text-purple-800 border-purple-200',
-    interview: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    sync: 'bg-gray-100 text-gray-800 border-gray-200',
+    technical_test: 'bg-accent-coral-bg text-accent-coral border-accent-coral-light',
+    final_round: 'bg-accent-green-bg text-accent-green border-accent-green-bg',
+    interview: 'bg-accent-green-bg text-accent-green border-accent-green',
+    sync: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-border',
     other: 'bg-green-100 text-green-800 border-green-200'
   };
   return colors[type] || colors.other;
@@ -75,9 +75,9 @@ const EventCard: React.FC<EventCardProps> = ({ event, variant }) => {
       p-5 rounded-2xl border-2 transition-all
       ${variant === 'upcoming'
         ? imminent
-          ? 'bg-purple-50 border-purple-300 shadow-lg scale-[1.02]'
-          : 'bg-white border-gray-100 hover:border-gray-200 shadow-sm'
-        : 'bg-gray-50 border-transparent opacity-75'
+          ? 'bg-accent-green-bg border-accent-green-bg shadow-lg scale-[1.02]'
+          : 'bg-white dark:bg-surface border-border hover:border-border shadow-sm'
+        : 'bg-gray-50 dark:bg-gray-900 border-transparent opacity-75'
       }
     `}>
       <div className="flex items-start justify-between gap-4">
@@ -89,15 +89,15 @@ const EventCard: React.FC<EventCardProps> = ({ event, variant }) => {
             {getEventTypeLabel(event.event_type)}
           </span>
           
-          <h4 className="font-bold text-gray-900 truncate text-base">{event.title}</h4>
+          <h4 className="font-bold text-primary truncate text-base">{event.title}</h4>
           
-          <div className="flex items-center text-sm font-medium text-gray-500 mt-2">
-            <Clock className="w-4 h-4 mr-2 flex-shrink-0 text-gray-400" />
+          <div className="flex items-center text-sm font-medium text-muted mt-2">
+            <Clock className="w-4 h-4 mr-2 flex-shrink-0 text-gray-400 dark:text-gray-500" />
             {formatEventDateTime(event.start_time, event.end_time)}
           </div>
           
           {event.description && (
-            <p className="text-xs text-gray-400 mt-3 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 line-clamp-2 leading-relaxed">
               {event.description}
             </p>
           )}
@@ -112,7 +112,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, variant }) => {
               className={`
                 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-sm
                 ${imminent
-                  ? 'bg-purple-600 text-white hover:bg-purple-700 animate-pulse active:scale-95'
+                  ? 'bg-accent-coral text-white hover:bg-accent-coral-light animate-pulse active:scale-95'
                   : 'bg-gray-900 text-white hover:bg-black active:scale-95'
                 }
               `}
@@ -139,11 +139,11 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ application }) => {
   if (upcomingEvents.length === 0 && pastEvents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center min-h-[400px]">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Calendar className="w-8 h-8 text-gray-400" />
+        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+          <Calendar className="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
-        <h3 className="font-bold text-gray-900 mb-2 text-lg">No Scheduled Interviews</h3>
-        <p className="text-gray-500 text-sm max-w-xs leading-relaxed">
+        <h3 className="font-bold text-primary mb-2 text-lg">No Scheduled Interviews</h3>
+        <p className="text-muted text-sm max-w-xs leading-relaxed">
           Interviews scheduled by {application.job.company_name} will appear here with calendar sync and video links.
         </p>
       </div>
@@ -151,10 +151,10 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ application }) => {
   }
 
   return (
-    <div className="p-6 space-y-8 bg-gray-50/30 h-full">
+    <div className="p-6 space-y-8 bg-gray-50 dark:bg-gray-900/30 h-full">
       {upcomingEvents.length > 0 && (
         <div>
-          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center">
+          <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4 flex items-center">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-2 shadow-sm shadow-green-200" />
             Upcoming Rounds
           </h3>
@@ -167,8 +167,8 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ application }) => {
       )}
 
       {pastEvents.length > 0 && (
-        <div className="pt-4 border-t border-gray-100">
-          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+        <div className="pt-4 border-t border-border">
+          <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">
             Completed
           </h3>
           <div className="space-y-3">
@@ -180,11 +180,11 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ application }) => {
       )}
 
       {upcomingEvents.length > 0 && (
-        <div className="bg-blue-600 p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden group">
+        <div className="bg-accent-coral p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden group">
           <Calendar className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform duration-700" />
           <div className="relative z-10">
             <h4 className="font-black text-lg mb-1">Google Calendar Sync</h4>
-            <p className="text-blue-100 text-sm font-medium mb-0">Events are synced automatically if you've connected your account in the Schedule tab.</p>
+            <p className="text-accent-coral-bg text-sm font-medium mb-0">Events are synced automatically if you've connected your account in the Schedule tab.</p>
           </div>
         </div>
       )}

@@ -296,7 +296,7 @@ const RoleTitleAutocomplete: React.FC<RoleTitleAutocompleteProps> = ({
 
   return (
     <div className="relative">
-      <label className="block text-xs font-black text-gray-400 uppercase mb-2">
+      <label className="block text-xs font-black text-gray-400 dark:text-gray-500 uppercase mb-2">
         Role Title *
       </label>
       <div className="relative">
@@ -307,13 +307,13 @@ const RoleTitleAutocomplete: React.FC<RoleTitleAutocompleteProps> = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => inputValue.length >= 2 && searchRoles(inputValue)}
-          className="w-full p-4 border rounded-2xl font-bold focus:ring-2 focus:ring-blue-100 outline-none pr-10"
+          className="w-full p-4 border rounded-2xl font-bold focus:ring-2 focus:ring-accent-coral outline-none pr-10"
           placeholder="Start typing to search roles..."
           autoComplete="off"
         />
         {isLoading && (
           <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400 dark:text-gray-500" />
           </div>
         )}
       </div>
@@ -321,13 +321,13 @@ const RoleTitleAutocomplete: React.FC<RoleTitleAutocompleteProps> = ({
       {/* Template indicator */}
       {selectedTemplateName && canonicalRoleId && (
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-xs text-gray-500">
-            Template: <span className="font-bold text-blue-600">{selectedTemplateName}</span>
+          <span className="text-xs text-muted">
+            Template: <span className="font-bold text-accent-coral">{selectedTemplateName}</span>
           </span>
           <button
             type="button"
             onClick={handleClearTemplate}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 dark:text-gray-500 hover:text-muted"
           >
             <X className="w-3 h-3" />
           </button>
@@ -338,11 +338,11 @@ const RoleTitleAutocomplete: React.FC<RoleTitleAutocompleteProps> = ({
       {isOpen && (results.length > 0 || inputValue.length >= 2) && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-2 bg-white border rounded-2xl shadow-xl max-h-80 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-white dark:bg-surface border rounded-2xl shadow-xl max-h-80 overflow-y-auto"
         >
           {Object.entries(groupedResults).map(([familyName, roles]) => (
             <div key={familyName}>
-              <div className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider bg-gray-50 sticky top-0">
+              <div className="px-4 py-2 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-gray-900 sticky top-0">
                 {familyName}
               </div>
               {roles.map((role) => {
@@ -352,11 +352,11 @@ const RoleTitleAutocomplete: React.FC<RoleTitleAutocompleteProps> = ({
                     key={role.id}
                     type="button"
                     onClick={() => handleSelectRole(role)}
-                    className={`w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center justify-between ${
-                      highlightedIndex === idx - 1 ? 'bg-blue-50' : ''
+                    className={`w-full px-4 py-3 text-left hover:bg-accent-coral-bg transition-colors flex items-center justify-between ${
+                      highlightedIndex === idx - 1 ? 'bg-accent-coral-bg' : ''
                     }`}
                   >
-                    <span className="font-bold text-gray-800">{role.name}</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200">{role.name}</span>
                     {role.is_emerging && (
                       <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                         emerging
@@ -373,18 +373,18 @@ const RoleTitleAutocomplete: React.FC<RoleTitleAutocompleteProps> = ({
             <button
               type="button"
               onClick={handleSelectCustom}
-              className={`w-full px-4 py-3 text-left border-t hover:bg-gray-50 transition-colors ${
-                highlightedIndex === results.length ? 'bg-gray-50' : ''
+              className={`w-full px-4 py-3 text-left border-t hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:bg-gray-900 transition-colors ${
+                highlightedIndex === results.length ? 'bg-gray-50 dark:bg-gray-900' : ''
               }`}
             >
-              <span className="text-gray-600">
+              <span className="text-muted">
                 Use "<span className="font-bold">{inputValue}</span>" as custom title
               </span>
             </button>
           )}
 
           {results.length === 0 && inputValue.length >= 2 && !isLoading && (
-            <div className="px-4 py-3 text-sm text-gray-500">
+            <div className="px-4 py-3 text-sm text-muted">
               No matching roles found
             </div>
           )}

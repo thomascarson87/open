@@ -50,14 +50,14 @@ export function SlidePanel({ isOpen, onClose, title, children, width = 'md' }: S
 
       {/* Panel */}
       <div
-        className={`absolute right-0 top-0 h-full w-full ${widthClasses[width]} bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300`}
+        className={`absolute right-0 top-0 h-full w-full ${widthClasses[width]} bg-white dark:bg-surface shadow-2xl flex flex-col animate-in slide-in-from-right duration-300`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-white sticky top-0 z-10">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-white dark:bg-surface sticky top-0 z-10">
+          <h2 className="font-heading text-lg text-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-muted rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

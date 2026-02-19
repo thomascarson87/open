@@ -1,10 +1,10 @@
 export const COLORS = {
   skills: {
-    primary: '#2563EB',
-    light: '#DBEAFE',
-    text: 'text-blue-600',
-    bg: 'bg-blue-500',
-    bgLight: 'bg-blue-50',
+    primary: 'var(--accent-coral)',
+    light: 'var(--accent-coral-bg)',
+    text: 'text-accent-coral',
+    bg: 'bg-accent-coral',
+    bgLight: 'bg-accent-coral-bg',
   },
   compensation: {
     primary: '#16A34A',
@@ -16,9 +16,9 @@ export const COLORS = {
   culture: {
     primary: '#9333EA',
     light: '#F3E8FF',
-    text: 'text-purple-600',
-    bg: 'bg-purple-500',
-    bgLight: 'bg-purple-50',
+    text: 'text-accent-green',
+    bg: 'bg-accent-green',
+    bgLight: 'bg-accent-green-bg',
   },
 } as const;
 

@@ -37,8 +37,10 @@ import PendingApprovals from './pages/PendingApprovals';
 import MarketPulse from './pages/candidate/MarketPulse';
 import TalentMarket from './pages/company/TalentMarket';
 import CompanyHomepage from './components/homepage/CompanyHomepage';
+import MatchRevealBanner from './components/MatchRevealBanner';
 import { Role, CandidateProfile, JobPosting, Notification, CompanyProfile as CompanyProfileType, Connection, TeamMember, Skill } from './types';
 import { Loader2, Briefcase } from 'lucide-react';
+import { DarkModeProvider } from './contexts/DarkModeContext';
 import { notificationService } from './services/notificationService';
 
 // API response types for unlock-profile endpoint
@@ -67,199 +69,9 @@ type UnlockApiResponse = UnlockSuccessResponse | UnlockErrorResponse;
 import { messageService } from './services/messageService';
 import { fetchEnrichedJobs, EnrichedJob } from './services/jobDataService';
 import { calculateMatch } from './services/matchingService';
+import { mapJobFromDB, mapCandidateFromDB, mapCompanyFromDB } from './services/dataMapperService';
 
-const mapJobFromDB = (data: any): JobPosting => {
-    if (!data) return {} as JobPosting;
-    const skillsSource = data.required_skills_with_levels || data.required_skills || [];
-    return {
-        ...data,
-        id: data.id,
-        company_id: data.company_id,
-        canonical_role_id: data.canonical_role_id,
-        companyName: data.company_name,
-        companyLogo: data.company_logo,
-        title: data.title,
-        description: data.description,
-        location: data.location,
-        salaryRange: data.salary_range,
-        salaryMin: data.salary_min,
-        salaryMax: data.salary_max,
-        salaryCurrency: data.salary_currency || 'USD',
-        seniority: data.seniority,
-        contractTypes: data.contract_types || [],
-        startDate: data.start_date,
-        workMode: data.work_mode || 'Remote',
-        postedDate: data.posted_date || data.created_at,
-        status: data.status,
-        approvals: data.approvals,
-        requiredSkills: skillsSource.map((s: any) => ({
-            name: s.name,
-            required_level: s.required_level || (s.minimumYears >= 5 ? 4 : s.minimumYears >= 3 ? 3 : 2),
-            minimumYears: s.minimumYears,
-            weight: s.weight || 'preferred'
-        })),
-        values: data.values_list || [],
-        perks: data.perks || [],
-        desiredTraits: data.desired_traits || [],
-        requiredTraits: data.required_traits || [],
-        companyIndustry: data.company_industry || [],
-        required_education_level: data.required_education_level,
-        preferred_education_level: data.preferred_education_level,
-        education_required: data.education_required || false,
-        responsibilities: data.responsibilities || [],
-        impact_statement: data.impact_statement,
-        key_deliverables: data.key_deliverables || [],
-        success_metrics: data.success_metrics || [],
-        team_structure: data.team_structure,
-        growth_opportunities: data.growth_opportunities,
-        tech_stack: data.tech_stack || [],
-        required_impact_scope: data.required_impact_scope,
-        workStyleRequirements: data.work_style_requirements || {},
-        workStyleDealbreakers: data.work_style_dealbreakers || [],
-        teamRequirements: data.team_requirements || {},
-        teamDealbreakers: data.team_dealbreakers || [],
-        requiredLanguages: data.required_languages || [],
-        timezoneRequirements: data.timezone_requirements,
-        // New fields
-        preferredLanguages: data.preferred_languages || [],
-        requiredTimezoneOverlap: data.required_timezone_overlap,
-        visaSponsorshipAvailable: data.visa_sponsorship_available || false,
-        equityOffered: data.equity_offered || false,
-        relocationAssistance: data.relocation_assistance || false,
-        desiredEnneagramTypes: data.desired_enneagram_types || [],
-        requiredCertifications: data.required_certifications || [],
-        preferredCertifications: data.preferred_certifications || [],
-        regulatoryDomains: data.regulatory_domains || []
-    };
-};
-
-const mapCandidateFromDB = (data: any): CandidateProfile => {
-    if (!data) return {} as CandidateProfile;
-    const skillsSource = data.skills_with_levels || data.skills || [];
-    return { 
-        ...data, 
-        id: data.id,
-        name: data.name,
-        headline: data.headline,
-        email: data.email,
-        location: data.location,
-        avatarUrls: data.avatar_urls || [], 
-        videoIntroUrl: data.video_intro_url,
-        themeColor: data.theme_color,
-        themeFont: data.theme_font,
-        bio: data.bio,
-        status: data.status,
-        skills: skillsSource.map((s: any) => ({
-            name: s.name,
-            years: s.years !== undefined ? s.years : (s.minimumYears || 0),
-            level: s.level || (s.years >= 8 ? 5 : s.years >= 5 ? 4 : s.years >= 3 ? 3 : s.years >= 1 ? 2 : 1),
-            description: s.description
-        })),
-        contractTypes: data.contract_types || [],
-        preferredWorkMode: data.preferred_work_mode || [],
-        desiredPerks: data.desired_perks || [],
-        interestedIndustries: data.interested_industries || [],
-        characterTraits: data.character_traits || [],
-        values: data.values_list || [],
-        nonNegotiables: data.non_negotiables || [],
-        portfolio: data.portfolio || [],
-        references: data.references_list || [],
-        experience: data.experience || [],
-        desiredSeniority: data.desired_seniority || [],
-        salaryExpectation: data.salary_expectation,
-        salaryMin: data.salary_min,
-        salaryCurrency: data.salary_currency,
-        legalStatus: data.legal_status,
-        currentBonuses: data.current_bonuses,
-        noticePeriod: data.notice_period,
-        ambitions: data.ambitions,
-        isUnlocked: data.is_unlocked,
-        education_level: data.education_level,
-        education_field: data.education_field,
-        education_institution: data.education_institution,
-        myers_briggs: data.myers_briggs,
-        disc_profile: data.disc_profile || { D: 0, I: 0, S: 0, C: 0 },
-        call_ready: data.call_ready,
-        call_link: data.call_link,
-        enneagram_type: data.enneagram_type,
-        assessment_completed_at: data.assessment_completed_at,
-        is_mock_data: data.is_mock_data || false,
-        verification_stats: data.verification_stats,
-        currentImpactScope: data.current_impact_scope,
-        desiredImpactScopes: data.desired_impact_scope || [],
-        workStylePreferences: data.work_style_preferences || {},
-        teamCollaborationPreferences: data.team_collaboration_preferences || {},
-        timezone: data.timezone,
-        languages: data.languages || [],
-        totalYearsExperience: data.total_years_experience,
-        // New fields
-        salaryMax: data.salary_max,
-        education_graduation_year: data.education_graduation_year,
-        callReady: data.call_ready,
-        callLink: data.call_link,
-        preferredTimezone: data.preferred_timezone,
-        preferredCompanySize: data.preferred_company_size || [],
-        willingToRelocate: data.willing_to_relocate,
-        openToEquity: data.open_to_equity,
-        // Management Preferences
-        preferredLeadershipStyle: data.preferred_leadership_style,
-        preferredFeedbackFrequency: data.preferred_feedback_frequency,
-        preferredCommunicationStyle: data.preferred_communication_style,
-        preferredMeetingCulture: data.preferred_meeting_culture,
-        preferredConflictResolution: data.preferred_conflict_resolution,
-        preferredMentorshipStyle: data.preferred_mentorship_style,
-        growthGoals: data.growth_goals,
-        // Enrichment fields
-        preferredCompanyFocus: data.preferred_company_focus || [],
-        preferredMissionOrientation: data.preferred_mission_orientation || [],
-        preferredWorkStyle: data.preferred_work_style || [],
-        regulatoryExperience: data.regulatory_experience || []
-    };
-};
-
-const mapCompanyFromDB = (data: any): CompanyProfileType => {
-    if (!data) return {} as CompanyProfileType;
-    return {
-        id: data.id,
-        companyName: data.company_name || '',
-        logoUrl: data.logo_url,
-        website: data.website || '',
-        tagline: data.tagline || '',
-        about: data.about || '',
-        missionStatement: data.mission_statement,
-        industry: data.industry || [],
-        values: data.values || [],
-        cultureDescription: data.culture_description,
-        workEnvironment: data.work_environment,
-        desiredTraits: data.desired_traits || [],
-        diversityStatement: data.diversity_statement,
-        perks: data.perks || [],
-        benefitsDescription: data.benefits_description,
-        remotePolicy: data.remote_policy || '',
-        teamSize: data.team_size || 0,
-        foundedYear: data.founded_year || new Date().getFullYear(),
-        headquartersLocation: data.headquarters_location || '',
-        companySizeRange: data.company_size_range,
-        fundingStage: data.funding_stage,
-        growthStage: data.growth_stage,
-        techStack: data.tech_stack || [],
-        socialMedia: data.social_media || {},
-        companyPhotos: data.company_photos || [],
-        billing_plan: data.billing_plan || 'pay_per_hire',
-        credits: data.credits || 0,
-        is_mock_data: data.is_mock_data || false,
-        mock_data_seed: data.mock_data_seed,
-        workStyleCulture: data.work_style_culture || {},
-        teamStructure: data.team_structure || {},
-        companyLanguages: data.company_languages || [],
-        // New fields
-        defaultTimezone: data.default_timezone,
-        visaSponsorshipPolicy: data.visa_sponsorship_policy,
-        focusType: data.focus_type || null,
-        missionOrientation: data.mission_orientation || null,
-        workStyle: data.work_style || null
-    };
-};
+// Data mappers imported from services/dataMapperService.ts (single source of truth)
 
 // Weighting logic function
 function calculateWeightedScore(baseMatch: any, weights: MatchWeights): number {
@@ -344,7 +156,7 @@ function MainApp() {
 
         return {
             id: testAccount.id,
-            user_id: testAccount.id,
+            userId: testAccount.id,
             name: testAccount.name || '',
             headline: '',
             email: testAccount.email,
@@ -363,9 +175,9 @@ function MainApp() {
             contractTypes: [],
             noticePeriod: '',
             nonNegotiables: [],
-            onboarding_completed: false,
-            created_at: testAccount.createdAt,
-            updated_at: testAccount.createdAt,
+            onboardingCompleted: false,
+            createdAt: testAccount.createdAt,
+            updatedAt: testAccount.createdAt,
         };
     };
 
@@ -505,14 +317,14 @@ function MainApp() {
                 portfolio: profile.portfolio || [], references_list: profile.references || [], salary_expectation: profile.salaryExpectation,
                 salary_min: profile.salaryMin, salary_currency: profile.salaryCurrency, notice_period: profile.noticePeriod,
                 legal_status: profile.legalStatus, current_bonuses: profile.currentBonuses, ambitions: profile.ambitions,
-                education_level: profile.education_level, education_field: profile.education_field, education_institution: profile.education_institution,
-                myers_briggs: profile.myers_briggs, disc_profile: profile.disc_profile, enneagram_type: profile.enneagram_type,
-                assessment_completed_at: profile.assessment_completed_at, current_impact_scope: profile.currentImpactScope,
+                education_level: profile.educationLevel, education_field: profile.educationField, education_institution: profile.educationInstitution,
+                myers_briggs: profile.myersBriggs, disc_profile: profile.discProfile, enneagram_type: profile.enneagramType,
+                assessment_completed_at: profile.assessmentCompletedAt, current_impact_scope: profile.currentImpactScope,
                 desired_impact_scope: profile.desiredImpactScopes, 
                 work_style_preferences: profile.workStylePreferences || {},
                 team_collaboration_preferences: profile.teamCollaborationPreferences || {}, timezone: profile.timezone, languages: profile.languages || [],
                 // New fields
-                salary_max: profile.salaryMax, education_graduation_year: profile.education_graduation_year,
+                salary_max: profile.salaryMax, education_graduation_year: profile.educationGraduationYear,
                 call_ready: profile.callReady, call_link: profile.callLink, preferred_timezone: profile.preferredTimezone,
                 preferred_company_size: profile.preferredCompanySize || [], willing_to_relocate: profile.willingToRelocate,
                 open_to_equity: profile.openToEquity,
@@ -523,7 +335,12 @@ function MainApp() {
                 preferred_meeting_culture: profile.preferredMeetingCulture,
                 preferred_conflict_resolution: profile.preferredConflictResolution,
                 preferred_mentorship_style: profile.preferredMentorshipStyle,
-                growth_goals: profile.growthGoals
+                growth_goals: profile.growthGoals,
+                // Enrichment fields
+                preferred_company_focus: profile.preferredCompanyFocus || [],
+                preferred_mission_orientation: profile.preferredMissionOrientation || [],
+                preferred_work_style: profile.preferredWorkStyle || [],
+                regulatory_experience: profile.regulatoryExperience || [],
             }).eq('id', user.id);
             if (error) throw error;
             setCandidateProfile(profile);
@@ -543,7 +360,7 @@ function MainApp() {
 
             const dbJobPayload = {
                 company_id: user?.id,
-                canonical_role_id: job.canonical_role_id || null,
+                canonical_role_id: job.canonicalRoleId || null,
                 company_name: companyProfile?.companyName,
                 company_logo: companyProfile?.logoUrl || job.companyLogo,
                 title: job.title,
@@ -561,32 +378,33 @@ function MainApp() {
                 start_date: job.startDate,
                 required_skills: job.requiredSkills,
                 required_skills_with_levels: job.requiredSkills,
-                tech_stack: job.tech_stack || [],
-                required_impact_scope: job.required_impact_scope,
+                tech_stack: job.techStack || [],
+                required_impact_scope: job.requiredImpactScope,
                 values_list: job.values || [],
                 perks: job.perks || [],
                 // Fixed: desired_traits and required_traits should use camelCase properties from JobPosting
                 desired_traits: job.desiredTraits || [],
                 required_traits: job.requiredTraits || [],
                 company_industry: job.companyIndustry || companyProfile?.industry || [],
-                required_education_level: job.required_education_level,
-                preferred_education_level: job.preferred_education_level,
-                education_required: job.education_required || false,
+                required_education_level: job.requiredEducationLevel,
+                preferred_education_level: job.preferredEducationLevel,
+                education_required: job.educationRequired || false,
                 responsibilities: job.responsibilities || [],
-                impact_statement: job.impact_statement,
-                key_deliverables: job.key_deliverables || [],
-                success_metrics: job.success_metrics || [],
-                team_structure: job.team_structure,
-                growth_opportunities: job.growth_opportunities,
-                desired_performance_scores: job.desired_performance_scores,
+                impact_statement: job.impactStatement,
+                key_deliverables: job.keyDeliverables || [],
+                success_metrics: job.successMetrics || [],
+                team_structure: job.teamStructure,
+                growth_opportunities: job.growthOpportunities,
+                desired_performance_scores: job.desiredPerformanceScores,
                 work_style_requirements: job.workStyleRequirements || {},
                 work_style_dealbreakers: job.workStyleDealbreakers || [],
                 team_requirements: job.teamRequirements || {},
                 team_dealbreakers: job.teamDealbreakers || [],
                 approvals: job.approvals || {},
                 posted_date: new Date().toISOString(),
-                // New fields
+                required_languages: job.requiredLanguages || [],
                 preferred_languages: job.preferredLanguages || [],
+                timezone_requirements: job.timezoneRequirements,
                 required_timezone_overlap: job.requiredTimezoneOverlap,
                 visa_sponsorship_available: job.visaSponsorshipAvailable || false,
                 equity_offered: job.equityOffered || false,
@@ -611,7 +429,7 @@ function MainApp() {
     const handleApply = async (jobId: string) => {
         if (userRole !== 'candidate') return;
         try {
-            await supabase.from('applications').insert({ job_id: jobId, candidate_id: user?.id, company_id: enrichedJobs.find(j => j.job.id === jobId)?.job.company_id });
+            await supabase.from('applications').insert({ job_id: jobId, candidate_id: user?.id, company_id: enrichedJobs.find(j => j.job.id === jobId)?.job.companyId });
             alert("Applied successfully!");
         } catch (e) { console.error(e); }
     };
@@ -685,7 +503,7 @@ function MainApp() {
             const data: UnlockApiResponse = await response.json();
 
             if (data.success) {
-                const unlockedCandidate = mapCandidateFromDB({ ...data.candidate, is_unlocked: true });
+                const unlockedCandidate = mapCandidateFromDB({ ...data.candidate, is_unlocked: true } as any);
                 setCandidatesList(prev =>
                     prev.map(c => c.id === candidateId ? unlockedCandidate : c)
                 );
@@ -766,18 +584,18 @@ function MainApp() {
             .sort((a, b) => b.weightedScore - a.weightedScore);
     }, [enrichedJobs, candidateProfile, matchWeights, candidateCertIds]);
 
-    if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-gray-500" /></div>;
+    if (isLoadingProfile) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-muted" /></div>;
 
     if (!userRole) return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-gray-50 text-center">
+        <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-background text-center">
             <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-white text-3xl font-black mb-8 shadow-xl">c</div>
-            <h2 className="text-3xl font-black mb-2 tracking-tight">Welcome to chime</h2>
-            <p className="text-gray-500 mb-8 max-w-xs">Precision alignment for technical talent and the teams that need them.</p>
+            <h2 className="font-heading text-3xl mb-2 tracking-tight">Welcome to chime</h2>
+            <p className="text-muted mb-8 max-w-xs">Precision alignment for technical talent and the teams that need them.</p>
             <div className="flex gap-4">
-                <button onClick={() => handleCreateProfile('candidate')} className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform">I'm Talent</button>
+                <button onClick={() => handleCreateProfile('candidate')} className="bg-accent-coral text-white px-8 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform">I'm Talent</button>
                 <button onClick={() => handleCreateProfile('recruiter')} className="bg-gray-900 text-white px-8 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform">I'm Hiring</button>
             </div>
-            <button onClick={signOut} className="mt-12 text-gray-400 text-sm font-bold uppercase tracking-widest hover:text-gray-900">Sign Out</button>
+            <button onClick={signOut} className="mt-12 text-gray-400 dark:text-gray-500 text-sm font-bold uppercase tracking-widest hover:text-primary">Sign Out</button>
         </div>
     );
 
@@ -857,17 +675,17 @@ function MainApp() {
                             )}
 
                             {sortedEnrichedJobs.length === 0 && (
-                                <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
-                                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <div className="text-center py-20 bg-white dark:bg-surface rounded-[3rem] border-2 border-dashed border-border">
+                                    <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6">
                                         <Briefcase className="w-10 h-10 text-gray-200" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-900 mb-2">
+                                    <h3 className="text-2xl font-black text-primary mb-2">
                                         {!candidateProfile?.skills || candidateProfile.skills.length === 0
                                             ? "Complete your profile to see matches"
                                             : "No matches found yet"
                                         }
                                     </h3>
-                                    <p className="text-gray-500 max-w-md mx-auto">
+                                    <p className="text-muted max-w-md mx-auto">
                                         {!candidateProfile?.skills || candidateProfile.skills.length === 0
                                             ? "Add your skills, preferences, and work history to unlock precision-matched opportunities."
                                             : "We're constantly adding new precision-aligned technical roles. Check back shortly!"
@@ -876,7 +694,7 @@ function MainApp() {
                                     {(!candidateProfile?.skills || candidateProfile.skills.length === 0) && (
                                         <button 
                                             onClick={() => setCurrentView('profile')}
-                                            className="mt-6 px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                                            className="mt-6 px-8 py-3 bg-accent-coral text-white rounded-xl font-bold hover:bg-accent-coral transition-colors"
                                         >
                                             Complete Profile
                                         </button>
@@ -902,8 +720,16 @@ function MainApp() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="min-h-screen bg-background">
             <Navigation role={userRole} currentView={currentView} setCurrentView={setCurrentView} onLogout={signOut} notificationCount={notifications.filter(n => !n.isRead).length} />
+            {userRole && (
+                <MatchRevealBanner
+                    notifications={notifications}
+                    userRole={userRole as 'candidate' | 'recruiter'}
+                    onNavigate={(view) => setCurrentView(view)}
+                    onNotificationsUpdate={fetchNotifications}
+                />
+            )}
             <div className="pt-6 pb-20 md:pb-6">{renderContent()}</div>
         </div>
     );
@@ -914,7 +740,7 @@ function AuthWrapper() {
     const [showAuth, setShowAuth] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role>(null);
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-muted" /></div>;
     
     if (session) return <MainApp />;
 
@@ -964,10 +790,12 @@ export default function App() {
     };
 
     return (
-        <AuthProvider>
-            {renderRoute()}
-            <DevModeSwitcher />
-            <TestSignupBanner />
-        </AuthProvider>
+        <DarkModeProvider>
+            <AuthProvider>
+                {renderRoute()}
+                <DevModeSwitcher />
+                <TestSignupBanner />
+            </AuthProvider>
+        </DarkModeProvider>
     );
 }

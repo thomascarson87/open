@@ -57,7 +57,7 @@ const CultureScoreRing: React.FC<{ score: number; size?: number }> = ({ score, s
 
   const getColor = () => {
     if (score >= 70) return { stroke: '#16a34a', text: 'text-green-600' };
-    if (score >= 50) return { stroke: '#2563eb', text: 'text-blue-600' };
+    if (score >= 50) return { stroke: 'var(--accent-coral)', text: 'text-accent-coral' };
     if (score >= 30) return { stroke: '#f59e0b', text: 'text-amber-600' };
     return { stroke: '#ef4444', text: 'text-red-500' };
   };
@@ -73,7 +73,7 @@ const CultureScoreRing: React.FC<{ score: number; size?: number }> = ({ score, s
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e5e7eb"
+          stroke="var(--border)"
           strokeWidth={strokeWidth}
         />
         {/* Progress circle */}
@@ -93,7 +93,7 @@ const CultureScoreRing: React.FC<{ score: number; size?: number }> = ({ score, s
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`text-3xl font-black ${colors.text}`}>{score}</span>
-        <span className="text-xs text-gray-400">/ 100</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">/ 100</span>
       </div>
     </div>
   );
@@ -119,13 +119,13 @@ const PreferencesSummary: React.FC<{ prefs: HiringManagerPreferences }> = ({ pre
       {items.slice(0, 4).map((item, i) => (
         <span
           key={i}
-          className="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg"
+          className="px-2 py-1 bg-accent-green-bg text-accent-green text-xs font-medium rounded-lg"
         >
           {item.label}: {formatValue(item.value!)}
         </span>
       ))}
       {items.length > 4 && (
-        <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-lg">
+        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-muted text-xs font-medium rounded-lg">
           +{items.length - 4} more
         </span>
       )}
@@ -408,16 +408,16 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
     switch (status) {
       case 'interview':
       case 'interviewing':
-        return 'text-blue-600 bg-blue-50';
+        return 'text-accent-coral bg-accent-coral-bg';
       case 'offer':
         return 'text-green-600 bg-green-50';
       case 'rejected':
         return 'text-red-600 bg-red-50';
       case 'applied':
       case 'new':
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted bg-gray-100 dark:bg-gray-800';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted bg-gray-100 dark:bg-gray-800';
     }
   };
 
@@ -439,11 +439,11 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 animate-pulse">
-          <div className="h-5 bg-gray-200 rounded w-40 mb-4" />
+        <div className="bg-surface rounded-2xl border border-border p-6 animate-pulse">
+          <div className="h-5 bg-border rounded w-40 mb-4" />
           <div className="flex flex-wrap gap-2">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-8 bg-gray-100 rounded-full w-24" />
+              <div key={i} className="h-8 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
             ))}
           </div>
         </div>
@@ -454,17 +454,17 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
   return (
     <div className="space-y-6">
       {/* Section A: Your Culture Profile */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-rose-500" />
-              <h3 className="text-lg font-bold text-gray-900">Your Culture Profile</h3>
+              <h3 className="text-lg font-bold text-primary">Your Culture Profile</h3>
             </div>
             {hasCompanyValues && (
               <button
                 onClick={handleEditCompanyProfile}
-                className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1"
+                className="text-sm text-accent-coral font-medium hover:text-accent-coral flex items-center gap-1"
               >
                 Edit
                 <ChevronRight className="w-4 h-4" />
@@ -476,18 +476,18 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
             <div className="animate-pulse space-y-4">
               <div className="flex flex-wrap gap-2">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-8 bg-gray-100 rounded-full w-24" />
+                  <div key={i} className="h-8 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
                 ))}
               </div>
             </div>
           ) : !hasCompanyValues ? (
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Heart className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">No company values set</p>
-              <p className="text-xs text-gray-500 mb-4">Add company values to see culture insights</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+              <Heart className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">No company values set</p>
+              <p className="text-xs text-muted mb-4">Add company values to see culture insights</p>
               <button
                 onClick={handleEditCompanyProfile}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-accent-coral text-white text-sm font-bold rounded-lg hover:bg-accent-coral transition-colors"
               >
                 Add Values
               </button>
@@ -503,13 +503,13 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.05 }}
-                      className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-full"
+                      className="px-3 py-1.5 bg-accent-coral text-white text-sm font-medium rounded-full"
                     >
                       {value}
                     </motion.span>
                   ))}
                   {companyProfile.values.length > 8 && (
-                    <span className="px-3 py-1.5 bg-gray-100 text-gray-500 text-sm font-medium rounded-full">
+                    <span className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-muted text-sm font-medium rounded-full">
                       +{companyProfile.values.length - 8} more
                     </span>
                   )}
@@ -519,18 +519,18 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
               {/* Desired Traits */}
               {companyProfile.desired_traits && companyProfile.desired_traits.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Desired Traits</p>
+                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Desired Traits</p>
                   <div className="flex flex-wrap gap-2">
                     {companyProfile.desired_traits.slice(0, 6).map((trait, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1 border border-gray-200 text-gray-600 text-sm font-medium rounded-full"
+                        className="px-3 py-1 border border-border text-muted text-sm font-medium rounded-full"
                       >
                         {trait}
                       </span>
                     ))}
                     {companyProfile.desired_traits.length > 6 && (
-                      <span className="px-3 py-1 border border-gray-200 text-gray-400 text-sm font-medium rounded-full">
+                      <span className="px-3 py-1 border border-border text-gray-400 dark:text-gray-500 text-sm font-medium rounded-full">
                         +{companyProfile.desired_traits.length - 6} more
                       </span>
                     )}
@@ -539,13 +539,13 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
               )}
 
               {/* HM Preferences */}
-              <div className="pt-3 border-t border-gray-100">
+              <div className="pt-3 border-t border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Team Preferences</p>
+                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Team Preferences</p>
                   {hasHmPrefs && (
                     <button
                       onClick={handleSetHmPreferences}
-                      className="text-xs text-blue-600 font-medium hover:text-blue-700"
+                      className="text-xs text-accent-coral font-medium hover:text-accent-coral"
                     >
                       Edit
                     </button>
@@ -572,29 +572,29 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
       </div>
 
       {/* Section B: Candidate Values Distribution */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-1">
-            <Users className="w-5 h-5 text-indigo-500" />
-            <h3 className="text-lg font-bold text-gray-900">Values in Your Talent Pool</h3>
+            <Users className="w-5 h-5 text-accent-green" />
+            <h3 className="text-lg font-bold text-primary">Values in Your Talent Pool</h3>
           </div>
-          <p className="text-sm text-gray-500 mb-4">How candidates matching your jobs align with your values</p>
+          <p className="text-sm text-muted mb-4">How candidates matching your jobs align with your values</p>
 
           {isLoadingValues ? (
             <div className="animate-pulse space-y-2">
               {[1, 2, 3, 4, 5].map(i => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-24 h-4 bg-gray-100 rounded" />
-                  <div className="flex-1 h-6 bg-gray-100 rounded" />
-                  <div className="w-10 h-4 bg-gray-100 rounded" />
+                  <div className="w-24 h-4 bg-gray-100 dark:bg-gray-800 rounded" />
+                  <div className="flex-1 h-6 bg-gray-100 dark:bg-gray-800 rounded" />
+                  <div className="w-10 h-4 bg-gray-100 dark:bg-gray-800 rounded" />
                 </div>
               ))}
             </div>
           ) : valueDistribution.length === 0 ? (
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Users className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">No candidate data yet</p>
-              <p className="text-xs text-gray-500">Post jobs to start building your talent pool</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+              <Users className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">No candidate data yet</p>
+              <p className="text-xs text-muted">Post jobs to start building your talent pool</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -610,7 +610,7 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                     <YAxis
                       type="category"
                       dataKey="value"
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
+                      tick={{ fontSize: 12, fill: 'var(--text-muted)' }}
                       tickLine={false}
                       axisLine={false}
                       width={95}
@@ -619,14 +619,14 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                       {valueDistribution.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={entry.isCompanyValue ? '#2563eb' : '#d1d5db'}
+                          fill={entry.isCompanyValue ? 'var(--accent-coral)' : 'var(--border)'}
                         />
                       ))}
                       <LabelList
                         dataKey="percent"
                         position="right"
                         formatter={(value: number) => `${value}%`}
-                        style={{ fontSize: 11, fill: '#6b7280' }}
+                        style={{ fontSize: 11, fill: 'var(--text-muted)' }}
                       />
                     </Bar>
                   </BarChart>
@@ -634,9 +634,9 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
               </div>
 
               {/* Legend */}
-              <div className="flex items-center gap-6 text-xs text-gray-500">
+              <div className="flex items-center gap-6 text-xs text-muted">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-blue-600" />
+                  <div className="w-3 h-3 rounded bg-accent-coral" />
                   <span>Matches your values</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -673,24 +673,24 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
       </div>
 
       {/* Section C: Team Fit Analyzer */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-1">
             <Briefcase className="w-5 h-5 text-emerald-500" />
-            <h3 className="text-lg font-bold text-gray-900">Candidate Culture Fit</h3>
+            <h3 className="text-lg font-bold text-primary">Candidate Culture Fit</h3>
           </div>
-          <p className="text-sm text-gray-500 mb-4">Select a candidate to see detailed culture alignment</p>
+          <p className="text-sm text-muted mb-4">Select a candidate to see detailed culture alignment</p>
 
           {isLoadingCandidates ? (
             <div className="animate-pulse">
-              <div className="h-10 bg-gray-100 rounded-lg w-full mb-4" />
-              <div className="h-32 bg-gray-50 rounded-xl" />
+              <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg w-full mb-4" />
+              <div className="h-32 bg-gray-50 dark:bg-gray-900 rounded-xl" />
             </div>
           ) : pipelineCandidates.length === 0 ? (
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <User className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-700 mb-1">Your talent pool is empty</p>
-              <p className="text-xs text-gray-500">Post a job to start building your pipeline</p>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+              <User className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 mb-1">Your talent pool is empty</p>
+              <p className="text-xs text-muted">Post a job to start building your pipeline</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -699,7 +699,7 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                 <select
                   value={selectedCandidateId || ''}
                   onChange={(e) => setSelectedCandidateId(e.target.value || null)}
-                  className="w-full px-4 py-2.5 pr-10 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-gray-900 border border-border rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-600 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent-coral focus:border-transparent"
                 >
                   <option value="">Select a candidate...</option>
                   {pipelineCandidates.map((candidate) => (
@@ -708,22 +708,22 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               </div>
 
               {/* Culture Fit Display */}
               {!selectedCandidateId ? (
-                <div className="bg-gray-50 rounded-xl p-8 text-center">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <User className="w-8 h-8 text-gray-400" />
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-8 text-center">
+                  <div className="w-16 h-16 bg-border rounded-full flex items-center justify-center mx-auto mb-3">
+                    <User className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                   </div>
-                  <p className="text-sm text-gray-500">Select a candidate above to analyze culture fit</p>
+                  <p className="text-sm text-muted">Select a candidate above to analyze culture fit</p>
                 </div>
               ) : isLoadingFit ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-500">Analyzing culture fit...</span>
+                    <div className="w-5 h-5 border-2 border-accent-coral border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-muted">Analyzing culture fit...</span>
                   </div>
                 </div>
               ) : cultureFitResult ? (
@@ -733,13 +733,13 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                   className="space-y-4"
                 >
                   {/* Overall Score */}
-                  <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                     <CultureScoreRing score={cultureFitResult.overallScore} />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-500 mb-1">Overall Culture Fit</p>
+                      <p className="text-sm font-medium text-muted mb-1">Overall Culture Fit</p>
                       <p className={`text-lg font-bold ${
                         cultureFitResult.overallScore >= 70 ? 'text-green-600' :
-                        cultureFitResult.overallScore >= 50 ? 'text-blue-600' :
+                        cultureFitResult.overallScore >= 50 ? 'text-accent-coral' :
                         cultureFitResult.overallScore >= 30 ? 'text-amber-600' : 'text-red-500'
                       }`}>
                         {cultureFitResult.overallScore >= 70 ? 'Strong Alignment' :
@@ -752,17 +752,17 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                   {/* Breakdown */}
                   <div className="grid grid-cols-2 gap-4">
                     {/* Values Alignment */}
-                    <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className="p-4 bg-accent-coral-bg rounded-xl">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-blue-900">Values Alignment</span>
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-sm font-medium text-accent-coral">Values Alignment</span>
+                        <span className="text-lg font-bold text-accent-coral">
                           {cultureFitResult.valuesAlignment.score ?? 0}%
                         </span>
                       </div>
                       {cultureFitResult.valuesAlignment.shared.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {cultureFitResult.valuesAlignment.shared.slice(0, 3).map((val, i) => (
-                            <span key={i} className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                            <span key={i} className="px-2 py-0.5 bg-accent-coral-bg text-accent-coral text-xs rounded-full">
                               {val}
                             </span>
                           ))}
@@ -771,14 +771,14 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                     </div>
 
                     {/* Work Style Match */}
-                    <div className="p-4 bg-purple-50 rounded-xl">
+                    <div className="p-4 bg-accent-green-bg rounded-xl">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-purple-900">Work Style Match</span>
-                        <span className="text-lg font-bold text-purple-600">
+                        <span className="text-sm font-medium text-accent-green">Work Style Match</span>
+                        <span className="text-lg font-bold text-accent-green">
                           {cultureFitResult.workStyleCompatibility.overallScore}%
                         </span>
                       </div>
-                      <p className="text-xs text-purple-600">
+                      <p className="text-xs text-accent-green">
                         {cultureFitResult.workStyleCompatibility.alignedCount} of {cultureFitResult.workStyleCompatibility.totalDimensions} dimensions aligned
                       </p>
                     </div>
@@ -820,7 +820,7 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                   {/* Dimension Details (collapsible) */}
                   {cultureFitResult.workStyleCompatibility.dimensions.length > 0 && (
                     <details className="group">
-                      <summary className="flex items-center gap-2 cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                      <summary className="flex items-center gap-2 cursor-pointer text-sm text-muted hover:text-gray-700 dark:text-gray-300 dark:text-gray-600">
                         <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
                         View dimension breakdown
                       </summary>
@@ -829,12 +829,12 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                           const StatusIcon = dim.status === 'aligned' ? CheckCircle :
                                             dim.status === 'misaligned' ? XCircle : Minus;
                           const statusColor = dim.status === 'aligned' ? 'text-green-500' :
-                                              dim.status === 'misaligned' ? 'text-red-500' : 'text-gray-400';
+                                              dim.status === 'misaligned' ? 'text-red-500' : 'text-gray-400 dark:text-gray-500';
                           return (
                             <div key={i} className="flex items-center gap-3 text-sm">
                               <StatusIcon className={`w-4 h-4 ${statusColor}`} />
-                              <span className="w-32 text-gray-600">{dim.name}</span>
-                              <span className="text-gray-400">
+                              <span className="w-32 text-muted">{dim.name}</span>
+                              <span className="text-gray-400 dark:text-gray-500">
                                 {dim.candidatePreference || '—'} vs {dim.companyExpectation || '—'}
                               </span>
                             </div>
@@ -845,9 +845,9 @@ const CultureAlignment: React.FC<CultureAlignmentProps> = ({
                   )}
                 </motion.div>
               ) : (
-                <div className="bg-gray-50 rounded-xl p-6 text-center">
-                  <AlertCircle className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">Unable to calculate culture fit</p>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 text-center">
+                  <AlertCircle className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-sm text-muted">Unable to calculate culture fit</p>
                 </div>
               )}
             </div>

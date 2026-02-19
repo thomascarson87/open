@@ -22,7 +22,7 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   if (profile.ambitions !== undefined) mapping.ambitions = profile.ambitions;
   
   // Media
-  if (profile.avatar_url !== undefined) mapping.avatar_url = profile.avatar_url;
+  if (profile.avatarUrl !== undefined) mapping.avatar_url = profile.avatarUrl;
   if (profile.avatarUrls !== undefined) mapping.avatar_urls = profile.avatarUrls;
   if (profile.videoIntroUrl !== undefined) mapping.video_intro_url = profile.videoIntroUrl;
   
@@ -71,15 +71,15 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   if (profile.legalStatus !== undefined) mapping.legal_status = profile.legalStatus;
   
   // Education
-  if (profile.education_level !== undefined) mapping.education_level = profile.education_level;
-  if (profile.education_field !== undefined) mapping.education_field = profile.education_field;
-  if (profile.education_institution !== undefined) mapping.education_institution = profile.education_institution;
-  if (profile.education_graduation_year !== undefined) mapping.education_graduation_year = profile.education_graduation_year;
+  if (profile.educationLevel !== undefined) mapping.education_level = profile.educationLevel;
+  if (profile.educationField !== undefined) mapping.education_field = profile.educationField;
+  if (profile.educationInstitution !== undefined) mapping.education_institution = profile.educationInstitution;
+  if (profile.educationGraduationYear !== undefined) mapping.education_graduation_year = profile.educationGraduationYear;
   
   // Personality
-  if (profile.myers_briggs !== undefined) mapping.myers_briggs = profile.myers_briggs;
-  if (profile.disc_profile !== undefined) mapping.disc_profile = profile.disc_profile;
-  if (profile.enneagram_type !== undefined) mapping.enneagram_type = profile.enneagram_type;
+  if (profile.myersBriggs !== undefined) mapping.myers_briggs = profile.myersBriggs;
+  if (profile.discProfile !== undefined) mapping.disc_profile = profile.discProfile;
+  if (profile.enneagramType !== undefined) mapping.enneagram_type = profile.enneagramType;
   
   // Theme
   if (profile.themeColor !== undefined) mapping.theme_color = profile.themeColor;
@@ -96,7 +96,7 @@ function mapCandidateToDatabase(profile: Partial<CandidateProfile>): Record<stri
   if (profile.interestedRoles !== undefined) mapping.interested_roles = profile.interestedRoles;
 
   // Onboarding
-  if (profile.onboarding_completed !== undefined) mapping.onboarding_completed = profile.onboarding_completed;
+  if (profile.onboardingCompleted !== undefined) mapping.onboarding_completed = profile.onboardingCompleted;
 
   // Availability
   if (profile.callReady !== undefined) mapping.call_ready = profile.callReady;
@@ -270,7 +270,7 @@ const CandidateProfileForm: React.FC<Props> = ({ profile, onSave }) => {
     <>
       {saveStatus !== 'idle' && (
         <div className={`fixed top-4 right-4 z-[60] px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all animate-in fade-in slide-in-from-top-2 ${
-          saveStatus === 'saving' ? 'bg-blue-100 text-blue-700' :
+          saveStatus === 'saving' ? 'bg-accent-coral-bg text-accent-coral' :
           saveStatus === 'saved' ? 'bg-green-100 text-green-700' :
           saveStatus === 'error' ? 'bg-red-100 text-red-700' : ''
         }`}>
